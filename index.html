@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fbf6f5" />
+<title>YesyModa · Catálogo</title>
+<meta name="description" content="YesyModa — ropa fina y elegante. Explora el catálogo y haz tu pedido por WhatsApp." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===================== YESYMODA · THEME ===================== */
+:root{
+  --bg:#fbf6f5;            /* blush white */
+  --surface:#ffffff;
+  --surface-soft:#fdeef1;
+  --ink:#4a3b42;           /* deep mauve, softer than black */
+  --ink-strong:#3a2d33;
+  --muted:#9a868f;
+  --faint:#c3b2b9;
+  --line:#f1e2e6;
+  --line-strong:#ecd3da;
+  --rosa:#f4c9d6;          /* pastel */
+  --rosa-mid:#e8a9bc;
+  --rosa-deep:#c65f80;     /* accessible on white */
+  --rosa-ink:#a84868;
+  --gold:#c6a15b;
+  --gold-soft:#f6edda;
+  --wa:#25D366;
+  --wa-deep:#0e8a54;
+  --wa-soft:#e6f8ee;
+  --shadow-sm:0 1px 2px rgba(74,59,66,.05);
+  --shadow:0 8px 30px -14px rgba(166,72,104,.28), 0 2px 8px -4px rgba(74,59,66,.10);
+  --shadow-lg:0 24px 60px -24px rgba(166,72,104,.40);
+  --r:16px; --r-lg:22px; --r-sm:11px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-weight:400; line-height:1.55; font-size:16px; -webkit-font-smoothing:antialiased;
+  padding-bottom:88px;
+}
+.serif{font-family:"Playfair Display",Georgia,serif}
+h1,h2,h3,h4{margin:0; line-height:1.15}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+img{display:block; max-width:100%}
+a{color:inherit; text-decoration:none}
+.wrap{max-width:1120px; margin:0 auto; padding:0 18px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+/* ===================== HEADER ===================== */
+header{
+  position:sticky; top:0; z-index:40;
+  background:rgba(251,246,245,.82); backdrop-filter:saturate(1.4) blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.hd{display:flex; align-items:center; gap:14px; padding:12px 0}
+.brand{display:flex; align-items:baseline; gap:9px; margin-right:auto}
+.brand .logo{
+  font-family:"Playfair Display",serif; font-weight:700; font-size:25px; letter-spacing:.2px;
+  color:var(--ink-strong);
+}
+.brand .logo b{color:var(--rosa-deep); font-weight:700}
+.brand .tag{font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); font-weight:500}
+@media(max-width:560px){.brand .tag{display:none}}
+.search{
+  flex:1; max-width:340px; display:flex; align-items:center; gap:8px;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:999px;
+  padding:9px 15px; box-shadow:var(--shadow-sm); transition:border-color .2s, box-shadow .2s;
+}
+.search:focus-within{border-color:var(--rosa-mid); box-shadow:0 0 0 4px var(--surface-soft)}
+.search svg{flex:none; opacity:.5}
+.search input{border:none; outline:none; background:none; width:100%; font-size:15px; color:var(--ink)}
+.search input::placeholder{color:var(--faint)}
+@media(max-width:560px){.search{max-width:none}}
+.cart-btn{
+  position:relative; flex:none; width:46px; height:46px; border-radius:50%;
+  background:var(--surface); border:1px solid var(--line-strong); display:grid; place-items:center;
+  box-shadow:var(--shadow-sm); transition:transform .12s, border-color .2s;
+}
+.cart-btn:active{transform:scale(.93)}
+.cart-btn .count{
+  position:absolute; top:-4px; right:-4px; min-width:20px; height:20px; padding:0 5px;
+  background:var(--rosa-deep); color:#fff; border-radius:999px; font-size:11.5px; font-weight:600;
+  display:grid; place-items:center; border:2px solid var(--bg); transform:scale(0); transition:transform .18s cubic-bezier(.2,1.3,.5,1);
+}
+.cart-btn .count.show{transform:scale(1)}
+
+/* ===================== HERO STRIP ===================== */
+.hero{
+  background:
+    radial-gradient(120% 130% at 100% 0%, #fbdbe4 0%, rgba(251,219,228,0) 55%),
+    radial-gradient(90% 120% at 0% 0%, #f7ecd9 0%, rgba(247,236,217,0) 50%),
+    var(--surface);
+  border-bottom:1px solid var(--line);
+}
+.hero-in{padding:34px 0 30px; text-align:center}
+.hero .kicker{font-size:12px; letter-spacing:.34em; text-transform:uppercase; color:var(--gold); font-weight:600}
+.hero h1{font-size:clamp(28px,6vw,44px); font-weight:600; color:var(--ink-strong); margin:10px 0 6px; letter-spacing:.3px}
+.hero p{color:var(--muted); margin:0 auto; max-width:520px; font-size:15.5px}
+.hero .wa-hint{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:13px;color:var(--wa-deep);background:var(--wa-soft);border:1px solid #bfe9d0;padding:6px 13px;border-radius:999px;font-weight:500}
+
+/* ===================== CATEGORY CHIPS ===================== */
+.cats{position:sticky; top:71px; z-index:30; background:rgba(251,246,245,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+.cats-in{display:flex; gap:9px; overflow-x:auto; padding:13px 18px; max-width:1120px; margin:0 auto; scrollbar-width:none}
+.cats-in::-webkit-scrollbar{display:none}
+.chip{
+  flex:none; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px;
+  background:var(--surface); border:1px solid var(--line-strong); font-size:14px; font-weight:500; color:var(--ink);
+  white-space:nowrap; transition:all .18s; box-shadow:var(--shadow-sm);
+}
+.chip:active{transform:scale(.95)}
+.chip.active{background:var(--ink-strong); color:#fff; border-color:var(--ink-strong)}
+.chip .ic{font-size:15px}
+
+/* ===================== PRODUCT GRID ===================== */
+.section-head{display:flex; align-items:end; justify-content:space-between; margin:26px 0 4px}
+.section-head h2{font-size:22px; font-weight:600; color:var(--ink-strong)}
+.section-head .n{font-size:13px; color:var(--muted)}
+.grid{
+  display:grid; gap:16px; padding:16px 0 8px;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+}
+@media(max-width:560px){.grid{grid-template-columns:1fr 1fr; gap:12px}}
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden;
+  box-shadow:var(--shadow-sm); transition:transform .18s, box-shadow .25s; position:relative; display:flex; flex-direction:column;
+}
+.card:hover{transform:translateY(-3px); box-shadow:var(--shadow)}
+.card .imgwrap{position:relative; aspect-ratio:4/5; overflow:hidden; background:var(--surface-soft)}
+.card .imgwrap img{width:100%; height:100%; object-fit:cover; transition:transform .4s}
+.card:hover .imgwrap img{transform:scale(1.04)}
+.badge{position:absolute; top:10px; left:10px; font-size:11px; font-weight:600; letter-spacing:.03em; padding:4px 10px; border-radius:999px; background:var(--gold-soft); color:#9a7b2e; box-shadow:var(--shadow-sm)}
+.badge.out{background:#f3e6ea; color:#a06377; left:auto; right:10px}
+.card .body{padding:13px 14px 15px; display:flex; flex-direction:column; gap:3px; flex:1}
+.card .cat{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-weight:500}
+.card .name{font-size:15.5px; font-weight:500; color:var(--ink-strong); line-height:1.3}
+.card .row{display:flex; align-items:center; justify-content:space-between; margin-top:8px; gap:8px}
+.card .price{font-family:"Playfair Display",serif; font-size:19px; font-weight:600; color:var(--rosa-deep)}
+.card .add{
+  width:38px; height:38px; border-radius:50%; background:var(--rosa-deep); color:#fff; display:grid; place-items:center;
+  flex:none; box-shadow:0 6px 16px -6px var(--rosa-deep); transition:transform .12s, background .2s;
+}
+.card .add:active{transform:scale(.88)}
+.card .add:disabled{background:var(--faint); box-shadow:none; cursor:not-allowed}
+.swatches{display:flex; gap:5px; margin-top:9px}
+.sw{width:15px; height:15px; border-radius:50%; border:1.5px solid #fff; box-shadow:0 0 0 1px var(--line-strong)}
+.empty{text-align:center; padding:60px 20px; color:var(--muted)}
+.empty .big{font-size:40px; margin-bottom:8px}
+
+/* ===================== BOTTOM SHEET (product) ===================== */
+.scrim{position:fixed; inset:0; background:rgba(58,45,51,.44); opacity:0; pointer-events:none; transition:opacity .28s; z-index:60}
+.scrim.show{opacity:1; pointer-events:auto}
+.sheet{
+  position:fixed; left:0; right:0; bottom:0; z-index:70; background:var(--surface);
+  border-radius:26px 26px 0 0; box-shadow:var(--shadow-lg); transform:translateY(102%);
+  transition:transform .34s cubic-bezier(.22,1,.36,1); max-height:92vh; overflow:auto;
+  max-width:560px; margin:0 auto;
+}
+.sheet.show{transform:translateY(0)}
+.sheet .grab{width:44px; height:5px; border-radius:99px; background:var(--line-strong); margin:10px auto 4px}
+.sheet .ph{aspect-ratio:16/11; background:var(--surface-soft); overflow:hidden}
+.sheet .ph img{width:100%; height:100%; object-fit:cover}
+.sheet .content{padding:18px 22px 26px}
+.sheet .cat{font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:600}
+.sheet h3{font-size:25px; font-weight:600; color:var(--ink-strong); margin:5px 0 2px}
+.sheet .desc{color:var(--muted); font-size:14.5px; margin:6px 0 2px}
+.sheet .price{font-family:"Playfair Display",serif; font-size:27px; font-weight:600; color:var(--rosa-deep); margin:12px 0 4px}
+.pick-label{font-size:12.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:18px 0 9px}
+.opts{display:flex; flex-wrap:wrap; gap:9px}
+.opt{
+  min-width:46px; padding:9px 15px; border-radius:11px; border:1.5px solid var(--line-strong); background:var(--surface);
+  font-size:14.5px; font-weight:500; color:var(--ink); transition:all .16s;
+}
+.opt:active{transform:scale(.94)}
+.opt.sel{border-color:var(--rosa-deep); background:var(--surface-soft); color:var(--rosa-ink); box-shadow:0 0 0 3px #fbe3ea}
+.opt:disabled{opacity:.32; text-decoration:line-through; cursor:not-allowed}
+.opt.color{display:inline-flex; align-items:center; gap:8px; padding-left:11px}
+.opt.color .dot{width:16px; height:16px; border-radius:50%; box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.qtyrow{display:flex; align-items:center; gap:16px; margin-top:20px}
+.stepper{display:flex; align-items:center; gap:2px; border:1.5px solid var(--line-strong); border-radius:12px; overflow:hidden}
+.stepper button{width:42px; height:42px; font-size:20px; color:var(--rosa-deep); display:grid; place-items:center}
+.stepper button:disabled{color:var(--faint)}
+.stepper .v{min-width:34px; text-align:center; font-weight:600; font-size:16px}
+.stock-note{font-size:12.5px; color:var(--muted)}
+.sheet-cta{
+  display:flex; align-items:center; justify-content:center; gap:10px; width:100%; margin-top:22px;
+  background:var(--rosa-deep); color:#fff; font-size:16px; font-weight:600; padding:15px; border-radius:15px;
+  box-shadow:0 12px 26px -12px var(--rosa-deep); transition:transform .12s, opacity .2s;
+}
+.sheet-cta:active{transform:translateY(1px) scale(.995)}
+.sheet-cta:disabled{background:var(--faint); box-shadow:none; cursor:not-allowed}
+
+/* ===================== CART DRAWER ===================== */
+.drawer{
+  position:fixed; top:0; right:0; bottom:0; width:min(430px,100%); z-index:70; background:var(--bg);
+  box-shadow:var(--shadow-lg); transform:translateX(103%); transition:transform .32s cubic-bezier(.22,1,.36,1);
+  display:flex; flex-direction:column;
+}
+.drawer.show{transform:translateX(0)}
+.drawer .top{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line); background:var(--surface)}
+.drawer .top h3{font-size:20px; font-weight:600; color:var(--ink-strong)}
+.iconbtn{width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:var(--muted); transition:background .18s}
+.iconbtn:hover{background:var(--surface-soft)}
+.drawer .items{flex:1; overflow:auto; padding:10px 16px}
+.citem{display:flex; gap:12px; padding:13px 0; border-bottom:1px dashed var(--line)}
+.citem .th{width:64px; height:80px; border-radius:12px; overflow:hidden; background:var(--surface-soft); flex:none}
+.citem .th img{width:100%;height:100%;object-fit:cover}
+.citem .info{flex:1; min-width:0}
+.citem .nm{font-size:14.5px; font-weight:500; color:var(--ink-strong)}
+.citem .vr{font-size:12.5px; color:var(--muted); margin-top:1px}
+.citem .pr{font-family:"Playfair Display",serif; color:var(--rosa-deep); font-weight:600; margin-top:4px}
+.citem .mini{display:flex; align-items:center; gap:2px; margin-top:7px; border:1px solid var(--line-strong); border-radius:9px; width:max-content; overflow:hidden}
+.citem .mini button{width:30px; height:30px; color:var(--rosa-deep); font-size:16px}
+.citem .mini .v{min-width:26px; text-align:center; font-size:13.5px; font-weight:600}
+.citem .rm{margin-left:auto; align-self:flex-start; color:var(--faint); font-size:12.5px}
+.drawer .foot{padding:16px 20px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--surface)}
+.totrow{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px}
+.totrow .l{color:var(--muted); font-size:14px}
+.totrow .t{font-family:"Playfair Display",serif; font-size:26px; font-weight:700; color:var(--ink-strong)}
+.wa-cta{
+  display:flex; align-items:center; justify-content:center; gap:11px; width:100%; margin-top:12px;
+  background:var(--wa); color:#fff; font-size:16.5px; font-weight:600; padding:16px; border-radius:15px;
+  box-shadow:0 14px 28px -12px var(--wa); transition:transform .12s;
+}
+.wa-cta:active{transform:translateY(1px) scale(.995)}
+.wa-cta:disabled{background:var(--faint); box-shadow:none; cursor:not-allowed}
+.wa-sub{text-align:center; font-size:12px; color:var(--muted); margin-top:9px}
+.cart-empty{text-align:center; color:var(--muted); padding:50px 20px}
+.cart-empty .big{font-size:38px; margin-bottom:8px}
+
+/* ===================== TOAST ===================== */
+.toast{
+  position:fixed; left:50%; bottom:104px; transform:translate(-50%,20px); z-index:90; opacity:0; pointer-events:none;
+  background:var(--ink-strong); color:#fff; padding:11px 20px; border-radius:999px; font-size:14px; font-weight:500;
+  box-shadow:var(--shadow-lg); transition:opacity .25s, transform .25s; display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.toast.show{opacity:1; transform:translate(-50%,0)}
+
+/* ===================== FLOATING CART BAR (mobile) ===================== */
+.floatbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:50; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg, var(--bg) 68%, rgba(251,246,245,0)); pointer-events:none;
+  transform:translateY(120%); transition:transform .3s cubic-bezier(.22,1,.36,1);
+}
+.floatbar.show{transform:translateY(0)}
+.floatbar .inner{
+  pointer-events:auto; max-width:560px; margin:0 auto; background:var(--ink-strong); color:#fff;
+  border-radius:16px; padding:13px 16px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-lg);
+}
+.floatbar .n{background:var(--rosa-deep); width:26px;height:26px;border-radius:50%; display:grid;place-items:center; font-size:13px; font-weight:700; flex:none}
+.floatbar .lbl{font-size:14px; font-weight:500}
+.floatbar .tt{margin-left:auto; font-family:"Playfair Display",serif; font-weight:700; font-size:18px}
+.floatbar .go{color:var(--rosa); font-weight:600; font-size:14px; margin-left:6px}
+
+/* ===================== FOOTER ===================== */
+footer{margin-top:20px; border-top:1px solid var(--line); background:var(--surface)}
+.foot-in{padding:30px 0 34px; text-align:center; color:var(--muted); font-size:13.5px}
+.foot-in .fb{font-family:"Playfair Display",serif; font-size:22px; color:var(--ink-strong); font-weight:600}
+.foot-in .fb b{color:var(--rosa-deep)}
+.foot-in a{color:var(--wa-deep); font-weight:500}
+.skeleton{background:linear-gradient(90deg,#f6ebee 25%,#fbeef2 37%,#f6ebee 63%); background-size:400% 100%; animation:sk 1.3s ease-in-out infinite}
+@keyframes sk{0%{background-position:100% 0}100%{background-position:-100% 0}}
+</style>
+</head>
+<body>
+
+<!-- ============ CONFIG (edita config.js) ============ -->
+<script src="config.js"></script>
+
+<header>
+  <div class="wrap hd">
+    <div class="brand">
+      <span class="logo serif">Yesy<b>Moda</b></span>
+      <span class="tag">Boutique</span>
+    </div>
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      <input id="q" type="search" placeholder="Buscar prendas…" autocomplete="off" />
+    </label>
+    <button class="cart-btn" id="cartBtn" aria-label="Ver carrito">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M6 6 5 3H2"/></svg>
+      <span class="count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-in">
+    <div class="kicker">Ropa fina & elegante</div>
+    <h1 class="serif">Vístete como te imaginas</h1>
+    <p>Descubre nuestra selección, elige tu talla y color, y recibe tu pedido coordinando por WhatsApp.</p>
+    <div class="wa-hint">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Z" opacity=".25"/><path d="M12 4a8 8 0 0 0-6.9 12l.3.5-.7 2.6 2.7-.7.5.3A8 8 0 1 0 12 4Z"/></svg>
+      Pide fácil, sin registrarte
+    </div>
+  </div>
+</section>
+
+<nav class="cats"><div class="cats-in" id="cats"></div></nav>
+
+<main class="wrap">
+  <div class="section-head">
+    <h2 class="serif" id="sectionTitle">Todo el catálogo</h2>
+    <span class="n" id="sectionCount"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="fb serif">Yesy<b>Moda</b></div>
+    <p style="margin:8px 0 4px">Ropa fina y elegante · Pedidos por WhatsApp</p>
+    <p><a id="footWa" href="#">Escríbenos por WhatsApp →</a></p>
+    <p style="margin-top:14px; font-size:12px; color:var(--faint)">© <span id="yr"></span> YesyModa · Hecho con cariño</p>
+  </div>
+</footer>
+
+<!-- floating cart bar -->
+<div class="floatbar" id="floatbar"><div class="inner" onclick="openCart()">
+  <span class="n" id="fbN">0</span><span class="lbl">Ver mi pedido</span>
+  <span class="tt" id="fbT">C$0</span><span class="go">→</span>
+</div></div>
+
+<!-- product sheet -->
+<div class="scrim" id="scrim" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+
+<!-- cart drawer -->
+<div class="scrim" id="scrim2" onclick="closeCart()"></div>
+<aside class="drawer" id="drawer" aria-label="Carrito">
+  <div class="top">
+    <h3 class="serif">Mi pedido</h3>
+    <button class="iconbtn" onclick="closeCart()" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="items" id="cartItems"></div>
+  <div class="foot" id="cartFoot"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   YESYMODA · Storefront logic
+   ============================================================ */
+const CUR = CONFIG.CURRENCY || "C$";
+const money = n => CUR + " " + (Math.round(n)).toLocaleString("es-NI");
+
+/* --- color name -> swatch hex (para mostrar puntos de color) --- */
+const COLORS = {
+  "rosa":"#f4c9d6","rosado":"#f4c9d6","palo de rosa":"#e7b7c2","fucsia":"#d6468f",
+  "blanco":"#ffffff","negro":"#2f2b2e","gris":"#b9b3b6","beige":"#e8d9c5","crema":"#f3ead9",
+  "azul":"#8fa9cf","celeste":"#bcd4ea","marino":"#3a4a6b","rojo":"#c85a5f","vino":"#7d2f42",
+  "verde":"#9bb894","menta":"#c3e0cf","amarillo":"#f0d585","mostaza":"#d1a24a",
+  "morado":"#a98bc4","lila":"#d7c6e8","cafe":"#8a6552","café":"#8a6552","dorado":"#d8b45f",
+  "coral":"#f39d8a","turquesa":"#7fc9c2","naranja":"#e79a5c"
+};
+const colorHex = c => COLORS[(c||"").toLowerCase().trim()] || "#e3d3d9";
+
+/* --- placeholder image (SVG data-uri) elegante por categoría --- */
+function ph(name, icon){
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='800'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='#fdeef1'/><stop offset='1' stop-color='#f7ecd9'/></linearGradient></defs>
+    <rect width='640' height='800' fill='url(#g)'/>
+    <text x='320' y='372' font-size='150' text-anchor='middle'>${icon||"👗"}</text>
+    <text x='320' y='470' font-size='30' fill='#c65f80' font-family='Georgia,serif' font-style='italic' text-anchor='middle'>${(name||"YesyModa").replace(/&/g,"&amp;")}</text>
+    <text x='320' y='742' font-size='20' letter-spacing='8' fill='#c6a15b' font-family='Georgia,serif' text-anchor='middle'>YESYMODA</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+const imgOf = p => (p.imagen && p.imagen.trim()) ? p.imagen.trim() : ph(p.nombre, catIcon(p.categoria));
+
+/* --- state --- */
+let DATA = { categories:[], products:[], config:{} };
+let CATMAP = {};
+let filterCat = "all", query = "";
+let cart = loadCart();
+
+function catIcon(id){ return (CATMAP[id]&&CATMAP[id].icono) || "👗"; }
+function catName(id){ return (CATMAP[id]&&CATMAP[id].nombre) || ""; }
+function stockOf(p){ return (p.variantes||[]).reduce((s,v)=>s+(+v.stock||0),0); }
+function colorsOf(p){ const s=[]; (p.variantes||[]).forEach(v=>{ if((+v.stock||0)>0 && v.color && !s.includes(v.color)) s.push(v.color);}); return s; }
+
+/* ---------- SAMPLE DATA (modo demostración) ---------- */
+const SAMPLE = {
+  config:{ nombre:"YesyModa", whatsapp:CONFIG.WHATSAPP, moneda:CUR, mensaje:"¡Hola YesyModa! 💕 Quiero hacer este pedido:" },
+  categories:[
+    {id:"blusas", nombre:"Blusas", icono:"👚", orden:1, visible:true},
+    {id:"vestidos", nombre:"Vestidos", icono:"👗", orden:2, visible:true},
+    {id:"pantalones", nombre:"Pantalones", icono:"👖", orden:3, visible:true},
+    {id:"faldas", nombre:"Faldas", icono:"🩱", orden:4, visible:true},
+    {id:"accesorios", nombre:"Accesorios", icono:"👜", orden:5, visible:true}
+  ],
+  products:[
+    {id:"p1", categoria:"blusas", nombre:"Blusa Manga Larga", descripcion:"Tela suave y fresca, corte clásico. Ideal para el día a día.", precio:450, imagen:"", destacado:true, activo:true,
+      variantes:[ {talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},
+                  {talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"L",color:"Blanco",stock:2},
+                  {talla:"M",color:"Negro",stock:4},{talla:"L",color:"Negro",stock:3} ]},
+    {id:"p2", categoria:"blusas", nombre:"Blusa Casual Básica", descripcion:"Cómoda y versátil, combina con todo.", precio:380, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"L",color:"Beige",stock:0},
+                  {talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5} ]},
+    {id:"p3", categoria:"vestidos", nombre:"Vestido Floral", descripcion:"Estampado floral primaveral, vuelo ligero.", precio:690, imagen:"", destacado:true, activo:true,
+      variantes:[ {talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"L",color:"Rosa",stock:2},
+                  {talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3} ]},
+    {id:"p4", categoria:"vestidos", nombre:"Vestido Elegante de Noche", descripcion:"Corte entallado, perfecto para ocasiones especiales.", precio:980, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"L",color:"Negro",stock:1},
+                  {talla:"M",color:"Vino",stock:2},{talla:"L",color:"Vino",stock:2} ]},
+    {id:"p5", categoria:"pantalones", nombre:"Pantalón Jean Clásico", descripcion:"Mezclilla resistente, tiro medio, muy cómodo.", precio:720, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4},{talla:"34",color:"Azul",stock:2},
+                  {talla:"30",color:"Negro",stock:3},{talla:"32",color:"Negro",stock:3} ]},
+    {id:"p6", categoria:"pantalones", nombre:"Pantalón de Tela", descripcion:"Caída elegante, ideal para la oficina.", precio:650, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"S",color:"Beige",stock:4},{talla:"M",color:"Beige",stock:3},{talla:"L",color:"Beige",stock:2},
+                  {talla:"S",color:"Negro",stock:3},{talla:"M",color:"Negro",stock:4} ]},
+    {id:"p7", categoria:"faldas", nombre:"Falda Midi Plisada", descripcion:"Movimiento elegante, largo a media pierna.", precio:520, imagen:"", destacado:true, activo:true,
+      variantes:[ {talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},
+                  {talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3},{talla:"L",color:"Marino",stock:2} ]},
+    {id:"p8", categoria:"faldas", nombre:"Falda Corta Casual", descripcion:"Fresca y juvenil, fácil de combinar.", precio:410, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"S",color:"Beige",stock:4},{talla:"M",color:"Beige",stock:5},{talla:"L",color:"Beige",stock:3} ]},
+    {id:"p9", categoria:"accesorios", nombre:"Bolso de Mano", descripcion:"Diseño sobrio y elegante, amplio interior.", precio:480, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3} ]},
+    {id:"p10", categoria:"accesorios", nombre:"Collar de Perlas", descripcion:"Toque clásico y femenino para cualquier look.", precio:250, imagen:"", destacado:false, activo:true,
+      variantes:[ {talla:"Única",color:"Blanco",stock:8} ]}
+  ]
+};
+
+/* ---------- LOAD ---------- */
+async function load(){
+  renderSkeleton();
+  if(CONFIG.API_URL){
+    try{
+      const r = await fetch(CONFIG.API_URL + "?action=getCatalog", {method:"GET"});
+      const j = await r.json();
+      if(j && j.products){ DATA = normalize(j); afterLoad(); return; }
+    }catch(e){ console.warn("No se pudo cargar en vivo, uso datos de ejemplo:", e); }
+  }
+  DATA = normalize(SAMPLE);
+  afterLoad();
+}
+function normalize(d){
+  const cfg = d.config||{};
+  const cats = (d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const prods = (d.products||[]).filter(p=>p.activo!==false);
+  return { config:cfg, categories:cats, products:prods };
+}
+function afterLoad(){
+  CATMAP = {}; DATA.categories.forEach(c=>CATMAP[c.id]=c);
+  document.getElementById("yr").textContent = new Date().getFullYear();
+  const waNum = (DATA.config.whatsapp||CONFIG.WHATSAPP);
+  document.getElementById("footWa").href = "https://wa.me/"+waNum;
+  renderCats(); renderGrid(); renderCart();
+}
+
+/* ---------- RENDER: categories ---------- */
+function renderCats(){
+  const el = document.getElementById("cats");
+  let html = `<button class="chip ${filterCat==='all'?'active':''}" onclick="setCat('all')"><span class="ic">✨</span>Todo</button>`;
+  DATA.categories.forEach(c=>{
+    html += `<button class="chip ${filterCat===c.id?'active':''}" onclick="setCat('${c.id}')"><span class="ic">${c.icono||"👗"}</span>${c.nombre}</button>`;
+  });
+  el.innerHTML = html;
+}
+function setCat(id){ filterCat=id; renderCats(); renderGrid();
+  document.getElementById("sectionTitle").textContent = id==="all" ? "Todo el catálogo" : catName(id);
+  window.scrollTo({top: document.querySelector('.cats').offsetTop-70, behavior:'smooth'});
+}
+
+/* ---------- RENDER: grid ---------- */
+function renderSkeleton(){
+  document.getElementById("grid").innerHTML =
+    Array.from({length:6}).map(()=>`<div class="card"><div class="imgwrap skeleton"></div><div class="body"><div class="skeleton" style="height:12px;width:50%;border-radius:6px"></div><div class="skeleton" style="height:15px;width:80%;border-radius:6px;margin-top:8px"></div></div></div>`).join("");
+}
+function visibleProducts(){
+  let list = DATA.products.slice();
+  if(filterCat!=="all") list = list.filter(p=>p.categoria===filterCat);
+  if(query){ const q=query.toLowerCase();
+    list = list.filter(p => (p.nombre||"").toLowerCase().includes(q) || catName(p.categoria).toLowerCase().includes(q) || (p.descripcion||"").toLowerCase().includes(q)); }
+  // destacados primero
+  return list.sort((a,b)=>(b.destacado?1:0)-(a.destacado?1:0));
+}
+function renderGrid(){
+  const list = visibleProducts();
+  const grid = document.getElementById("grid");
+  document.getElementById("sectionCount").textContent = list.length ? `${list.length} ${list.length===1?"prenda":"prendas"}` : "";
+  if(!list.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">🔎</div><p>No encontramos prendas${query?` para “${query}”`:""}.</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p=>{
+    const st = stockOf(p); const out = st<=0;
+    const sw = colorsOf(p).slice(0,5).map(c=>`<span class="sw" style="background:${colorHex(c)}" title="${c}"></span>`).join("");
+    return `<article class="card" onclick="openSheet('${p.id}')">
+      <div class="imgwrap">
+        <img loading="lazy" src="${imgOf(p)}" alt="${p.nombre}">
+        ${p.destacado&&!out?`<span class="badge">★ Destacado</span>`:""}
+        ${out?`<span class="badge out">Agotado</span>`:""}
+      </div>
+      <div class="body">
+        <span class="cat">${catName(p.categoria)}</span>
+        <span class="name">${p.nombre}</span>
+        ${sw?`<div class="swatches">${sw}</div>`:""}
+        <div class="row">
+          <span class="price">${money(p.precio)}</span>
+          <button class="add" ${out?"disabled":""} onclick="event.stopPropagation(); openSheet('${p.id}')" aria-label="Agregar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+/* ---------- PRODUCT SHEET ---------- */
+let sel = { p:null, talla:null, color:null, qty:1 };
+function openSheet(id){
+  const p = DATA.products.find(x=>x.id===id); if(!p) return;
+  sel = { p, talla:null, color:null, qty:1 };
+  drawSheet();
+  document.getElementById("scrim").classList.add("show");
+  document.getElementById("sheet").classList.add("show");
+  document.body.style.overflow="hidden";
+}
+function closeSheet(){
+  document.getElementById("scrim").classList.remove("show");
+  document.getElementById("sheet").classList.remove("show");
+  document.body.style.overflow="";
+}
+function tallasOf(p){ const t=[]; (p.variantes||[]).forEach(v=>{ if(!t.includes(v.talla)) t.push(v.talla);}); return t; }
+function coloresOf(p){ const c=[]; (p.variantes||[]).forEach(v=>{ if(v.color && !c.includes(v.color)) c.push(v.color);}); return c; }
+function variant(p,t,c){ return (p.variantes||[]).find(v=>v.talla===t && v.color===c); }
+function stockFor(p,t,c){ const v=variant(p,t,c); return v?(+v.stock||0):0; }
+/* stock disponible dado lo ya elegido (para deshabilitar) */
+function tallaAvail(p,t){ // hay algún color con stock para esta talla (respetando color elegido si aplica)
+  if(sel.color) return stockFor(p,t,sel.color)>0;
+  return (p.variantes||[]).some(v=>v.talla===t && (+v.stock||0)>0);
+}
+function colorAvail(p,c){
+  if(sel.talla) return stockFor(p,sel.talla,c)>0;
+  return (p.variantes||[]).some(v=>v.color===c && (+v.stock||0)>0);
+}
+function drawSheet(){
+  const p = sel.p; const el = document.getElementById("sheet");
+  const tallas = tallasOf(p), colores = coloresOf(p);
+  const curStock = (sel.talla && sel.color) ? stockFor(p,sel.talla,sel.color) : 0;
+  const ready = sel.talla && sel.color && curStock>0;
+  const needColor = colores.length>0;
+  el.innerHTML = `
+    <div class="grab"></div>
+    <div class="ph"><img src="${imgOf(p)}" alt="${p.nombre}"></div>
+    <div class="content">
+      <span class="cat">${catName(p.categoria)}</span>
+      <h3 class="serif">${p.nombre}</h3>
+      ${p.descripcion?`<p class="desc">${p.descripcion}</p>`:""}
+      <div class="price">${money(p.precio)}</div>
+
+      <div class="pick-label">Talla</div>
+      <div class="opts">${tallas.map(t=>{
+        const dis = !tallaAvail(p,t);
+        return `<button class="opt ${sel.talla===t?'sel':''}" ${dis?"disabled":""} onclick="pickTalla('${encodeURIComponent(t)}')">${t}</button>`;
+      }).join("")}</div>
+
+      ${needColor?`<div class="pick-label">Color</div>
+      <div class="opts">${colores.map(c=>{
+        const dis = !colorAvail(p,c);
+        return `<button class="opt color ${sel.color===c?'sel':''}" ${dis?"disabled":""} onclick="pickColor('${encodeURIComponent(c)}')"><span class="dot" style="background:${colorHex(c)}"></span>${c}</button>`;
+      }).join("")}</div>`:""}
+
+      <div class="qtyrow">
+        <div class="stepper">
+          <button onclick="qtyStep(-1)" ${sel.qty<=1?"disabled":""}>−</button>
+          <span class="v">${sel.qty}</span>
+          <button onclick="qtyStep(1)" ${ready&&sel.qty>=curStock?"disabled":""}>+</button>
+        </div>
+        <span class="stock-note">${ ready ? (curStock<=3?`¡Solo quedan ${curStock}! 🔥`:`Disponible`) : (sel.talla&&sel.color?"Sin stock en esta combinación":"Elige talla"+(needColor?" y color":"")) }</span>
+      </div>
+
+      <button class="sheet-cta" ${ready?"":"disabled"} onclick="addToCart()">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
+        Agregar al pedido · ${money(p.precio*sel.qty)}
+      </button>
+    </div>`;
+}
+function pickTalla(t){ t=decodeURIComponent(t); sel.talla = (sel.talla===t?null:t); sel.qty=1; drawSheet(); }
+function pickColor(c){ c=decodeURIComponent(c); sel.color = (sel.color===c?null:c); sel.qty=1; drawSheet(); }
+function qtyStep(d){ const p=sel.p; const max=stockFor(p,sel.talla,sel.color)||1; sel.qty=Math.max(1,Math.min(max,sel.qty+d)); drawSheet(); }
+
+/* ---------- CART ---------- */
+function loadCart(){ try{ return JSON.parse(localStorage.getItem("ym_cart")||"[]"); }catch(e){ return []; } }
+function saveCart(){ localStorage.setItem("ym_cart", JSON.stringify(cart)); }
+function cartCount(){ return cart.reduce((s,i)=>s+i.qty,0); }
+function cartTotal(){ return cart.reduce((s,i)=>s+i.precio*i.qty,0); }
+function addToCart(){
+  const p=sel.p; if(!(sel.talla&&sel.color)) return;
+  const key = p.id+"|"+sel.talla+"|"+sel.color;
+  const found = cart.find(i=>i.key===key);
+  const max = stockFor(p,sel.talla,sel.color);
+  if(found){ found.qty=Math.min(max, found.qty+sel.qty); }
+  else{ cart.push({ key, id:p.id, nombre:p.nombre, categoria:p.categoria, precio:p.precio, talla:sel.talla, color:sel.color, qty:sel.qty, imagen:p.imagen||"" }); }
+  saveCart(); renderCart(); closeSheet();
+  toast(`✓ ${p.nombre} agregada`);
+}
+function changeQty(key,d){
+  const it=cart.find(i=>i.key===key); if(!it) return;
+  const p=DATA.products.find(x=>x.id===it.id); const max = p?stockFor(p,it.talla,it.color):99;
+  it.qty=Math.max(0,Math.min(max||99,it.qty+d));
+  if(it.qty<=0) cart=cart.filter(i=>i.key!==key);
+  saveCart(); renderCart();
+}
+function removeItem(key){ cart=cart.filter(i=>i.key!==key); saveCart(); renderCart(); }
+function renderCart(){
+  const n=cartCount(), tot=cartTotal();
+  const cc=document.getElementById("cartCount"); cc.textContent=n; cc.classList.toggle("show",n>0);
+  const fb=document.getElementById("floatbar"); fb.classList.toggle("show",n>0);
+  document.getElementById("fbN").textContent=n; document.getElementById("fbT").textContent=money(tot);
+
+  const items=document.getElementById("cartItems"), foot=document.getElementById("cartFoot");
+  if(!cart.length){
+    items.innerHTML=`<div class="cart-empty"><div class="big">🛍️</div><p>Tu pedido está vacío.<br>¡Agrega tus prendas favoritas!</p></div>`;
+    foot.innerHTML=""; return;
+  }
+  items.innerHTML = cart.map(i=>{
+    const p=DATA.products.find(x=>x.id===i.id)||i;
+    return `<div class="citem">
+      <div class="th"><img src="${imgOf({imagen:i.imagen,nombre:i.nombre,categoria:i.categoria})}" alt=""></div>
+      <div class="info">
+        <div class="nm">${i.nombre}</div>
+        <div class="vr">Talla ${i.talla} · <span style="display:inline-flex;align-items:center;gap:5px"><span class="sw" style="width:11px;height:11px;background:${colorHex(i.color)}"></span>${i.color}</span></div>
+        <div class="pr">${money(i.precio*i.qty)}</div>
+        <div class="mini">
+          <button onclick="changeQty('${i.key}',-1)">−</button>
+          <span class="v">${i.qty}</span>
+          <button onclick="changeQty('${i.key}',1)">+</button>
+        </div>
+      </div>
+      <button class="rm" onclick="removeItem('${i.key}')">Quitar</button>
+    </div>`;
+  }).join("");
+  foot.innerHTML = `
+    <div class="totrow"><span class="l">Total (${n} art.)</span><span class="t serif">${money(tot)}</span></div>
+    <button class="wa-cta" onclick="checkout()">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm5.8 14.14c-.24.68-1.42 1.32-1.95 1.36-.5.04-.99.24-3.35-.7-2.82-1.11-4.6-3.97-4.74-4.16-.14-.19-1.12-1.49-1.12-2.84 0-1.35.71-2.02.96-2.29.24-.27.53-.34.71-.34.18 0 .36 0 .51.01.16.01.39-.06.6.46.24.58.82 2 .89 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.17-.29.37-.42.5-.14.14-.28.29-.12.56.16.27.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.27.14.43.12.59-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.24.09 1.55.73 1.81.87.27.14.44.2.51.31.07.12.07.69-.17 1.36Z"/></svg>
+      Pedir por WhatsApp
+    </button>
+    <div class="wa-sub">Se abrirá WhatsApp con tu pedido listo para enviar 💬</div>`;
+}
+function openCart(){ document.getElementById("scrim2").classList.add("show"); document.getElementById("drawer").classList.add("show"); document.body.style.overflow="hidden"; }
+function closeCart(){ document.getElementById("scrim2").classList.remove("show"); document.getElementById("drawer").classList.remove("show"); document.body.style.overflow=""; }
+
+/* ---------- WHATSAPP CHECKOUT ---------- */
+function checkout(){
+  if(!cart.length) return;
+  const num = (DATA.config.whatsapp||CONFIG.WHATSAPP).replace(/\D/g,"");
+  const hi = DATA.config.mensaje || "¡Hola YesyModa! 💕 Quiero hacer este pedido:";
+  let msg = hi + "\n\n";
+  cart.forEach((i,idx)=>{
+    msg += `${idx+1}. ${i.nombre}\n   Talla ${i.talla} · Color ${i.color} · x${i.qty} — ${money(i.precio*i.qty)}\n`;
+  });
+  msg += `\n*Total: ${money(cartTotal())}*\n\nMi nombre es: \nDirección/entrega: `;
+  const url = "https://wa.me/"+num+"?text="+encodeURIComponent(msg);
+  window.open(url, "_blank");
+}
+
+/* ---------- TOAST + SEARCH ---------- */
+let toastT;
+function toast(t){ const el=document.getElementById("toast"); el.textContent=t; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),1900); }
+let qT;
+document.getElementById("q").addEventListener("input", e=>{ clearTimeout(qT); qT=setTimeout(()=>{ query=e.target.value.trim(); renderGrid(); },160); });
+document.getElementById("cartBtn").addEventListener("click", openCart);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeCart(); } });
+
+load();
+</script>
+</body>
+</html>

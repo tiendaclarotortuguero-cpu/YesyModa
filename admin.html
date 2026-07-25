@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fbf6f5" />
+<title>YesyModa · Panel de administración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#fbf6f5; --surface:#ffffff; --surface-soft:#fdeef1;
+  --ink:#4a3b42; --ink-strong:#3a2d33; --muted:#9a868f; --faint:#c3b2b9;
+  --line:#f1e2e6; --line-strong:#ecd3da;
+  --rosa:#f4c9d6; --rosa-mid:#e8a9bc; --rosa-deep:#c65f80; --rosa-ink:#a84868;
+  --gold:#c6a15b; --gold-soft:#f6edda; --wa:#25D366; --wa-deep:#0e8a54;
+  --ok:#2f9e6f; --ok-soft:#e6f6ee; --warn:#c98a3a; --warn-soft:#f8efdd; --danger:#c65a5a; --danger-soft:#f8e8e8;
+  --shadow-sm:0 1px 2px rgba(74,59,66,.05);
+  --shadow:0 8px 30px -14px rgba(166,72,104,.24), 0 2px 8px -4px rgba(74,59,66,.08);
+  --shadow-lg:0 24px 60px -24px rgba(166,72,104,.40);
+  --r:14px; --r-sm:10px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+.serif{font-family:"Playfair Display",Georgia,serif}
+h1,h2,h3,h4{margin:0;line-height:1.2}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
+img{display:block;max-width:100%}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:20px;
+  background:radial-gradient(120% 90% at 100% 0,#fbdbe4 0,rgba(251,219,228,0) 55%),radial-gradient(90% 90% at 0 0,#f7ecd9 0,rgba(247,236,217,0) 50%),var(--bg)}
+.login .box{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-lg);padding:34px 30px;width:min(400px,100%);text-align:center}
+.login .logo{font-family:"Playfair Display",serif;font-size:32px;font-weight:700;color:var(--ink-strong)}
+.login .logo b{color:var(--rosa-deep)}
+.login .tag{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:22px}
+.login p{color:var(--muted);font-size:14px;margin:4px 0 20px}
+.field{text-align:left;margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:.02em}
+.inp{width:100%;padding:12px 14px;border:1.5px solid var(--line-strong);border-radius:12px;background:var(--surface);outline:none;transition:border-color .18s,box-shadow .18s}
+.inp:focus{border-color:var(--rosa-mid);box-shadow:0 0 0 4px var(--surface-soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:12px;font-weight:600;font-size:15px;transition:transform .1s,opacity .2s,background .2s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--rosa-deep);color:#fff;box-shadow:0 10px 22px -12px var(--rosa-deep);width:100%}
+.btn-ghost{background:var(--surface);border:1.5px solid var(--line-strong);color:var(--ink)}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-soft{background:var(--surface-soft);color:var(--rosa-ink)}
+.btn-sm{padding:8px 13px;font-size:13.5px;border-radius:10px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.hide{display:none!important}
+
+/* app shell */
+header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:12px;padding:12px 0}
+.top .logo{font-family:"Playfair Display",serif;font-size:22px;font-weight:700;color:var(--ink-strong);margin-right:auto}
+.top .logo b{color:var(--rosa-deep)}
+.pill{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px}
+.pill.live{background:var(--ok-soft);color:var(--ok)}
+.pill.demo{background:var(--warn-soft);color:var(--warn)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 6px}
+@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.stat .k{font-size:12px;color:var(--muted);font-weight:500}
+.stat .v{font-family:"Playfair Display",serif;font-size:26px;font-weight:700;color:var(--ink-strong);margin-top:2px}
+.stat.warn .v{color:var(--warn)}
+.tabs{display:flex;gap:6px;margin:18px 0 8px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:11px 16px;font-weight:500;color:var(--muted);border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .18s}
+.tab.active{color:var(--rosa-deep);border-color:var(--rosa-deep);font-weight:600}
+.panel{padding:14px 0}
+
+/* toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.search2{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line-strong);border-radius:11px;padding:9px 13px}
+.search2 input{border:none;outline:none;background:none;width:100%}
+.search2 svg{opacity:.5;flex:none}
+
+/* product rows */
+.plist{display:grid;gap:10px}
+.prow{display:flex;gap:13px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;box-shadow:var(--shadow-sm)}
+.prow .th{width:52px;height:64px;border-radius:9px;overflow:hidden;background:var(--surface-soft);flex:none}
+.prow .th img{width:100%;height:100%;object-fit:cover}
+.prow .m{flex:1;min-width:0}
+.prow .nm{font-weight:600;color:var(--ink-strong);display:flex;align-items:center;gap:8px}
+.prow .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.tagmini{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:999px}
+.tagmini.star{background:var(--gold-soft);color:#9a7b2e}
+.tagmini.off{background:#eee;color:#999}
+.tagmini.low{background:var(--warn-soft);color:var(--warn)}
+.tagmini.out{background:var(--danger-soft);color:var(--danger)}
+.prow .pr{font-family:"Playfair Display",serif;font-weight:700;color:var(--rosa-deep);font-size:17px}
+.prow .acts{display:flex;gap:6px;flex:none}
+.iconbtn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line-strong);background:var(--surface);transition:all .16s}
+.iconbtn:hover{background:var(--surface-soft);color:var(--rosa-deep);border-color:var(--rosa-mid)}
+.iconbtn.on{background:var(--gold-soft);color:#9a7b2e;border-color:#e6d3a3}
+
+/* card / form */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm)}
+.card h3{font-size:18px;font-weight:600;color:var(--ink-strong);margin-bottom:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+label.fl{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px}
+textarea.inp{resize:vertical;min-height:64px}
+.row-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toggle{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;font-size:14px}
+.toggle input{display:none}
+.tg{width:42px;height:24px;border-radius:999px;background:var(--line-strong);position:relative;transition:background .2s;flex:none}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:transform .2s}
+.toggle input:checked + .tg{background:var(--rosa-deep)}
+.toggle input:checked + .tg::after{transform:translateX(18px)}
+
+/* chips (tallas/colores) */
+.chipbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.tchip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--surface);font-size:14px;font-weight:500;transition:all .15s}
+.tchip.sel{border-color:var(--rosa-deep);background:var(--surface-soft);color:var(--rosa-ink)}
+.tchip .x{opacity:.5;font-weight:700}
+.tchip .cd{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.1)}
+.presetbtn{font-size:12.5px;color:var(--rosa-deep);background:var(--surface-soft);padding:6px 11px;border-radius:8px;font-weight:600}
+.addmini{display:flex;gap:6px;align-items:center;margin-top:8px}
+.addmini input{padding:8px 11px;border:1.5px solid var(--line-strong);border-radius:9px;outline:none;width:150px}
+
+/* stock grid */
+.stockwrap{overflow:auto;margin-top:8px;border:1px solid var(--line);border-radius:12px}
+table.stock{border-collapse:collapse;width:100%;min-width:max-content}
+table.stock th,table.stock td{padding:8px 10px;border:1px solid var(--line);text-align:center;font-size:13.5px}
+table.stock thead th{background:var(--surface-soft);color:var(--rosa-ink);font-weight:600;position:sticky;top:0}
+table.stock td.tl{background:#fbfafb;font-weight:600;color:var(--ink-strong);text-align:left;white-space:nowrap;position:sticky;left:0}
+table.stock input{width:56px;padding:6px;border:1px solid var(--line-strong);border-radius:7px;text-align:center;outline:none}
+table.stock input:focus{border-color:var(--rosa-mid)}
+.hintbox{background:var(--surface-soft);border:1px dashed var(--line-strong);border-radius:11px;padding:12px 14px;font-size:13.5px;color:var(--rosa-ink);margin-top:8px}
+
+/* import */
+.drop{border:2px dashed var(--line-strong);border-radius:16px;padding:30px 20px;text-align:center;background:var(--surface);transition:all .2s;cursor:pointer}
+.drop:hover{border-color:var(--rosa-mid);background:var(--surface-soft)}
+.drop .big{font-size:34px}
+.prev-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+.prev-table th,.prev-table td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left}
+.prev-table th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(58,45,51,.45);opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
+.scrim.show{opacity:1;pointer-events:auto}
+.modal{position:fixed;z-index:70;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);opacity:0;pointer-events:none;transition:all .26s cubic-bezier(.22,1,.36,1);
+  width:min(680px,94vw);max-height:90vh;overflow:auto;background:var(--surface);border-radius:22px;box-shadow:var(--shadow-lg)}
+.modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.modal .mh{position:sticky;top:0;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);z-index:2}
+.modal .mh h3{font-size:19px;font-weight:600;color:var(--ink-strong)}
+.modal .mb{padding:18px 20px}
+.modal .mf{position:sticky;bottom:0;background:var(--surface);padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:90;opacity:0;pointer-events:none;background:var(--ink-strong);color:#fff;padding:11px 20px;border-radius:999px;font-weight:500;box-shadow:var(--shadow-lg);transition:all .25s;font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--danger)}
+.empty2{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty2 .big{font-size:36px;margin-bottom:6px}
+.spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loadfull{min-height:60vh;display:grid;place-items:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<script src="config.js"></script>
+
+<!-- ===================== LOGIN ===================== -->
+<div class="login" id="loginView">
+  <div class="box">
+    <div class="logo serif">Yesy<b>Moda</b></div>
+    <div class="tag">Panel de administración</div>
+    <p>Ingresa tu contraseña para gestionar tu tienda.</p>
+    <div class="field">
+      <label>Contraseña</label>
+      <input class="inp" id="pwd" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+    <p class="small" id="loginNote" style="margin-top:16px"></p>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appView" class="hide">
+  <header class="top">
+    <div class="wrap top-in">
+      <span class="logo serif">Yesy<b>Moda</b></span>
+      <span class="pill" id="modePill"></span>
+      <button class="iconbtn" title="Recargar" onclick="reload()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="k">Productos</div><div class="v" id="stProd">0</div></div>
+      <div class="stat"><div class="k">Categorías</div><div class="v" id="stCat">0</div></div>
+      <div class="stat"><div class="k">Prendas en stock</div><div class="v" id="stStock">0</div></div>
+      <div class="stat warn"><div class="k">Bajo stock</div><div class="v" id="stLow">0</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-t="productos" onclick="setTab('productos')">Productos</button>
+      <button class="tab" data-t="nuevo" onclick="newProduct()">＋ Nuevo</button>
+      <button class="tab" data-t="importar" onclick="setTab('importar')">Importar Excel</button>
+      <button class="tab" data-t="categorias" onclick="setTab('categorias')">Categorías</button>
+      <button class="tab" data-t="ajustes" onclick="setTab('ajustes')">Ajustes</button>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <section class="panel" id="tab-productos">
+      <div class="toolbar">
+        <div class="search2">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+          <input id="psearch" placeholder="Buscar producto…" oninput="renderProducts()">
+        </div>
+        <button class="btn btn-soft btn-sm" onclick="newProduct()">＋ Nuevo producto</button>
+      </div>
+      <div class="plist" id="plist"></div>
+    </section>
+
+    <!-- NUEVO / EDITAR -->
+    <section class="panel hide" id="tab-nuevo">
+      <div class="card">
+        <h3 id="edTitle" class="serif">Nuevo producto</h3>
+        <p class="muted small" style="margin:0 0 14px">Completa los datos y define las existencias por talla y color.</p>
+        <div class="grid2">
+          <div>
+            <label class="fl">Nombre de la prenda *</label>
+            <input class="inp" id="edNombre" placeholder="Ej. Blusa Manga Larga">
+          </div>
+          <div>
+            <label class="fl">Categoría *</label>
+            <div class="row-inline">
+              <select class="inp" id="edCategoria" style="flex:1"></select>
+              <button class="btn btn-ghost btn-sm" onclick="quickCategory()" title="Nueva categoría">＋</button>
+            </div>
+          </div>
+          <div>
+            <label class="fl">Precio (<span id="curLbl">C$</span>) *</label>
+            <input class="inp" id="edPrecio" type="number" inputmode="decimal" placeholder="450">
+          </div>
+          <div>
+            <label class="fl">URL de la foto (opcional)</label>
+            <input class="inp" id="edImagen" placeholder="https://…  (déjalo vacío y usamos una imagen elegante)">
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="fl">Descripción (opcional)</label>
+            <textarea class="inp" id="edDesc" placeholder="Tela suave, corte clásico…"></textarea>
+          </div>
+        </div>
+
+        <div class="row-inline" style="margin:14px 0 4px;gap:22px">
+          <label class="toggle"><input type="checkbox" id="edDestacado"><span class="tg"></span> Destacado ★</label>
+          <label class="toggle"><input type="checkbox" id="edActivo" checked><span class="tg"></span> Visible en el catálogo</label>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+
+        <label class="fl">Tallas</label>
+        <div class="row-inline" style="margin-bottom:8px">
+          <button class="presetbtn" onclick="addTallas(['S','M','L','XL'])">S · M · L · XL</button>
+          <button class="presetbtn" onclick="addTallas(['XS','S','M','L','XL','XXL'])">XS → XXL</button>
+          <button class="presetbtn" onclick="addTallas(['28','30','32','34','36'])">28 → 36</button>
+          <button class="presetbtn" onclick="addTallas(['Única'])">Única</button>
+        </div>
+        <div class="chipbar" id="tallaChips"></div>
+        <div class="addmini"><input id="tallaNew" placeholder="Agregar talla" onkeydown="if(event.key==='Enter'){addTallas([this.value]);this.value=''}"><button class="btn btn-ghost btn-sm" onclick="addTallas([document.getElementById('tallaNew').value]);document.getElementById('tallaNew').value=''">Agregar</button></div>
+
+        <label class="fl" style="margin-top:16px">Colores</label>
+        <div class="chipbar" id="colorPreset"></div>
+        <div class="chipbar" id="colorChips" style="margin-top:8px"></div>
+        <div class="addmini"><input id="colorNew" placeholder="Otro color" onkeydown="if(event.key==='Enter'){addColores([this.value]);this.value=''}"><button class="btn btn-ghost btn-sm" onclick="addColores([document.getElementById('colorNew').value]);document.getElementById('colorNew').value=''">Agregar</button></div>
+
+        <label class="fl" style="margin-top:18px">Existencias por combinación</label>
+        <div id="stockArea"></div>
+
+        <div class="row-inline" style="margin-top:20px;gap:10px">
+          <button class="btn btn-primary" style="width:auto" id="saveBtn" onclick="saveProduct(false)">Guardar producto</button>
+          <button class="btn btn-soft btn-sm" id="saveAddBtn" onclick="saveProduct(true)">Guardar y agregar otro</button>
+          <button class="btn btn-ghost btn-sm" onclick="setTab('productos')">Cancelar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPORTAR -->
+    <section class="panel hide" id="tab-importar">
+      <div class="card">
+        <h3 class="serif">Importar desde Excel</h3>
+        <p class="muted small" style="margin:2px 0 14px">Sube un archivo <b>.xlsx</b> o <b>.csv</b>. Detectamos las columnas automáticamente (nombre, precio, talla, color, stock, categoría). Una fila por combinación talla/color.</p>
+        <div class="row-inline" style="margin-bottom:12px">
+          <button class="btn btn-soft btn-sm" onclick="downloadTemplate()">⬇ Descargar plantilla</button>
+        </div>
+        <label class="drop" for="xfile" id="drop">
+          <div class="big">📄</div>
+          <div style="font-weight:600;margin-top:6px">Toca para elegir tu archivo</div>
+          <div class="muted small">o arrástralo aquí</div>
+        </label>
+        <input type="file" id="xfile" accept=".xlsx,.xls,.csv" class="hide">
+        <div id="importPreview"></div>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section class="panel hide" id="tab-categorias">
+      <div class="card">
+        <h3 class="serif">Categorías</h3>
+        <p class="muted small" style="margin:2px 0 12px">Agrega, edita y ordena las secciones de tu tienda.</p>
+        <div class="addmini" style="margin-bottom:14px">
+          <input id="catIcon" placeholder="👗" style="width:56px;text-align:center">
+          <input id="catName" placeholder="Nombre de categoría" style="width:200px">
+          <button class="btn btn-primary btn-sm" style="width:auto" onclick="addCategory()">Agregar</button>
+        </div>
+        <div class="plist" id="clist"></div>
+      </div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="panel hide" id="tab-ajustes">
+      <div class="card">
+        <h3 class="serif">Ajustes de la tienda</h3>
+        <div class="grid2" style="margin-top:12px">
+          <div><label class="fl">Nombre de la tienda</label><input class="inp" id="cfgNombre"></div>
+          <div><label class="fl">WhatsApp (con código país, sin +)</label><input class="inp" id="cfgWhatsapp" placeholder="50557528808"></div>
+          <div><label class="fl">Símbolo de moneda</label><input class="inp" id="cfgMoneda" placeholder="C$"></div>
+          <div style="grid-column:1/-1"><label class="fl">Mensaje inicial del pedido de WhatsApp</label><input class="inp" id="cfgMensaje" placeholder="¡Hola YesyModa! 💕 Quiero hacer este pedido:"></div>
+        </div>
+        <button class="btn btn-primary" style="width:auto;margin-top:16px" onclick="saveConfig()">Guardar ajustes</button>
+        <div class="hintbox" style="margin-top:16px">
+          <b>Estado de conexión:</b> <span id="connState"></span><br>
+          Para guardar de forma permanente en Google Sheets, configura <code>API_URL</code> en <code>config.js</code> (ver el archivo <b>README</b>).
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" onclick="closeModal()"></div>
+<div class="modal" id="modal"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   YESYMODA · Admin logic
+   ============================================================ */
+const CUR = (CONFIG.CURRENCY||"C$");
+const money = n => CUR+" "+(Math.round(n)).toLocaleString("es-NI");
+const norm = s => (s||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+const COLORS={"rosa":"#f4c9d6","rosado":"#f4c9d6","palo de rosa":"#e7b7c2","fucsia":"#d6468f","blanco":"#ffffff","negro":"#2f2b2e","gris":"#b9b3b6","beige":"#e8d9c5","crema":"#f3ead9","azul":"#8fa9cf","celeste":"#bcd4ea","marino":"#3a4a6b","rojo":"#c85a5f","vino":"#7d2f42","verde":"#9bb894","menta":"#c3e0cf","amarillo":"#f0d585","mostaza":"#d1a24a","morado":"#a98bc4","lila":"#d7c6e8","cafe":"#8a6552","dorado":"#d8b45f","coral":"#f39d8a","turquesa":"#7fc9c2","naranja":"#e79a5c"};
+const colorHex=c=>COLORS[norm(c)]||"#e3d3d9";
+const PRESET_COLORS=["Rosa","Blanco","Negro","Beige","Azul","Marino","Rojo","Vino","Verde","Café","Gris"];
+const LOW=3; // umbral bajo stock
+function ph(name,icon){const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='320' height='400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fdeef1'/><stop offset='1' stop-color='#f7ecd9'/></linearGradient></defs><rect width='320' height='400' fill='url(#g)'/><text x='160' y='196' font-size='80' text-anchor='middle'>${icon||"👗"}</text></svg>`;return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);}
+
+/* ---------- SAMPLE (demo) ---------- */
+const SAMPLE={config:{nombre:"YesyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR,mensaje:"¡Hola YesyModa! 💕 Quiero hacer este pedido:"},
+categories:[{id:"blusas",nombre:"Blusas",icono:"👚",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"👗",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"👖",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"🩱",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"👜",orden:5,visible:true}],
+products:[
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"L",color:"Blanco",stock:2},{talla:"M",color:"Negro",stock:4},{talla:"L",color:"Negro",stock:3}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"L",color:"Rosa",stock:2},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"L",color:"Negro",stock:1},{talla:"M",color:"Vino",stock:2}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4},{talla:"34",color:"Azul",stock:2}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
+]};
+
+/* ---------- STATE ---------- */
+let DATA={config:{},categories:[],products:[]};
+let CATMAP={};
+let TAB="productos";
+const LIVE = !!CONFIG.API_URL;
+
+/* ---------- AUTH ---------- */
+function getToken(){ return sessionStorage.getItem("ym_token")||""; }
+function doLogin(){
+  const v=document.getElementById("pwd").value;
+  if(!v){ document.getElementById("loginNote").textContent="Escribe tu contraseña."; return; }
+  sessionStorage.setItem("ym_token", v);
+  startApp();
+}
+function logout(){ sessionStorage.removeItem("ym_token"); location.reload(); }
+document.getElementById("loginNote").innerHTML = LIVE
+  ? "Se validará con tu Google Apps Script."
+  : "Modo demostración: escribe cualquier cosa para entrar (los cambios no se guardan permanentemente hasta configurar Google Sheets).";
+
+if(getToken()) startApp();
+
+/* ---------- API ---------- */
+function demoStore(){ try{ return JSON.parse(localStorage.getItem("ym_admin")||"null"); }catch(e){ return null; } }
+function demoSave(d){ localStorage.setItem("ym_admin", JSON.stringify(d)); }
+async function apiGet(){
+  if(LIVE){
+    const r=await fetch(CONFIG.API_URL+"?action=getCatalog",{method:"GET"});
+    return await r.json();
+  }
+  let d=demoStore(); if(!d){ d=JSON.parse(JSON.stringify(SAMPLE)); demoSave(d); }
+  return d;
+}
+async function apiWrite(action,payload){
+  if(LIVE){
+    const body=JSON.stringify(Object.assign({action,token:getToken()},payload));
+    try{
+      const r=await fetch(CONFIG.API_URL,{method:"POST",body}); // simple request → sin preflight
+      let j=null; try{ j=await r.json(); }catch(e){}
+      if(j&&j.ok===false){ throw new Error(j.error||"Error"); }
+      return j||{ok:true,unverified:true};
+    }catch(e){
+      // posible bloqueo CORS al leer respuesta; la escritura suele completarse igual.
+      return {ok:true,unverified:true,warn:String(e.message||e)};
+    }
+  }
+  // ---- DEMO ----
+  return demoWrite(action,payload);
+}
+function demoWrite(action,p){
+  let d=demoStore()||JSON.parse(JSON.stringify(SAMPLE));
+  if(action==="saveProduct"){
+    const prod=p.product;
+    if(!prod.id) prod.id="p"+Date.now();
+    const i=d.products.findIndex(x=>x.id===prod.id);
+    if(i>=0) d.products[i]=prod; else d.products.push(prod);
+  }else if(action==="deleteProduct"){ d.products=d.products.filter(x=>x.id!==p.id);
+  }else if(action==="bulkAddProducts"){ (p.products||[]).forEach(pr=>{ pr.id="p"+Date.now()+Math.floor(Math.random()*999); d.products.push(pr); });
+  }else if(action==="saveCategory"){ const c=p.category; if(!c.id) c.id=norm(c.nombre).replace(/\s+/g,"-")||("c"+Date.now()); const i=d.categories.findIndex(x=>x.id===c.id); if(i>=0)d.categories[i]=c; else d.categories.push(c);
+  }else if(action==="deleteCategory"){ d.categories=d.categories.filter(x=>x.id!==p.id);
+  }else if(action==="saveConfig"){ d.config=Object.assign(d.config||{},p.config); }
+  demoSave(d);
+  return {ok:true};
+}
+
+/* ---------- BOOT ---------- */
+async function startApp(){
+  document.getElementById("loginView").classList.add("hide");
+  document.getElementById("appView").classList.remove("hide");
+  const pill=document.getElementById("modePill");
+  pill.className="pill "+(LIVE?"live":"demo");
+  pill.textContent=LIVE?"● En vivo (Sheets)":"● Modo demostración";
+  document.getElementById("connState").innerHTML = LIVE
+    ? "<b style='color:var(--ok)'>Conectado a Google Sheets.</b>"
+    : "<b style='color:var(--warn)'>Modo demostración</b> — los cambios se guardan solo en este dispositivo.";
+  document.getElementById("curLbl").textContent=CUR;
+  await reload();
+}
+async function reload(){
+  try{
+    const d=await apiGet();
+    DATA={config:d.config||{},categories:(d.categories||[]).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:d.products||[]};
+  }catch(e){ toast("No se pudo cargar. Revisa la URL de la API.",true); DATA={config:{},categories:[],products:[]}; }
+  CATMAP={}; DATA.categories.forEach(c=>CATMAP[c.id]=c);
+  renderAll();
+}
+function renderAll(){ renderStats(); renderProducts(); renderCategories(); fillCatSelect(); fillConfig(); renderColorPresets(); }
+
+/* ---------- STATS ---------- */
+function stockOf(p){ return (p.variantes||[]).reduce((s,v)=>s+(+v.stock||0),0); }
+function renderStats(){
+  document.getElementById("stProd").textContent=DATA.products.length;
+  document.getElementById("stCat").textContent=DATA.categories.length;
+  let tot=0,low=0;
+  DATA.products.forEach(p=>{const s=stockOf(p);tot+=s;if(s>0&&s<=LOW)low++;if(s===0)low++;});
+  document.getElementById("stStock").textContent=tot;
+  document.getElementById("stLow").textContent=low;
+}
+
+/* ---------- TABS ---------- */
+function setTab(t){
+  TAB=t;
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.t===t));
+  ["productos","nuevo","importar","categorias","ajustes"].forEach(k=>{
+    document.getElementById("tab-"+k).classList.toggle("hide",k!==t);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function newProduct(){ resetEditor(); setTab("nuevo"); }
+
+/* ---------- PRODUCT LIST ---------- */
+function renderProducts(){
+  const q=norm(document.getElementById("psearch").value);
+  let list=DATA.products.slice();
+  if(q) list=list.filter(p=>norm(p.nombre).includes(q)||norm((CATMAP[p.categoria]||{}).nombre).includes(q));
+  const el=document.getElementById("plist");
+  if(!list.length){ el.innerHTML=`<div class="empty2"><div class="big">🛍️</div><p>Sin productos todavía. Usa <b>＋ Nuevo</b> o <b>Importar Excel</b>.</p></div>`; return; }
+  el.innerHTML=list.map(p=>{
+    const s=stockOf(p); const cat=CATMAP[p.categoria]||{};
+    const flags=[];
+    if(p.destacado) flags.push(`<span class="tagmini star">★</span>`);
+    if(p.activo===false) flags.push(`<span class="tagmini off">oculto</span>`);
+    if(s===0) flags.push(`<span class="tagmini out">agotado</span>`);
+    else if(s<=LOW) flags.push(`<span class="tagmini low">bajo (${s})</span>`);
+    const nv=(p.variantes||[]).length;
+    return `<div class="prow">
+      <div class="th"><img src="${(p.imagen&&p.imagen.trim())?p.imagen:ph(p.nombre,cat.icono)}" alt=""></div>
+      <div class="m">
+        <div class="nm">${p.nombre} ${flags.join(" ")}</div>
+        <div class="sub">${cat.nombre||"—"} · ${nv} ${nv===1?"variante":"variantes"} · ${s} en stock</div>
+      </div>
+      <div class="pr">${money(p.precio)}</div>
+      <div class="acts">
+        <button class="iconbtn ${p.destacado?'on':''}" title="Destacado" onclick="toggleFlag('${p.id}','destacado')">★</button>
+        <button class="iconbtn" title="Editar" onclick="editProduct('${p.id}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="iconbtn" title="Eliminar" onclick="delProduct('${p.id}','${(p.nombre||'').replace(/'/g,"")}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+async function toggleFlag(id,flag){
+  const p=DATA.products.find(x=>x.id===id); if(!p) return;
+  p[flag]=!p[flag];
+  await saveProductObj(p,"Actualizado");
+}
+
+/* ---------- EDITOR ---------- */
+let ed={_editing:false,id:null,tallas:[],colores:[],stock:{}};
+function resetEditor(){
+  ed={_editing:false,id:null,tallas:[],colores:[],stock:{}};
+  document.getElementById("edTitle").textContent="Nuevo producto";
+  ["edNombre","edPrecio","edImagen","edDesc"].forEach(k=>document.getElementById(k).value="");
+  document.getElementById("edDestacado").checked=false;
+  document.getElementById("edActivo").checked=true;
+  fillCatSelect();
+  renderTallaChips(); renderColorChips(); renderStockGrid();
+}
+function editProduct(id){
+  const p=DATA.products.find(x=>x.id===id); if(!p) return;
+  ed={_editing:true,id:p.id,tallas:[],colores:[],stock:{}};
+  document.getElementById("edTitle").textContent="Editar producto";
+  document.getElementById("edNombre").value=p.nombre||"";
+  document.getElementById("edPrecio").value=p.precio||"";
+  document.getElementById("edImagen").value=p.imagen||"";
+  document.getElementById("edDesc").value=p.descripcion||"";
+  document.getElementById("edDestacado").checked=!!p.destacado;
+  document.getElementById("edActivo").checked=p.activo!==false;
+  fillCatSelect(p.categoria);
+  (p.variantes||[]).forEach(v=>{
+    if(!ed.tallas.includes(v.talla)) ed.tallas.push(v.talla);
+    const c=v.color||""; if(!ed.colores.includes(c)) ed.colores.push(c);
+    ed.stock[v.talla+"||"+c]=+v.stock||0;
+  });
+  renderTallaChips(); renderColorChips(); renderStockGrid();
+  setTab("nuevo");
+}
+function fillCatSelect(sel){
+  const s=document.getElementById("edCategoria");
+  s.innerHTML=DATA.categories.map(c=>`<option value="${c.id}" ${sel===c.id?"selected":""}>${c.icono||""} ${c.nombre}</option>`).join("")||`<option value="">(crea una categoría primero)</option>`;
+}
+function addTallas(arr){ arr.map(t=>(t||"").trim()).filter(Boolean).forEach(t=>{ if(!ed.tallas.includes(t)) ed.tallas.push(t); }); renderTallaChips(); renderStockGrid(); }
+function removeTalla(t){ ed.tallas=ed.tallas.filter(x=>x!==t); renderTallaChips(); renderStockGrid(); }
+function renderTallaChips(){
+  document.getElementById("tallaChips").innerHTML=ed.tallas.map(t=>`<span class="tchip sel">${t} <span class="x" onclick="removeTalla('${t.replace(/'/g,"")}')">✕</span></span>`).join("")||`<span class="muted small">Elige o agrega tallas ↑</span>`;
+}
+function renderColorPresets(){
+  document.getElementById("colorPreset").innerHTML=PRESET_COLORS.map(c=>`<button class="tchip" onclick="addColores(['${c}'])"><span class="cd" style="background:${colorHex(c)}"></span>${c}</button>`).join("");
+}
+function addColores(arr){ arr.map(c=>(c||"").trim()).filter(Boolean).forEach(c=>{ if(!ed.colores.includes(c)) ed.colores.push(c); }); renderColorChips(); renderStockGrid(); }
+function removeColor(c){ ed.colores=ed.colores.filter(x=>x!==c); renderColorChips(); renderStockGrid(); }
+function renderColorChips(){
+  const real=ed.colores.filter(c=>c!=="");
+  document.getElementById("colorChips").innerHTML=real.map(c=>`<span class="tchip sel"><span class="cd" style="background:${colorHex(c)}"></span>${c} <span class="x" onclick="removeColor('${c.replace(/'/g,"")}')">✕</span></span>`).join("")||`<span class="muted small">Sin color (para accesorios puedes dejarlo vacío)</span>`;
+}
+function renderStockGrid(){
+  const area=document.getElementById("stockArea");
+  if(!ed.tallas.length){ area.innerHTML=`<div class="hintbox">Agrega al menos una talla para definir existencias.</div>`; return; }
+  const cols=ed.colores.length?ed.colores:[""];
+  let html=`<div class="stockwrap"><table class="stock"><thead><tr><th>Talla \\ Color</th>${cols.map(c=>`<th>${c===""?"Stock":`<span style="display:inline-flex;align-items:center;gap:6px"><span class="cd" style="width:12px;height:12px;border-radius:50%;display:inline-block;background:${colorHex(c)}"></span>${c}</span>`}</th>`).join("")}</tr></thead><tbody>`;
+  ed.tallas.forEach(t=>{
+    html+=`<tr><td class="tl">${t}</td>`+cols.map(c=>{
+      const key=t+"||"+c; const val=ed.stock[key]!=null?ed.stock[key]:"";
+      return `<td><input type="number" min="0" inputmode="numeric" value="${val}" onchange="ed.stock['${key.replace(/'/g,"")}']=this.value===''?0:+this.value" placeholder="0"></td>`;
+    }).join("")+`</tr>`;
+  });
+  html+=`</tbody></table></div><div class="muted small" style="margin-top:6px">Deja en 0 lo que no tengas. Solo se mostrará en el catálogo lo que tenga stock.</div>`;
+  area.innerHTML=html;
+}
+function buildVariantes(){
+  const cols=ed.colores.length?ed.colores:[""];
+  const vs=[];
+  ed.tallas.forEach(t=>cols.forEach(c=>{
+    const st=+ed.stock[t+"||"+c]||0;
+    vs.push({talla:t,color:c,stock:st,sku:skuOf(t,c)});
+  }));
+  return vs;
+}
+function skuOf(t,c){ return (norm(document.getElementById("edNombre").value).slice(0,3).toUpperCase()||"YM")+"-"+norm(t).toUpperCase()+"-"+norm(c).slice(0,3).toUpperCase(); }
+
+async function saveProduct(addAnother){
+  const nombre=document.getElementById("edNombre").value.trim();
+  const precio=+document.getElementById("edPrecio").value;
+  const categoria=document.getElementById("edCategoria").value;
+  if(!nombre){ toast("Ponle nombre al producto.",true); return; }
+  if(!categoria){ toast("Elige una categoría.",true); return; }
+  if(!(precio>0)){ toast("Ingresa un precio válido.",true); return; }
+  if(!ed.tallas.length){ toast("Agrega al menos una talla.",true); return; }
+  const prod={
+    id:ed.id||"", categoria, nombre, precio,
+    descripcion:document.getElementById("edDesc").value.trim(),
+    imagen:document.getElementById("edImagen").value.trim(),
+    destacado:document.getElementById("edDestacado").checked,
+    activo:document.getElementById("edActivo").checked,
+    variantes:buildVariantes()
+  };
+  await saveProductObj(prod, ed.id?"Producto actualizado ✓":"Producto agregado ✓");
+  if(addAnother){ const cat=categoria; resetEditor(); fillCatSelect(cat); }
+  else setTab("productos");
+}
+async function saveProductObj(prod,msg){
+  setBusy(true);
+  const res=await apiWrite("saveProduct",{product:prod});
+  setBusy(false);
+  await reload();
+  toast(res.unverified?(msg+" (verifica en la tienda)"):msg);
+}
+function delProduct(id,name){
+  confirmModal("Eliminar producto","¿Seguro que quieres eliminar <b>"+name+"</b>? Esta acción no se puede deshacer.", async()=>{
+    setBusy(true); await apiWrite("deleteProduct",{id}); setBusy(false); await reload(); toast("Producto eliminado");
+  },"Eliminar",true);
+}
+
+/* ---------- CATEGORIES ---------- */
+function renderCategories(){
+  const el=document.getElementById("clist");
+  if(!DATA.categories.length){ el.innerHTML=`<div class="empty2"><div class="big">🏷️</div><p>Aún no hay categorías.</p></div>`; return; }
+  el.innerHTML=DATA.categories.map((c,i)=>{
+    const n=DATA.products.filter(p=>p.categoria===c.id).length;
+    return `<div class="prow">
+      <div style="width:44px;height:44px;border-radius:10px;background:var(--surface-soft);display:grid;place-items:center;font-size:22px;flex:none">${c.icono||"👗"}</div>
+      <div class="m"><div class="nm">${c.nombre}</div><div class="sub">${n} ${n===1?"producto":"productos"} ${c.visible===false?"· <span style='color:var(--warn)'>oculta</span>":""}</div></div>
+      <div class="acts">
+        <button class="iconbtn" title="Subir" ${i===0?"disabled":""} onclick="moveCat('${c.id}',-1)">↑</button>
+        <button class="iconbtn" title="Bajar" ${i===DATA.categories.length-1?"disabled":""} onclick="moveCat('${c.id}',1)">↓</button>
+        <button class="iconbtn" title="Editar" onclick="editCat('${c.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="iconbtn" title="Eliminar" onclick="delCat('${c.id}','${(c.nombre||'').replace(/'/g,"")}',${n})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+async function addCategory(){
+  const nombre=document.getElementById("catName").value.trim();
+  const icono=document.getElementById("catIcon").value.trim()||"👗";
+  if(!nombre){ toast("Escribe el nombre de la categoría.",true); return; }
+  const orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
+  setBusy(true); await apiWrite("saveCategory",{category:{nombre,icono,orden,visible:true}}); setBusy(false);
+  document.getElementById("catName").value=""; document.getElementById("catIcon").value="";
+  await reload(); toast("Categoría agregada ✓");
+}
+function editCat(id){
+  const c=CATMAP[id]; if(!c) return;
+  modal(`<div class="mh"><h3>Editar categoría</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="grid2">
+      <div><label class="fl">Icono</label><input class="inp" id="mIcon" value="${c.icono||""}"></div>
+      <div><label class="fl">Nombre</label><input class="inp" id="mName" value="${c.nombre||""}"></div>
+    </div>
+    <label class="toggle" style="margin-top:14px"><input type="checkbox" id="mVis" ${c.visible!==false?"checked":""}><span class="tg"></span> Visible en el catálogo</label>
+  </div>
+  <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary btn-sm" style="width:auto" onclick="saveCatEdit('${id}')">Guardar</button></div>`);
+}
+async function saveCatEdit(id){
+  const c=Object.assign({},CATMAP[id],{icono:document.getElementById("mIcon").value.trim()||"👗",nombre:document.getElementById("mName").value.trim(),visible:document.getElementById("mVis").checked});
+  closeModal(); setBusy(true); await apiWrite("saveCategory",{category:c}); setBusy(false); await reload(); toast("Categoría actualizada ✓");
+}
+async function moveCat(id,dir){
+  const i=DATA.categories.findIndex(c=>c.id===id); const j=i+dir;
+  if(j<0||j>=DATA.categories.length) return;
+  const a=DATA.categories[i], b=DATA.categories[j];
+  const ao=a.orden||i+1, bo=b.orden||j+1; a.orden=bo; b.orden=ao;
+  setBusy(true); await apiWrite("saveCategory",{category:a}); await apiWrite("saveCategory",{category:b}); setBusy(false); await reload();
+}
+function delCat(id,name,n){
+  if(n>0){ toast("Mueve o elimina primero los "+n+" productos de esta categoría.",true); return; }
+  confirmModal("Eliminar categoría","¿Eliminar la categoría <b>"+name+"</b>?", async()=>{
+    setBusy(true); await apiWrite("deleteCategory",{id}); setBusy(false); await reload(); toast("Categoría eliminada");
+  },"Eliminar",true);
+}
+function quickCategory(){
+  modal(`<div class="mh"><h3>Nueva categoría</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="grid2">
+    <div><label class="fl">Icono</label><input class="inp" id="qIcon" placeholder="👗" value="👗"></div>
+    <div><label class="fl">Nombre</label><input class="inp" id="qName" placeholder="Ej. Abrigos"></div>
+  </div></div>
+  <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary btn-sm" style="width:auto" onclick="createQuickCat()">Crear</button></div>`);
+}
+async function createQuickCat(){
+  const nombre=document.getElementById("qName").value.trim(); const icono=document.getElementById("qIcon").value.trim()||"👗";
+  if(!nombre){ toast("Escribe el nombre.",true); return; }
+  const orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
+  closeModal(); setBusy(true); await apiWrite("saveCategory",{category:{nombre,icono,orden,visible:true}}); setBusy(false);
+  await reload(); const nc=DATA.categories.find(c=>norm(c.nombre)===norm(nombre)); fillCatSelect(nc?nc.id:undefined); toast("Categoría creada ✓");
+}
+
+/* ---------- CONFIG ---------- */
+function fillConfig(){
+  document.getElementById("cfgNombre").value=DATA.config.nombre||CONFIG.STORE_NAME||"YesyModa";
+  document.getElementById("cfgWhatsapp").value=DATA.config.whatsapp||CONFIG.WHATSAPP||"";
+  document.getElementById("cfgMoneda").value=DATA.config.moneda||CUR;
+  document.getElementById("cfgMensaje").value=DATA.config.mensaje||"¡Hola YesyModa! 💕 Quiero hacer este pedido:";
+}
+async function saveConfig(){
+  const cfg={nombre:document.getElementById("cfgNombre").value.trim(),whatsapp:document.getElementById("cfgWhatsapp").value.replace(/\D/g,""),moneda:document.getElementById("cfgMoneda").value.trim()||"C$",mensaje:document.getElementById("cfgMensaje").value.trim()};
+  setBusy(true); await apiWrite("saveConfig",{config:cfg}); setBusy(false); await reload(); toast("Ajustes guardados ✓");
+}
+
+/* ---------- IMPORT EXCEL ---------- */
+const xf=document.getElementById("xfile"), drop=document.getElementById("drop");
+xf.addEventListener("change",e=>{ if(e.target.files[0]) parseFile(e.target.files[0]); });
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor="var(--rosa-deep)";}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor="";}));
+drop.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) parseFile(f); });
+
+const COLKEYS={nombre:["nombre","producto","prenda","articulo","item","descripcion corta"],precio:["precio","valor","costo","price","$"],talla:["talla","tallas","size","numero"],color:["color","colores"],stock:["stock","cantidad","existencia","existencias","inventario","qty"],categoria:["categoria","categoría","seccion","grupo","tipo"],descripcion:["descripcion","descripción","detalle","detalles"],imagen:["imagen","foto","url","imagenurl","imagen url","link"]};
+function detectCols(headers){
+  const map={};
+  headers.forEach(h=>{ const nh=norm(h); for(const key in COLKEYS){ if(COLKEYS[key].some(k=>nh===norm(k)||nh.includes(norm(k)))){ if(!map[key]) map[key]=h; } } });
+  return map;
+}
+let IMPORT=[];
+function parseFile(file){
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:"binary"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:""});
+      if(!rows.length){ toast("El archivo está vacío.",true); return; }
+      const map=detectCols(Object.keys(rows[0]));
+      if(!map.nombre||!map.precio){ toast("No encontré columnas de Nombre y Precio.",true); }
+      buildImport(rows,map);
+    }catch(err){ toast("No pude leer el archivo.",true); console.error(err); }
+  };
+  rd.readAsBinaryString(file);
+}
+function buildImport(rows,map){
+  const byName={};
+  rows.forEach(r=>{
+    const nombre=(r[map.nombre]||"").toString().trim(); if(!nombre) return;
+    const catName=(map.categoria?r[map.categoria]:"").toString().trim()||"General";
+    const k=norm(nombre)+"|"+norm(catName);
+    if(!byName[k]) byName[k]={nombre,categoriaNombre:catName,precio:+(r[map.precio]||0)||0,descripcion:(map.descripcion?r[map.descripcion]:"").toString().trim(),imagen:(map.imagen?r[map.imagen]:"").toString().trim(),variantes:[]};
+    const talla=(map.talla?r[map.talla]:"Única").toString().trim()||"Única";
+    const color=(map.color?r[map.color]:"").toString().trim();
+    const stock=+(map.stock?r[map.stock]:0)||0;
+    byName[k].variantes.push({talla,color,stock});
+    if(!byName[k].precio && +(r[map.precio]||0)) byName[k].precio=+(r[map.precio]||0);
+  });
+  IMPORT=Object.values(byName);
+  const totVar=IMPORT.reduce((s,p)=>s+p.variantes.length,0);
+  const issues=IMPORT.filter(p=>!p.precio).length;
+  const el=document.getElementById("importPreview");
+  el.innerHTML=`<div class="hintbox" style="margin-top:16px">Detecté <b>${IMPORT.length} productos</b> y <b>${totVar} variantes</b>.${issues?` <span style="color:var(--warn)">${issues} sin precio.</span>`:""} Las categorías nuevas se crearán solas.</div>
+  <table class="prev-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Variantes</th></tr></thead><tbody>
+  ${IMPORT.slice(0,12).map(p=>`<tr><td>${p.nombre}</td><td>${p.categoriaNombre}</td><td>${p.precio?money(p.precio):"<span style='color:var(--danger)'>—</span>"}</td><td>${p.variantes.length}</td></tr>`).join("")}
+  ${IMPORT.length>12?`<tr><td colspan="4" class="muted">…y ${IMPORT.length-12} más</td></tr>`:""}
+  </tbody></table>
+  <div class="row-inline" style="margin-top:14px"><button class="btn btn-primary" style="width:auto" onclick="confirmImport()">Importar ${IMPORT.length} productos</button><button class="btn btn-ghost btn-sm" onclick="IMPORT=[];document.getElementById('importPreview').innerHTML=''">Cancelar</button></div>`;
+}
+async function confirmImport(){
+  if(!IMPORT.length) return;
+  // resolver categorías (crear las que falten)
+  setBusy(true);
+  const existing={}; DATA.categories.forEach(c=>existing[norm(c.nombre)]=c.id);
+  let orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
+  for(const p of IMPORT){
+    const key=norm(p.categoriaNombre);
+    if(!existing[key]){ await apiWrite("saveCategory",{category:{nombre:p.categoriaNombre,icono:"👗",orden:orden++,visible:true}}); }
+  }
+  await reload();
+  const emap={}; DATA.categories.forEach(c=>emap[norm(c.nombre)]=c.id);
+  const products=IMPORT.map(p=>({categoria:emap[norm(p.categoriaNombre)]||DATA.categories[0].id,nombre:p.nombre,precio:p.precio,descripcion:p.descripcion,imagen:p.imagen,destacado:false,activo:true,variantes:p.variantes.map(v=>({talla:v.talla,color:v.color,stock:v.stock}))}));
+  await apiWrite("bulkAddProducts",{products});
+  setBusy(false);
+  IMPORT=[]; document.getElementById("importPreview").innerHTML=""; document.getElementById("xfile").value="";
+  await reload(); setTab("productos"); toast("Productos importados ✓");
+}
+function downloadTemplate(){
+  const rows=[
+    {Nombre:"Blusa Manga Larga",Categoria:"Blusas",Precio:450,Talla:"S",Color:"Rosa",Stock:5,Descripcion:"Tela suave",ImagenURL:""},
+    {Nombre:"Blusa Manga Larga",Categoria:"Blusas",Precio:450,Talla:"M",Color:"Rosa",Stock:6,Descripcion:"",ImagenURL:""},
+    {Nombre:"Blusa Manga Larga",Categoria:"Blusas",Precio:450,Talla:"M",Color:"Blanco",Stock:4,Descripcion:"",ImagenURL:""},
+    {Nombre:"Vestido Floral",Categoria:"Vestidos",Precio:690,Talla:"M",Color:"Verde",Stock:3,Descripcion:"Estampado floral",ImagenURL:""}
+  ];
+  const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Productos");
+  XLSX.writeFile(wb,"YesyModa_plantilla.xlsx");
+}
+
+/* ---------- MODAL / TOAST / BUSY ---------- */
+function modal(html){ const m=document.getElementById("modal"); m.innerHTML=html; document.getElementById("scrim").classList.add("show"); m.classList.add("show"); }
+function closeModal(){ document.getElementById("scrim").classList.remove("show"); document.getElementById("modal").classList.remove("show"); }
+function confirmModal(title,msg,onOk,okLabel,danger){
+  modal(`<div class="mh"><h3>${title}</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  <div class="mb"><p style="margin:0">${msg}</p></div>
+  <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>
+  <button class="btn btn-sm" style="width:auto;background:${danger?'var(--danger)':'var(--rosa-deep)'};color:#fff" id="cfBtn">${okLabel||"Aceptar"}</button></div>`);
+  document.getElementById("cfBtn").onclick=()=>{ closeModal(); onOk&&onOk(); };
+}
+let toastT;
+function toast(t,err){ const el=document.getElementById("toast"); el.textContent=t; el.className="toast show"+(err?" err":""); clearTimeout(toastT); toastT=setTimeout(()=>el.className="toast",2200); }
+function setBusy(b){ const btns=[document.getElementById("saveBtn"),document.getElementById("saveAddBtn")]; btns.forEach(x=>{if(x)x.disabled=b;}); if(b){const s=document.getElementById("saveBtn"); if(s&&!s.dataset.o){s.dataset.o=s.innerHTML;s.innerHTML='<span class="spin"></span> Guardando…';}} else {const s=document.getElementById("saveBtn"); if(s&&s.dataset.o){s.innerHTML=s.dataset.o;delete s.dataset.o;}} }
+</script>
+</body>
+</html>
