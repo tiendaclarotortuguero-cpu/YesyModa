@@ -451,7 +451,7 @@ function normalize(d){
 function afterLoad(){
   CATMAP = {}; DATA.categories.forEach(c=>CATMAP[c.id]=c);
   document.getElementById("yr").textContent = new Date().getFullYear();
-  const waNum = (DATA.config.whatsapp||CONFIG.WHATSAPP);
+  const waNum = String(DATA.config.whatsapp||CONFIG.WHATSAPP||"").replace(/\D/g,"");
   document.getElementById("footWa").href = "https://wa.me/"+waNum;
   renderCats(); renderGrid(); renderCart();
 }
@@ -654,7 +654,7 @@ function closeCart(){ document.getElementById("scrim2").classList.remove("show")
 /* ---------- WHATSAPP CHECKOUT ---------- */
 function checkout(){
   if(!cart.length) return;
-  const num = (DATA.config.whatsapp||CONFIG.WHATSAPP).replace(/\D/g,"");
+  const num = String(DATA.config.whatsapp||CONFIG.WHATSAPP||"").replace(/\D/g,"");
   const hi = DATA.config.mensaje || "¡Hola YesyModa! 💕 Quiero hacer este pedido:";
   let msg = hi + "\n\n";
   cart.forEach((i,idx)=>{
@@ -662,7 +662,8 @@ function checkout(){
   });
   msg += `\n*Total: ${money(cartTotal())}*\n\nMi nombre es: \nDirección/entrega: `;
   const url = "https://wa.me/"+num+"?text="+encodeURIComponent(msg);
-  window.open(url, "_blank");
+  const w = window.open(url, "_blank");
+  if(!w){ window.location.href = url; }   // por si el navegador bloquea la ventana emergente
 }
 
 /* ---------- TOAST + SEARCH ---------- */
