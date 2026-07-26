@@ -123,6 +123,14 @@ textarea.inp{resize:vertical;min-height:64px}
 .addmini{display:flex;gap:6px;align-items:center;margin-top:8px}
 .addmini input{padding:8px 11px;border:1.5px solid var(--line-strong);border-radius:9px;outline:none;width:150px}
 
+/* foto */
+.fotobox{border:1.5px dashed var(--line-strong);border-radius:12px;padding:12px;text-align:center;background:var(--surface)}
+.fotoempty{cursor:pointer;padding:16px}
+.fotoempty:hover{color:var(--rosa-deep)}
+.fotoprev{max-height:200px;max-width:100%;border-radius:10px;margin:0 auto;object-fit:contain}
+.fotoacts{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.linklike{cursor:pointer;color:var(--rosa-deep);font-weight:600}
+
 /* stock grid */
 .stockwrap{overflow:auto;margin-top:8px;border:1px solid var(--line);border-radius:12px}
 table.stock{border-collapse:collapse;width:100%;min-width:max-content}
@@ -244,8 +252,22 @@ table.stock input:focus{border-color:var(--rosa-mid)}
             <input class="inp" id="edPrecio" type="number" inputmode="decimal" placeholder="450">
           </div>
           <div>
-            <label class="fl">URL de la foto (opcional)</label>
-            <input class="inp" id="edImagen" placeholder="https://…  (déjalo vacío y usamos una imagen elegante)">
+            <label class="fl">Foto del producto</label>
+            <div class="fotobox">
+              <input type="file" id="edFoto" accept="image/*" class="hide">
+              <img id="edFotoPrev" class="fotoprev hide" onerror="imgErr(this)" alt="">
+              <div id="fotoPlaceholder" class="fotoempty" onclick="document.getElementById('edFoto').click()">
+                <div style="font-size:28px">📷</div>
+                <div style="font-weight:600;margin-top:2px">Tomar o subir foto</div>
+                <div class="muted small">Cámara o galería del teléfono</div>
+              </div>
+              <div class="fotoacts hide" id="fotoActs">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('edFoto').click()">Cambiar foto</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="clearFoto()">Quitar</button>
+              </div>
+            </div>
+            <input class="inp hide" id="edImagen" style="margin-top:8px" placeholder="https://…">
+            <div class="muted small" style="margin-top:6px"><span class="linklike" onclick="document.getElementById('edImagen').classList.toggle('hide')">o pegar un enlace (URL) ▾</span></div>
           </div>
           <div style="grid-column:1/-1">
             <label class="fl">Descripción (opcional)</label>
@@ -354,6 +376,8 @@ const colorHex=c=>COLORS[norm(c)]||"#e3d3d9";
 const PRESET_COLORS=["Rosa","Blanco","Negro","Beige","Azul","Marino","Rojo","Vino","Verde","Café","Gris"];
 const LOW=3; // umbral bajo stock
 function ph(name,icon){const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='320' height='400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fdeef1'/><stop offset='1' stop-color='#f7ecd9'/></linearGradient></defs><rect width='320' height='400' fill='url(#g)'/><text x='160' y='196' font-size='80' text-anchor='middle'>${icon||"👗"}</text></svg>`;return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);}
+const PH_GEN="data:image/svg+xml;utf8,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='320' height='400'><rect width='320' height='400' fill='#fdeef1'/><text x='160' y='210' font-size='96' text-anchor='middle'>👗</text></svg>");
+function imgErr(el){ el.onerror=null; el.src=PH_GEN; }
 
 /* ---------- SAMPLE (demo) ---------- */
 const SAMPLE={config:{nombre:"YesyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR,mensaje:"¡Hola YesyModa! 💕 Quiero hacer este pedido:"},
@@ -493,7 +517,7 @@ function renderProducts(){
     else if(s<=LOW) flags.push(`<span class="tagmini low">bajo (${s})</span>`);
     const nv=(p.variantes||[]).length;
     return `<div class="prow">
-      <div class="th"><img src="${(p.imagen&&p.imagen.trim())?p.imagen:ph(p.nombre,cat.icono)}" alt=""></div>
+      <div class="th"><img src="${(p.imagen&&p.imagen.trim())?p.imagen:ph(p.nombre,cat.icono)}" onerror="imgErr(this)" alt=""></div>
       <div class="m">
         <div class="nm">${p.nombre} ${flags.join(" ")}</div>
         <div class="sub">${cat.nombre||"—"} · ${nv} ${nv===1?"variante":"variantes"} · ${s} en stock</div>
@@ -520,21 +544,23 @@ async function toggleFlag(id,flag){
 /* ---------- EDITOR ---------- */
 let ed={_editing:false,id:null,tallas:[],colores:[],stock:{}};
 function resetEditor(){
-  ed={_editing:false,id:null,tallas:[],colores:[],stock:{}};
+  ed={_editing:false,id:null,tallas:[],colores:[],stock:{},fotoData:null};
   document.getElementById("edTitle").textContent="Nuevo producto";
   ["edNombre","edPrecio","edImagen","edDesc"].forEach(k=>document.getElementById(k).value="");
   document.getElementById("edDestacado").checked=false;
   document.getElementById("edActivo").checked=true;
+  showFoto("");
   fillCatSelect();
   renderTallaChips(); renderColorChips(); renderStockGrid();
 }
 function editProduct(id){
   const p=DATA.products.find(x=>x.id===id); if(!p) return;
-  ed={_editing:true,id:p.id,tallas:[],colores:[],stock:{}};
+  ed={_editing:true,id:p.id,tallas:[],colores:[],stock:{},fotoData:null};
   document.getElementById("edTitle").textContent="Editar producto";
   document.getElementById("edNombre").value=p.nombre||"";
   document.getElementById("edPrecio").value=p.precio||"";
   document.getElementById("edImagen").value=p.imagen||"";
+  showFoto(p.imagen||"");
   document.getElementById("edDesc").value=p.descripcion||"";
   document.getElementById("edDestacado").checked=!!p.destacado;
   document.getElementById("edActivo").checked=p.activo!==false;
@@ -590,6 +616,55 @@ function buildVariantes(){
 }
 function skuOf(t,c){ return (norm(document.getElementById("edNombre").value).slice(0,3).toUpperCase()||"YM")+"-"+norm(t).toUpperCase()+"-"+norm(c).slice(0,3).toUpperCase(); }
 
+/* ---------- FOTO (cámara / galería) ---------- */
+function showFoto(url){
+  const prev=document.getElementById("edFotoPrev");
+  if(url){ prev.src=url; prev.classList.remove("hide"); document.getElementById("fotoPlaceholder").classList.add("hide"); document.getElementById("fotoActs").classList.remove("hide"); }
+  else { prev.removeAttribute("src"); prev.classList.add("hide"); document.getElementById("fotoPlaceholder").classList.remove("hide"); document.getElementById("fotoActs").classList.add("hide"); }
+}
+function clearFoto(){ ed.fotoData=null; document.getElementById("edImagen").value=""; showFoto(""); }
+/* redimensiona y comprime la foto en el teléfono antes de subirla */
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve,reject)=>{
+    const rd=new FileReader();
+    rd.onerror=()=>reject(new Error("no se pudo leer"));
+    rd.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error("imagen inválida"));
+      img.onload=()=>{
+        let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+        if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
+        else if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
+        const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+        cv.getContext("2d").drawImage(img,0,0,w,h);
+        resolve(cv.toDataURL("image/jpeg", quality||0.82));
+      };
+      img.src=rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+/* sube la foto: en vivo -> Google Drive (vía Apps Script); en demo -> la usa local */
+async function uploadImage(dataUrl){
+  if(!LIVE) return dataUrl;
+  const body=JSON.stringify({action:"uploadImage", token:getToken(), dataUrl, name:document.getElementById("edNombre").value});
+  const r=await fetch(CONFIG.API_URL,{method:"POST",body});
+  const j=await r.json();
+  if(!j || !j.url){ throw new Error((j&&j.error)||"respuesta vacía"); }
+  return j.url;
+}
+document.getElementById("edFoto").addEventListener("change", async function(e){
+  const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{
+    toast("Procesando foto…");
+    const dataUrl=await compressImage(f, 1000, 0.82);
+    ed.fotoData=dataUrl;
+    document.getElementById("edImagen").value="";
+    showFoto(dataUrl);
+    toast("Foto lista ✓");
+  }catch(err){ toast("No pude leer la foto.", true); }
+});
+
 async function saveProduct(addAnother){
   const nombre=document.getElementById("edNombre").value.trim();
   const precio=+document.getElementById("edPrecio").value;
@@ -598,10 +673,17 @@ async function saveProduct(addAnother){
   if(!categoria){ toast("Elige una categoría.",true); return; }
   if(!(precio>0)){ toast("Ingresa un precio válido.",true); return; }
   if(!ed.tallas.length){ toast("Agrega al menos una talla.",true); return; }
+  let imagen=document.getElementById("edImagen").value.trim();
+  if(ed.fotoData){
+    setBusy(true); toast("Subiendo foto…");
+    try{ imagen = await uploadImage(ed.fotoData); }
+    catch(err){ setBusy(false); toast("No se pudo subir la foto: "+(err.message||err), true); return; }
+    setBusy(false);
+  }
   const prod={
     id:ed.id||"", categoria, nombre, precio,
     descripcion:document.getElementById("edDesc").value.trim(),
-    imagen:document.getElementById("edImagen").value.trim(),
+    imagen:imagen,
     destacado:document.getElementById("edDestacado").checked,
     activo:document.getElementById("edActivo").checked,
     variantes:buildVariantes()
