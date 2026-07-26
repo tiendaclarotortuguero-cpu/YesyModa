@@ -375,6 +375,7 @@ function ph(name, icon){
   return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 const imgOf = p => (p.imagen && p.imagen.trim()) ? p.imagen.trim() : ph(p.nombre, catIcon(p.categoria));
+function imgErr(el){ el.onerror=null; el.src=ph("YesyModa","👗"); }
 
 /* --- state --- */
 let DATA = { categories:[], products:[], config:{} };
@@ -496,7 +497,7 @@ function renderGrid(){
     const sw = colorsOf(p).slice(0,5).map(c=>`<span class="sw" style="background:${colorHex(c)}" title="${c}"></span>`).join("");
     return `<article class="card" onclick="openSheet('${p.id}')">
       <div class="imgwrap">
-        <img loading="lazy" src="${imgOf(p)}" alt="${p.nombre}">
+        <img loading="lazy" src="${imgOf(p)}" onerror="imgErr(this)" alt="${p.nombre}">
         ${p.destacado&&!out?`<span class="badge">★ Destacado</span>`:""}
         ${out?`<span class="badge out">Agotado</span>`:""}
       </div>
@@ -551,7 +552,7 @@ function drawSheet(){
   const needColor = colores.length>0;
   el.innerHTML = `
     <div class="grab"></div>
-    <div class="ph"><img src="${imgOf(p)}" alt="${p.nombre}"></div>
+    <div class="ph"><img src="${imgOf(p)}" onerror="imgErr(this)" alt="${p.nombre}"></div>
     <div class="content">
       <span class="cat">${catName(p.categoria)}</span>
       <h3 class="serif">${p.nombre}</h3>
@@ -626,7 +627,7 @@ function renderCart(){
   items.innerHTML = cart.map(i=>{
     const p=DATA.products.find(x=>x.id===i.id)||i;
     return `<div class="citem">
-      <div class="th"><img src="${imgOf({imagen:i.imagen,nombre:i.nombre,categoria:i.categoria})}" alt=""></div>
+      <div class="th"><img src="${imgOf({imagen:i.imagen,nombre:i.nombre,categoria:i.categoria})}" onerror="imgErr(this)" alt=""></div>
       <div class="info">
         <div class="nm">${i.nombre}</div>
         <div class="vr">Talla ${i.talla} · <span style="display:inline-flex;align-items:center;gap:5px"><span class="sw" style="width:11px;height:11px;background:${colorHex(i.color)}"></span>${i.color}</span></div>
