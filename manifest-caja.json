@@ -1,0 +1,15 @@
+{
+  "name": "YesyModa Caja",
+  "short_name": "YesyModa Caja",
+  "description": "Punto de venta e inventario de YesyModa.",
+  "start_url": "pos.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbf6f5",
+  "theme_color": "#c65f80",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

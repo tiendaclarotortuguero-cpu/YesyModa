@@ -11,10 +11,15 @@ Tienda digital para **YesyModa**: un catálogo público donde las clientas arman
 | Archivo | Qué es |
 |---|---|
 | `index.html` | El **catálogo público** (lo que ven las clientas). |
-| `admin.html` | El **panel de la dueña** (privado). |
+| `pos.html` | La **Caja / Punto de venta** (privado): vender en el local, pedidos en línea, fiados y reporte. |
+| `admin.html` | El **panel de la dueña** (privado): productos, categorías, tallas/colores y stock. |
 | `config.js` | **Lo único que editas** para conectar la tienda (URL de la API y WhatsApp). |
 | `Code.gs` | El **backend**: se pega en Google Apps Script (no va a GitHub Pages, va en tu Hoja). |
+| `manifest.json`, `manifest-caja.json`, `manifest-admin.json`, `sw.js` | Hacen que **se instale como app** en el celular (Catálogo, Caja y Panel). |
+| `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | Íconos de la app instalada. |
 | `.github/workflows/keepalive.yml` | Tarea opcional que mantiene "despierta" la base de datos. |
+
+> 📲 **Importante:** sube **todos** estos archivos a GitHub (incluidos los `manifest*.json`, `sw.js` y los `*.png`). Si falta el `sw.js` o los íconos, la instalación como app no aparece.
 
 ---
 
@@ -75,8 +80,26 @@ const CONFIG = {
 - **Categorías**: crea, ordena y oculta secciones.
 - **Ajustes**: nombre, WhatsApp, moneda y el mensaje del pedido.
 
+**La dueña (Caja `pos.html`):**
+- **Vender**: toca las prendas, arma el ticket y **Cobrar** → elige **Efectivo** o **Fiar** (a crédito). El inventario baja solo.
+- **Pedidos**: los pedidos que llegan del catálogo en línea aparecen aquí; al **Confirmar** eliges también **Efectivo o Fiado**, y recién ahí se descuenta el stock.
+- **Fiados**: lista de clientas que deben, con abonos y recordatorio por WhatsApp.
+- **Reporte / Cierre de caja**: con **selector de fecha** (Hoy, Ayer o cualquier día) para *arquear*. Muestra el **efectivo esperado en caja** (ventas en efectivo + abonos), lo fiado y la ganancia estimada.
+
 **La clienta (catálogo `index.html`):**
 - Explora, filtra por categoría, elige talla/color, arma el carrito y toca **Pedir por WhatsApp**. Se abre el chat con el pedido escrito hacia el número de la tienda. Sin registrarse.
+
+---
+
+## 📲 Instalar como app (en el celular)
+
+El sistema se **ve y se siente como una app nativa** y se puede instalar en la pantalla de inicio, sin tiendas de apps ni costos:
+
+- **Android (Chrome):** al abrir la Caja o el Panel aparece el botón **⬇️** arriba (o el menú ⋮ → *Instalar app*). Un toque y queda el ícono de YesyModa en el teléfono.
+- **iPhone (Safari):** toca **Compartir** ↑ y luego **Agregar a inicio**.
+- Una vez instalada, abre a pantalla completa (sin barra del navegador) y **arranca al instante** aunque el internet ande lento.
+
+> Se puede instalar por separado el **Catálogo** (para compartir), la **Caja** y el **Panel**. Para la dueña, con instalar la **Caja** basta: desde ahí llega también al Panel.
 
 ---
 
@@ -103,11 +126,20 @@ La contraseña protege las escrituras (agregar/editar/borrar). Es adecuada para 
 
 ---
 
+## 🔄 Cuando actualices el sistema (importante)
+
+Si cambias el **`Code.gs`** (el backend), no basta con guardarlo:
+1. Pega el `Code.gs` nuevo en Apps Script.
+2. **Implementar ▸ Administrar implementaciones ▸** (lápiz ✏️) **▸ Versión: Nueva versión ▸ Implementar.**
+   Así la URL `/exec` empieza a usar el código nuevo (la URL **no cambia**).
+3. Sube los archivos web nuevos a GitHub. En el celular, cierra y vuelve a abrir la app (o recárgala) para tomar la última versión.
+
+---
+
 ## 🧭 Próximos pasos sugeridos
 
 - Cargar los productos reales (por Excel es lo más rápido).
 - Poner el logo y afinar los colores de la marca.
-- Convertirla en app instalable (PWA) y agregar "compartir producto".
 - Más adelante (opcional): pago en línea, estadísticas de lo más pedido, o IA para descripciones y fotos.
 
 Hecho con cariño para **YesyModa** 🌸

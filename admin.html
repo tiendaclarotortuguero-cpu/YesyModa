@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#fbf6f5" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="YesyModa Admin" />
+<link rel="manifest" href="manifest-admin.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <title>YesyModa · Panel de administración</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,11 +29,11 @@
   --shadow-lg:0 24px 60px -24px rgba(166,72,104,.40);
   --r:14px; --r-sm:10px;
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:40px;overscroll-behavior-y:contain}
 .serif{font-family:"Playfair Display",Georgia,serif}
 h1,h2,h3,h4{margin:0;line-height:1.2}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 img{display:block;max-width:100%}
 .wrap{max-width:1080px;margin:0 auto;padding:0 18px}
@@ -196,6 +202,7 @@ table.stock input:focus{border-color:var(--rosa-mid)}
     <div class="wrap top-in">
       <span class="logo serif">Yesy<b>Moda</b></span>
       <span class="pill" id="modePill"></span>
+      <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
       <a class="btn btn-soft btn-sm" href="pos.html" style="width:auto">🧮 Caja</a>
       <button class="iconbtn" title="Recargar" onclick="reload()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
@@ -482,13 +489,23 @@ async function startApp(){
   document.getElementById("curLbl").textContent=CUR;
   await reload();
 }
+var __admSig="";
+function admSig(d){return (d.products||[]).map(p=>p.id+"·"+p.nombre+"·"+p.precio+"·"+(p.costo||0)+"·"+(p.codigo||"")+"·"+(p.activo!==false)+"·"+(p.destacado?1:0)+"·"+(p.imagen||"")+"·"+(p.variantes||[]).map(v=>v.talla+"/"+v.color+"/"+v.stock).join(",")).join("|")+"##"+(d.categories||[]).map(c=>c.id+c.nombre+(c.orden||0)+(c.visible!==false)).join("|")+"##"+JSON.stringify(d.config||{});}
 async function reload(){
   try{
     const d=await apiGet();
     DATA={config:d.config||{},categories:(d.categories||[]).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:d.products||[]};
+    try{ __admSig=admSig(d); }catch(e){}
   }catch(e){ toast("No se pudo cargar. Revisa la URL de la API.",true); DATA={config:{},categories:[],products:[]}; }
   CATMAP={}; DATA.categories.forEach(c=>CATMAP[c.id]=c);
   renderAll();
+}
+/* Refresco silencioso: solo re-dibuja si algo cambió (sin parpadeo mientras la dueña trabaja). */
+async function reloadSilent(){
+  try{ const d=await apiGet(); const sig=admSig(d); if(sig===__admSig) return; __admSig=sig;
+    DATA={config:d.config||{},categories:(d.categories||[]).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:d.products||[]};
+    CATMAP={}; DATA.categories.forEach(c=>CATMAP[c.id]=c); renderAll();
+  }catch(e){}
 }
 function renderAll(){ renderStats(); renderProducts(); renderCategories(); fillCatSelect(); fillConfig(); renderColorPresets(); }
 
@@ -902,8 +919,8 @@ function escanearCodigo(){
     scannerA.start({facingMode:"environment"},{fps:10,qrbox:{width:230,height:150}},function(t){ document.getElementById("edCodigo").value=String(t).trim(); closeModal(); toast("Código: "+String(t).trim()); },function(){}).catch(function(){toast("No pude abrir la cámara.",true);});
   }catch(e){ toast("No se pudo iniciar el escáner.",true); }
 }
-/* auto-actualización de la lista (tiempo real) */
-setInterval(function(){ if(document.hidden||document.querySelector(".scrim.show")) return; if(document.getElementById("appView").classList.contains("hide")) return; if(TAB!=="productos") return; reload(); }, 30000);
+/* auto-actualización de la lista (tiempo real, refresco silencioso) */
+setInterval(function(){ if(document.hidden||document.querySelector(".scrim.show")) return; if(document.getElementById("appView").classList.contains("hide")) return; if(TAB!=="productos") return; reloadSilent(); }, 30000);
 
 /* ---------- MODAL / TOAST / BUSY ---------- */
 function modal(html){ const m=document.getElementById("modal"); m.innerHTML=html; document.getElementById("scrim").classList.add("show"); m.classList.add("show"); }
@@ -918,6 +935,21 @@ function confirmModal(title,msg,onOk,okLabel,danger){
 let toastT;
 function toast(t,err){ const el=document.getElementById("toast"); el.textContent=t; el.className="toast show"+(err?" err":""); clearTimeout(toastT); toastT=setTimeout(()=>el.className="toast",2200); }
 function setBusy(b){ const btns=[document.getElementById("saveBtn"),document.getElementById("saveAddBtn")]; btns.forEach(x=>{if(x)x.disabled=b;}); if(b){const s=document.getElementById("saveBtn"); if(s&&!s.dataset.o){s.dataset.o=s.innerHTML;s.innerHTML='<span class="spin"></span> Guardando…';}} else {const s=document.getElementById("saveBtn"); if(s&&s.dataset.o){s.innerHTML=s.dataset.o;delete s.dataset.o;}} }
+
+/* ---------- PWA: instalar como app + service worker ---------- */
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
+var __deferredPrompt=null;
+function showInstall(){var b=document.getElementById('installBtn');if(b && !isStandalone())b.style.display='';}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();__deferredPrompt=e;showInstall();});
+(function(){ if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) showInstall(); })();
+function instalarApp(){
+  if(isStandalone()){toast("La app ya está instalada ✓");return;}
+  if(__deferredPrompt){__deferredPrompt.prompt();__deferredPrompt.userChoice.then(function(){__deferredPrompt=null;});return;}
+  var iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  toast(iOS?"En iPhone: toca Compartir y luego 'Agregar a inicio'":"Menú del navegador → 'Instalar app' / 'Agregar a inicio'");
+}
+window.addEventListener('appinstalled',function(){var b=document.getElementById('installBtn');if(b)b.style.display='none';});
+if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 </script>
 </body>
 </html>

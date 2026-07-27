@@ -321,7 +321,7 @@ function confirmarPedido(body){
   if(String(ped.estado) !== "pendiente") return { ok:false, error:"ya procesado" };
   let items = [];
   try{ items = JSON.parse(ped.items_json || "[]"); }catch(e){}
-  const res = venderItems({ items:items, descuento:0, pago:"efectivo", canal:"online", pedidoFolio:ped.folio });
+  const res = venderItems({ items:items, descuento:0, pago:(body.pago||"efectivo"), clienteId:(body.clienteId||""), canal:"online", pedidoFolio:ped.folio });
   if(!res.ok) return res; // p.ej. sin stock
   updatePedidoEstado(id, "confirmado", res.folio);
   return { ok:true, folio:res.folio, total:res.total };

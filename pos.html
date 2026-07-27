@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#fbf6f5" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="YesyModa Caja" />
+<link rel="manifest" href="manifest-caja.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <title>YesyModa · Caja (Punto de Venta)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,8 +29,10 @@
   --shadow-lg:0 24px 60px -24px rgba(166,72,104,.42);
   --r:14px;
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink2);font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+.btn,.tab,.chip,.pcard,.iconbtn,.pill,.opt,.stepper button{user-select:none;-webkit-user-select:none;touch-action:manipulation}
+body{margin:0;background:var(--bg);color:var(--ink2);font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:84px;overscroll-behavior-y:contain}
 .serif{font-family:"Playfair Display",Georgia,serif}
 h1,h2,h3,h4{margin:0;line-height:1.2;color:var(--ink)}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
@@ -209,6 +217,7 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.9);back
     <div class="wrap top-in">
       <span class="logo serif">Yesy<b>Moda</b> <span style="font-size:12px;color:var(--muted);font-family:'Jost'">· Caja</span></span>
       <span class="pill" id="modePill"></span>
+      <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
       <a class="iconbtn" href="admin.html" title="Panel">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       </a>
@@ -298,6 +307,7 @@ function imgErr(el){el.onerror=null;el.src=ph("👗");}
 const LIVE=!!CONFIG.API_URL;
 const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);};
 const nowStr=()=>{const d=new Date();return todayStr()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);};
+const ayerStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);};
 
 /* ---------- state ---------- */
 let DATA={config:{},categories:[],products:[]};
@@ -305,6 +315,8 @@ let CATMAP={};
 let filterCat="all";
 let ticket=[];          // {producto_id,codigo,nombre,talla,color,precio,costo,cantidad,imagen}
 let TAB="vender";
+let POLLSIG={ped:"",cat:"",ven:"",fia:""};   // firmas para refresco silencioso (sin parpadeo)
+let repDia="";                               // día seleccionado en el reporte (cierre de caja)
 
 /* ---------- auth ---------- */
 function getToken(){return sessionStorage.getItem("ym_token")||"";}
@@ -364,13 +376,13 @@ function demoCall(action,p){
   };
   if(action==="registrarVenta"){const err=dropStock(p.items);if(err)return err;const r=mkVenta(p.items,p.descuento,"tienda","",p.pago||"efectivo",p.clienteId||"");return {ok:true,folio:r.folio,total:r.total,estado:r.estado};}
   if(action==="crearPedido"){const q=p.pedido||{};const folio="P-"+("0000"+(pos.pedidos.length+1)).slice(-4);pos.pedidos.push({id:"ped"+Date.now(),folio,fecha:nowStr(),dia:todayStr(),cliente:q.cliente||"",whatsapp:q.whatsapp||"",items_json:JSON.stringify(q.items||[]),total:+q.total||0,estado:"pendiente",venta_folio:""});demoPosSave(pos);return {ok:true,folio};}
-  if(action==="confirmarPedido"){const ped=pos.pedidos.find(x=>x.id===p.id);if(!ped)return {ok:false,error:"no existe"};if(ped.estado!=="pendiente")return {ok:false,error:"ya procesado"};let items=[];try{items=JSON.parse(ped.items_json||"[]");}catch(e){}const err=dropStock(items);if(err)return err;const r=mkVenta(items,0,"online",ped.folio,"efectivo","");ped.estado="confirmado";ped.venta_folio=r.folio;demoPosSave(pos);return {ok:true,folio:r.folio};}
+  if(action==="confirmarPedido"){const ped=pos.pedidos.find(x=>x.id===p.id);if(!ped)return {ok:false,error:"no existe"};if(ped.estado!=="pendiente")return {ok:false,error:"ya procesado"};let items=[];try{items=JSON.parse(ped.items_json||"[]");}catch(e){}const err=dropStock(items);if(err)return err;const r=mkVenta(items,0,"online",ped.folio,p.pago||"efectivo",p.clienteId||"");ped.estado="confirmado";ped.venta_folio=r.folio;demoPosSave(pos);return {ok:true,folio:r.folio};}
   if(action==="descartarPedido"){const ped=pos.pedidos.find(x=>x.id===p.id);if(ped){ped.estado="descartado";demoPosSave(pos);}return {ok:true};}
   if(action==="anularVenta"){const v=pos.ventas.find(x=>x.id===p.id);if(!v)return {ok:false,error:"no existe"};if(v.estado==="anulada")return {ok:true};(v._items||[]).forEach(it=>{const prod=cat.products.find(x=>x.id===it.producto_id);const vr=prod&&findVar(prod,it.talla,it.color);if(vr)vr.stock=(+vr.stock||0)+(+it.cantidad||0);});demoCatSave(cat);if(v.pago==="credito"&&v.cliente_id){const cc=(pos.clientes||[]).find(c=>c.id===v.cliente_id);if(cc)cc.saldo=Math.max(0,(+cc.saldo||0)-(+v.total||0));}v.estado="anulada";demoPosSave(pos);return {ok:true,folio:v.folio};}
   if(action==="getVentas"){return {ok:true,ventas:pos.ventas.slice().reverse()};}
   if(action==="getVentaItems"){const v=pos.ventas.find(x=>x.id===p.id);return {ok:true,items:(v&&v._items)||[]};}
   if(action==="getPedidos"){return {ok:true,pedidos:pos.pedidos.slice().reverse()};}
-  if(action==="reporteDia"){const dia=todayStr();const vs=pos.ventas.filter(x=>x.dia===dia&&x.estado!=="anulada");let total=0,efectivo=0,fiado=0,ingreso=0,costoTot=0;const canal={};const top={};vs.forEach(x=>{total+=+x.total||0;if(x.pago==="credito")fiado+=+x.total||0;else efectivo+=+x.total||0;canal[x.canal]=(canal[x.canal]||0)+(+x.total||0);(x._items||[]).forEach(it=>{top[it.nombre]=(top[it.nombre]||0)+(+it.cantidad||0);ingreso+=(+it.precio||0)*(+it.cantidad||0);costoTot+=(+it.costo||0)*(+it.cantidad||0);});});const topArr=Object.keys(top).map(k=>({nombre:k,cant:top[k]})).sort((a,b)=>b.cant-a.cant).slice(0,8);let abonos=0;(pos.abonos||[]).forEach(a=>{if((a.fecha||"").slice(0,10)===dia)abonos+=+a.monto||0;});return {ok:true,dia,total,count:vs.length,ticket:vs.length?total/vs.length:0,efectivo,fiado,abonos,ingreso,costo:costoTot,ganancia:ingreso-costoTot,canal,top:topArr};}
+  if(action==="reporteDia"){const dia=p.dia||todayStr();const vs=pos.ventas.filter(x=>x.dia===dia&&x.estado!=="anulada");let total=0,efectivo=0,fiado=0,ingreso=0,costoTot=0;const canal={};const top={};vs.forEach(x=>{total+=+x.total||0;if(x.pago==="credito")fiado+=+x.total||0;else efectivo+=+x.total||0;canal[x.canal]=(canal[x.canal]||0)+(+x.total||0);(x._items||[]).forEach(it=>{top[it.nombre]=(top[it.nombre]||0)+(+it.cantidad||0);ingreso+=(+it.precio||0)*(+it.cantidad||0);costoTot+=(+it.costo||0)*(+it.cantidad||0);});});const topArr=Object.keys(top).map(k=>({nombre:k,cant:top[k]})).sort((a,b)=>b.cant-a.cant).slice(0,8);let abonos=0;(pos.abonos||[]).forEach(a=>{if((a.fecha||"").slice(0,10)===dia)abonos+=+a.monto||0;});return {ok:true,dia,total,count:vs.length,ticket:vs.length?total/vs.length:0,efectivo,fiado,abonos,ingreso,costo:costoTot,ganancia:ingreso-costoTot,canal,top:topArr};}
   if(action==="getClientes"){return {ok:true,clientes:(pos.clientes||[]).slice()};}
   if(action==="saveCliente"){const c=p.cliente||{};let id=c.id;if(!id){id="cli"+Date.now()+Math.floor(Math.random()*99);pos.clientes.push({id,nombre:c.nombre||"",whatsapp:c.whatsapp||"",saldo:0,notas:c.notas||""});}else{const ex=cliById(id);if(ex){if(c.nombre!=null)ex.nombre=c.nombre;if(c.whatsapp!=null)ex.whatsapp=c.whatsapp;}}demoPosSave(pos);return {ok:true,id};}
   if(action==="registrarAbono"){const cli=cliById(p.clienteId);const m=+p.monto||0;if(m<=0)return {ok:false,error:"monto"};pos.abonos.push({id:"ab"+Date.now(),cliente_id:p.clienteId,venta_folio:p.ventaFolio||"",fecha:nowStr(),monto:m});if(cli)cli.saldo=Math.max(0,(+cli.saldo||0)-m);demoPosSave(pos);return {ok:true,saldo:cli?cli.saldo:0};}
@@ -386,13 +398,30 @@ async function startApp(){
   loadPedidos();
   startPolling();
 }
-async function loadCatalog(){
-  try{const d=await apiGetCatalog();DATA={config:d.config||{},categories:(d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:(d.products||[]).filter(p=>p.activo!==false)};}
-  catch(e){toast("No se pudo cargar el catálogo.",true);}
+function catSig(cats,prods){
+  return (cats||[]).map(c=>c.id+"·"+c.nombre+"·"+(c.orden||0)+"·"+(c.visible!==false)).join("|")
+    +"##"+(prods||[]).map(p=>p.id+"·"+p.nombre+"·"+p.precio+"·"+(p.activo!==false)+"·"+(p.imagen||"")+"·"+(p.codigo||"")+"·"+(p.variantes||[]).map(v=>v.talla+"/"+v.color+"/"+v.stock).join(",")).join("|");
+}
+function applyCatalog(d){
+  DATA={config:d.config||{},categories:(d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:(d.products||[]).filter(p=>p.activo!==false)};
   CATMAP={};DATA.categories.forEach(c=>CATMAP[c.id]=c);
+  POLLSIG.cat=catSig(DATA.categories,DATA.products);
+}
+async function loadCatalog(){
+  try{const d=await apiGetCatalog();applyCatalog(d);}
+  catch(e){toast("No se pudo cargar el catálogo.",true);}
   renderCats();renderGrid();
 }
-function refreshAll(){loadCatalog();loadPedidos();if(TAB==="ventas")loadVentas();if(TAB==="reporte")loadReporte();toast("Actualizado");}
+/* Refresco silencioso del catálogo: solo re-dibuja si algo cambió realmente. */
+async function loadCatalogSilent(){
+  let d;try{d=await apiGetCatalog();}catch(e){return;}
+  const cats=(d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const prods=(d.products||[]).filter(p=>p.activo!==false);
+  if(catSig(cats,prods)===POLLSIG.cat)return;      // sin cambios → no tocar la pantalla
+  applyCatalog(d);
+  if(TAB==="vender"){renderCats();renderGrid();}
+}
+function refreshAll(){POLLSIG={ped:"",cat:"",ven:"",fia:""};loadCatalog();loadPedidos();if(TAB==="ventas")loadVentas();if(TAB==="fiados")loadFiados();if(TAB==="reporte")loadReporte(repDia);toast("Actualizado");}
 
 /* ---------- tabs ---------- */
 function setTab(t){
@@ -500,12 +529,18 @@ function renderTicket(){
 }
 function cobrar(){
   if(!ticket.length)return;
-  modal(`<div class="mh"><h3>Cobrar ${money(ticketTotal())}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  pagoChooser("Cobrar "+money(ticketTotal()), ()=>finalizeVenta('efectivo','',''), ()=>openClientePicker((id,nom)=>finalizeVenta('credito',id,nom)));
+}
+/* Selector de pago reutilizable (venta en tienda y confirmación de pedido online). */
+function pagoChooser(titulo,onEfectivo,onFiar){
+  modal(`<div class="mh"><h3>${titulo}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="mb">
       <p class="small muted" style="margin:0 0 12px">¿Cómo paga la clienta?</p>
-      <button class="btn btn-primary btn-block btn-lg" style="margin-bottom:10px" onclick="finalizeVenta('efectivo','','')">💵 Efectivo</button>
-      <button class="btn btn-ghost btn-block btn-lg" onclick="openClientePicker()">🤝 Fiar (crédito)</button>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-bottom:10px" id="pcEfe">💵 Efectivo</button>
+      <button class="btn btn-ghost btn-block btn-lg" id="pcFia">🤝 Fiar (crédito)</button>
     </div>`);
+  document.getElementById("pcEfe").onclick=function(){onEfectivo&&onEfectivo();};
+  document.getElementById("pcFia").onclick=function(){onFiar&&onFiar();};
 }
 let lastVenta=null;
 async function finalizeVenta(pago,clienteId,clienteNombre){
@@ -542,44 +577,72 @@ function showVentaOK(v){
 }
 
 /* ---------- pedidos ---------- */
-async function loadPedidos(){
-  const res=await apiCall("getPedidos",{});const peds=(res&&res.pedidos)||[];
-  const pend=peds.filter(p=>p.estado==="pendiente");
-  const dot=document.getElementById("pedDot");dot.textContent=pend.length;dot.classList.toggle("hide",pend.length===0);
+function pedSig(peds){return peds.map(p=>p.id+":"+p.estado+":"+(p.venta_folio||"")).join("|");}
+function updatePedBadge(peds){const pend=peds.filter(p=>p.estado==="pendiente");const dot=document.getElementById("pedDot");dot.textContent=pend.length;dot.classList.toggle("hide",pend.length===0);}
+function pedCard(p){let items=[];try{items=JSON.parse(p.items_json||"[]");}catch(e){}
+  const itemsHtml=items.map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:6px 0">
+    <img src="${(i.imagen&&String(i.imagen).trim())?i.imagen:ph('👗')}" onerror="imgErr(this)" style="width:38px;height:46px;border-radius:7px;object-fit:cover;background:var(--surface-soft);flex:none">
+    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--ink)">${i.nombre||""} ${i.codigo?`<span class="small" style="color:var(--rosa-ink);font-weight:700">${i.codigo}</span>`:""}</div><div class="small muted">T${i.talla}${i.color?" · "+i.color:""} · x${i.cantidad}</div></div>
+    <b class="small">${money((+i.precio||0)*(+i.cantidad||0))}</b></div>`).join("");
+  const b=p.estado==="pendiente"?"pend":(p.estado==="confirmado"?"conf":"desc");
+  return `<div class="row"><div class="rh"><span class="folio">${p.folio}</span><span class="badge online">online</span><span class="badge ${b}">${p.estado}</span><span class="money">${money(p.total)}</span></div>
+    <div class="sub">${p.fecha||""}${p.cliente?" · "+p.cliente:""}</div>
+    <div style="margin-top:6px;border-top:1px dashed var(--line)">${itemsHtml||'<div class="sub">—</div>'}</div>
+    ${p.estado==="pendiente"?`<div class="acts"><button class="btn btn-primary btn-sm" onclick="confirmarPed('${p.id}')">✓ Confirmar (vender)</button><button class="btn btn-ghost btn-sm" onclick="descartarPed('${p.id}','${p.folio}')">Descartar</button></div>`:(p.venta_folio?`<div class="sub" style="margin-top:6px">→ Venta ${p.venta_folio}</div>`:"")}</div>`;
+}
+function renderPedidos(peds){
+  updatePedBadge(peds);
   const el=document.getElementById("pedList");if(!el)return;
   if(!peds.length){el.innerHTML=`<div class="empty2"><div class="big">📥</div><p>No hay pedidos todavía.<br><span class="small">Los pedidos de la tienda en línea aparecerán aquí para confirmarlos.</span></p></div>`;return;}
-  const card=(p)=>{let items=[];try{items=JSON.parse(p.items_json||"[]");}catch(e){}
-    const itemsHtml=items.map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:6px 0">
-      <img src="${(i.imagen&&String(i.imagen).trim())?i.imagen:ph('👗')}" onerror="imgErr(this)" style="width:38px;height:46px;border-radius:7px;object-fit:cover;background:var(--surface-soft);flex:none">
-      <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--ink)">${i.nombre||""} ${i.codigo?`<span class="small" style="color:var(--rosa-ink);font-weight:700">${i.codigo}</span>`:""}</div><div class="small muted">T${i.talla}${i.color?" · "+i.color:""} · x${i.cantidad}</div></div>
-      <b class="small">${money((+i.precio||0)*(+i.cantidad||0))}</b></div>`).join("");
-    const b=p.estado==="pendiente"?"pend":(p.estado==="confirmado"?"conf":"desc");
-    return `<div class="row"><div class="rh"><span class="folio">${p.folio}</span><span class="badge online">online</span><span class="badge ${b}">${p.estado}</span><span class="money">${money(p.total)}</span></div>
-      <div class="sub">${p.fecha||""}${p.cliente?" · "+p.cliente:""}</div>
-      <div style="margin-top:6px;border-top:1px dashed var(--line)">${itemsHtml||'<div class="sub">—</div>'}</div>
-      ${p.estado==="pendiente"?`<div class="acts"><button class="btn btn-primary btn-sm" onclick="confirmarPed('${p.id}')">✓ Confirmar (vender)</button><button class="btn btn-ghost btn-sm" onclick="descartarPed('${p.id}','${p.folio}')">Descartar</button></div>`:(p.venta_folio?`<div class="sub" style="margin-top:6px">→ Venta ${p.venta_folio}</div>`:"")}</div>`;};
-  el.innerHTML="";
-  if(pend.length){const h=document.createElement("div");h.innerHTML=`<h3 class="serif" style="font-size:16px;margin:4px 0 8px">Pendientes de confirmar (${pend.length})</h3>`+pend.map(card).join("");el.appendChild(h);}
+  const pend=peds.filter(p=>p.estado==="pendiente");
   const otros=peds.filter(p=>p.estado!=="pendiente");
-  if(otros.length){const h=document.createElement("div");h.innerHTML=`<h3 class="serif" style="font-size:16px;margin:18px 0 8px">Recientes</h3>`+otros.map(card).join("");el.appendChild(h);}
+  let h="";
+  if(pend.length)h+=`<h3 class="serif" style="font-size:16px;margin:4px 0 8px">Pendientes de confirmar (${pend.length})</h3>`+pend.map(pedCard).join("");
+  if(otros.length)h+=`<h3 class="serif" style="font-size:16px;margin:18px 0 8px">Recientes</h3>`+otros.map(pedCard).join("");
+  el.innerHTML=h;
 }
-async function confirmarPed(id){
-  const res=await apiCall("confirmarPedido",{id});
-  if(res&&res.ok){toast("Pedido confirmado → Venta "+(res.folio||"")+" ✓","ok");await loadCatalog();loadPedidos();}
+async function loadPedidos(){
+  const res=await apiCall("getPedidos",{});const peds=(res&&res.pedidos)||[];
+  POLLSIG.ped=pedSig(peds);renderPedidos(peds);
+}
+/* Refresco silencioso: mantiene el badge al día y re-dibuja la lista SOLO si cambió. */
+async function silentPedidos(force){
+  const res=await apiCall("getPedidos",{});const peds=(res&&res.pedidos)||[];
+  updatePedBadge(peds);
+  const sig=pedSig(peds);
+  if(force||sig!==POLLSIG.ped){POLLSIG.ped=sig;if(TAB==="pedidos")renderPedidos(peds);}
+}
+/* Confirmar pedido online: ahora también permite fiarlo (efectivo o crédito). */
+function confirmarPed(id){
+  pagoChooser("Confirmar pedido en línea", ()=>doConfirmarPedido(id,'efectivo','',''), ()=>openClientePicker((cid,nom)=>doConfirmarPedido(id,'credito',cid,nom)));
+}
+async function doConfirmarPedido(id,pago,clienteId,nombre){
+  closeModal();
+  const res=await apiCall("confirmarPedido",{id,pago,clienteId});
+  if(res&&res.ok){toast("Pedido → Venta "+(res.folio||"")+(pago==="credito"?" · fiado"+(nombre?" a "+nombre:""):"")+" ✓","ok");await loadCatalog();silentPedidos(true);}
   else{const msg=(res&&res.error==="stock")?`No hay stock para ${res.producto} (T${res.talla}${res.color?"/"+res.color:""}). Quedan ${res.disponible}.`:("No se pudo confirmar"+(res&&res.error?": "+res.error:""));toast(msg,true);}
 }
-function descartarPed(id,folio){confirmModal("Descartar pedido","¿Descartar el pedido <b>"+folio+"</b>? No afecta el inventario.",async()=>{await apiCall("descartarPedido",{id});toast("Pedido descartado");loadPedidos();},"Descartar",true);}
+function descartarPed(id,folio){confirmModal("Descartar pedido","¿Descartar el pedido <b>"+folio+"</b>? No afecta el inventario.",async()=>{await apiCall("descartarPedido",{id});toast("Pedido descartado");silentPedidos(true);},"Descartar",true);}
 
 /* ---------- ventas ---------- */
-async function loadVentas(){
-  const el=document.getElementById("venList");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
-  const res=await apiCall("getVentas",{});const vs=(res&&res.ventas)||[];
+function ventaSig(vs){return vs.map(v=>v.id+":"+v.estado+":"+v.total).join("|");}
+function renderVentas(vs){
+  const el=document.getElementById("venList");
   if(!vs.length){el.innerHTML=`<div class="empty2"><div class="big">📄</div><p>Aún no hay ventas.</p></div>`;return;}
   el.innerHTML=vs.map(v=>{const anul=v.estado==="anulada";
     return `<div class="row" onclick="verVenta('${v.id}','${v.folio}',${v.total},'${v.estado}','${v.canal}')" style="cursor:pointer">
       <div class="rh"><span class="folio">${v.folio}</span><span class="badge ${v.canal==='online'?'online':'tienda'}">${v.canal}</span>${anul?`<span class="badge anul">anulada</span>`:""}<span class="money" style="${anul?'text-decoration:line-through;opacity:.6':''}">${money(v.total)}</span></div>
       <div class="sub">${v.fecha||""} · ${v.items||0} art. · ${v.pago||"efectivo"}</div></div>`;
   }).join("");
+}
+async function loadVentas(){
+  const el=document.getElementById("venList");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
+  const res=await apiCall("getVentas",{});const vs=(res&&res.ventas)||[];
+  POLLSIG.ven=ventaSig(vs);renderVentas(vs);
+}
+async function refreshVentasSilent(){
+  const res=await apiCall("getVentas",{});const vs=(res&&res.ventas)||[];
+  const sig=ventaSig(vs);if(sig===POLLSIG.ven)return;POLLSIG.ven=sig;renderVentas(vs);
 }
 async function verVenta(id,folio,total,estado,canal){
   modal(`<div class="mh"><h3>Venta ${folio}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
@@ -594,31 +657,46 @@ async function verVenta(id,folio,total,estado,canal){
 }
 function anular(id,folio){confirmModal("Anular venta","¿Anular <b>"+folio+"</b>? El inventario de esas prendas se devuelve.",async()=>{const res=await apiCall("anularVenta",{id});if(res&&res.ok){toast("Venta anulada · stock devuelto");closeModal();await loadCatalog();loadVentas();}else toast("No se pudo anular",true);},"Anular",true);}
 
-/* ---------- reporte ---------- */
-async function loadReporte(){
+/* ---------- reporte / cierre de caja (con selector de fecha) ---------- */
+async function loadReporte(dia){
+  repDia=dia||repDia||todayStr();
   const el=document.getElementById("repArea");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
-  const r=await apiCall("reporteDia",{});
+  const r=await apiCall("reporteDia",{dia:repDia});
   if(!r||!r.ok){el.innerHTML=`<div class="empty2"><p>No se pudo cargar el reporte.</p></div>`;return;}
-  const canalRows=Object.keys(r.canal||{}).map(k=>`<div style="display:flex;justify-content:space-between;padding:6px 0"><span class="muted">${k==='online'?'🛍️ En línea':'🏪 Mostrador'}</span><b>${money(r.canal[k])}</b></div>`).join("")||`<div class="muted small">Sin ventas hoy.</div>`;
+  const isHoy=repDia===todayStr(), isAyer=repDia===ayerStr();
+  const enCaja=(+r.efectivo||0)+(+r.abonos||0);
+  const canalRows=Object.keys(r.canal||{}).map(k=>`<div style="display:flex;justify-content:space-between;padding:6px 0"><span class="muted">${k==='online'?'🛍️ En línea':'🏪 Mostrador'}</span><b>${money(r.canal[k])}</b></div>`).join("")||`<div class="muted small">Sin ventas este día.</div>`;
   const topRows=(r.top||[]).map((t,i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)"><span>${i+1}. ${t.nombre}</span><b>${t.cant}</b></div>`).join("")||`<div class="muted small">—</div>`;
-  el.innerHTML=`<div class="small muted" style="margin:2px 0 10px">Resumen de hoy · ${r.dia}</div>
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 12px">
+      <button class="btn btn-sm ${isHoy?'btn-primary':'btn-ghost'}" onclick="loadReporte('${todayStr()}')">Hoy</button>
+      <button class="btn btn-sm ${isAyer?'btn-primary':'btn-ghost'}" onclick="loadReporte('${ayerStr()}')">Ayer</button>
+      <input type="date" value="${repDia}" max="${todayStr()}" onchange="loadReporte(this.value)" style="padding:9px 11px;border:1.5px solid var(--line-strong);border-radius:10px;outline:none;color:var(--ink2);background:var(--surface);font-weight:500;margin-left:auto">
+    </div>
+    <div class="small muted" style="margin:2px 0 10px">${isHoy?'Resumen de hoy':'Cierre de caja'} · ${r.dia}</div>
     <div class="stats">
-      <div class="stat big"><div class="k">Vendido hoy</div><div class="v">${money(r.total)}</div></div>
+      <div class="stat big"><div class="k">Vendido${isHoy?' hoy':''}</div><div class="v">${money(r.total)}</div></div>
       <div class="stat"><div class="k">💵 Efectivo</div><div class="v">${money(r.efectivo||0)}</div></div>
-      <div class="stat"><div class="k">🤝 Fiado hoy</div><div class="v" style="color:var(--warn)">${money(r.fiado||0)}</div></div>
+      <div class="stat"><div class="k">🤝 Fiado</div><div class="v" style="color:var(--warn)">${money(r.fiado||0)}</div></div>
       <div class="stat"><div class="k">📈 Ganancia estimada</div><div class="v" style="color:var(--ok)">${money(r.ganancia||0)}</div></div>
       <div class="stat"><div class="k">Abonos recibidos</div><div class="v">${money(r.abonos||0)}</div></div>
     </div>
-    <div class="small muted" style="margin:8px 2px 0">${r.count} ventas · ticket prom. ${money(r.ticket||0)}. La ganancia usa el costo que registres en cada prenda.</div>
+    <div class="stat" style="margin-top:12px;background:var(--surface-soft);border-color:var(--rosa-mid)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="k" style="color:var(--rosa-ink);font-weight:600">💰 Efectivo esperado en caja</div><div class="small muted">Ventas en efectivo + abonos recibidos</div></div><div class="v" style="color:var(--rosa-deep)">${money(enCaja)}</div></div></div>
+    <div class="small muted" style="margin:10px 2px 0">${r.count} ventas · ticket prom. ${money(r.ticket||0)}. La ganancia usa el costo que registres en cada prenda.</div>
     <div class="row" style="margin-top:12px"><h3 class="serif" style="font-size:16px;margin-bottom:6px">Por canal</h3>${canalRows}</div>
-    <div class="row" style="margin-top:12px"><h3 class="serif" style="font-size:16px;margin-bottom:6px">Lo más vendido hoy</h3>${topRows}</div>`;
+    <div class="row" style="margin-top:12px"><h3 class="serif" style="font-size:16px;margin-bottom:6px">Lo más vendido</h3>${topRows}</div>`;
 }
 
 /* ---------- FIADOS / CLIENTAS ---------- */
 let CLIENTES=[];
+function fiaSig(cls){return cls.map(c=>c.id+":"+c.saldo+":"+c.nombre).join("|");}
 async function loadFiados(){
   const el=document.getElementById("fiaArea");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
-  const res=await apiCall("getClientes",{});CLIENTES=(res&&res.clientes)||[];renderFiados();
+  const res=await apiCall("getClientes",{});CLIENTES=(res&&res.clientes)||[];POLLSIG.fia=fiaSig(CLIENTES);renderFiados();
+}
+async function refreshFiadosSilent(){
+  const res=await apiCall("getClientes",{});const cls=(res&&res.clientes)||[];
+  const sig=fiaSig(cls);if(sig===POLLSIG.fia)return;POLLSIG.fia=sig;CLIENTES=cls;renderFiados();
 }
 function renderFiados(){
   const el=document.getElementById("fiaArea");
@@ -667,19 +745,22 @@ async function guardarClienta(id){
   const res=await apiCall("saveCliente",{cliente:{id:id||"",nombre:nombre,whatsapp:whatsapp}});
   if(res&&res.ok){toast("Guardado ✓","ok");closeModal();if(TAB==="fiados")await loadFiados();}else toast("No se pudo guardar",true);
 }
-async function openClientePicker(){
+let __pickCb=null;
+async function openClientePicker(cb){
+  __pickCb=cb||((id,nom)=>finalizeVenta("credito",id,nom));
   const res=await apiCall("getClientes",{});const cls=(res&&res.clientes)||[];
-  const rows=cls.map(c=>`<button class="row" style="width:100%;text-align:left;margin-bottom:8px;display:block" onclick='finalizeVenta("credito",${JSON.stringify(c.id)},${JSON.stringify(c.nombre||"")})'><div class="rh"><span class="folio">${c.nombre}</span>${c.saldo>0?`<span class="badge pend" style="margin-left:auto">debe ${money(c.saldo)}</span>`:""}</div></button>`).join("");
+  const rows=cls.map(c=>`<button class="row" style="width:100%;text-align:left;margin-bottom:8px;display:block" onclick='pickCliente(${JSON.stringify(c.id)},${JSON.stringify(c.nombre||"")})'><div class="rh"><span class="folio">${c.nombre}</span>${c.saldo>0?`<span class="badge pend" style="margin-left:auto">debe ${money(c.saldo)}</span>`:""}</div></button>`).join("");
   modal(`<div class="mh"><h3>¿A quién se le fía?</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
    <div class="mb">
      <div style="display:flex;gap:8px;margin-bottom:12px"><input class="inp" id="nuevoCli" placeholder="Nombre de clienta nueva" style="flex:1"><button class="btn btn-primary btn-sm" style="width:auto" onclick="fiarANueva()">Crear y fiar</button></div>
      ${cls.length?rows:`<div class="small muted">No hay clientas. Escribe un nombre arriba.</div>`}
    </div>`);
 }
+function pickCliente(id,nom){const cb=__pickCb||((i,n)=>finalizeVenta("credito",i,n));__pickCb=null;cb(id,nom);}
 async function fiarANueva(){
   const nombre=document.getElementById("nuevoCli").value.trim();if(!nombre){toast("Escribe el nombre.",true);return;}
   const res=await apiCall("saveCliente",{cliente:{nombre:nombre}});
-  if(res&&res.ok)finalizeVenta("credito",res.id,nombre);else toast("No se pudo crear la clienta",true);
+  if(res&&res.ok){const cb=__pickCb||((i,n)=>finalizeVenta("credito",i,n));__pickCb=null;cb(res.id,nombre);}else toast("No se pudo crear la clienta",true);
 }
 
 /* ---------- ESCÁNER (cámara) ---------- */
@@ -753,16 +834,17 @@ async function compartirRecibo(){
   }catch(e){}
 }
 
-/* ---------- TIEMPO REAL (auto-actualización) ---------- */
+/* ---------- TIEMPO REAL (refresco silencioso, sin parpadeo) ---------- */
 function overlayOpen(){return document.querySelector(".scrim.show")!=null;}
-function startPolling(){
-  setInterval(function(){ if(!document.hidden && !overlayOpen()) loadPedidos(); }, 15000);
-  setInterval(function(){ if(document.hidden||overlayOpen())return;
-    if(TAB==="vender")loadCatalog();
-    else if(TAB==="ventas")loadVentas();
-    else if(TAB==="reporte")loadReporte();
-    else if(TAB==="fiados")loadFiados();
-  }, 20000);
+let pollTimer=null;
+function startPolling(){ if(pollTimer)clearInterval(pollTimer); pollTimer=setInterval(pollTick,10000); }
+async function pollTick(){
+  if(document.hidden||overlayOpen())return;   // no interrumpir si hay una ventana/panel abierto
+  silentPedidos(false);                        // el badge siempre al día; la lista solo si cambió
+  if(TAB==="vender")loadCatalogSilent();
+  else if(TAB==="ventas")refreshVentasSilent();
+  else if(TAB==="fiados")refreshFiadosSilent();
+  // El Reporte NO se auto-refresca: podrías estar arqueando (cerrando caja de) una fecha pasada.
 }
 
 /* ---------- modal / toast ---------- */
@@ -771,6 +853,21 @@ function closeModal(){ if(scanner){ try{ scanner.stop().then(function(){try{scan
 function confirmModal(title,msg,onOk,okLabel,danger){modal(`<div class="mh"><h3>${title}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="mb"><p style="margin:0">${msg}</p></div><div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" style="width:auto;background:${danger?'var(--danger)':'var(--rosa-deep)'};color:#fff" id="cfB">${okLabel||"Aceptar"}</button></div>`);document.getElementById("cfB").onclick=()=>{closeModal();onOk&&onOk();};}
 let toastT;function toast(t,err){const el=document.getElementById("toast");el.textContent=t;el.className="toast show"+(err===true?" err":(err==="ok"?" ok":""));clearTimeout(toastT);toastT=setTimeout(()=>el.className="toast",2600);}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSheet();closeTicket();closeModal();}});
+
+/* ---------- PWA: instalar como app + service worker ---------- */
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
+let __deferredPrompt=null;
+function showInstall(){var b=document.getElementById('installBtn');if(b && !isStandalone())b.style.display='';}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();__deferredPrompt=e;showInstall();});
+(function(){ if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) showInstall(); })();  // iOS no dispara el evento
+function instalarApp(){
+  if(isStandalone()){toast("La app ya está instalada ✓","ok");return;}
+  if(__deferredPrompt){__deferredPrompt.prompt();__deferredPrompt.userChoice.then(function(){__deferredPrompt=null;});return;}
+  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  toast(iOS?"En iPhone: toca Compartir y luego 'Agregar a inicio' 📲":"Abre el menú del navegador y elige 'Instalar app' / 'Agregar a inicio' 📲");
+}
+window.addEventListener('appinstalled',function(){var b=document.getElementById('installBtn');if(b)b.style.display='none';toast("¡Listo! Ya tienes la Caja como app 💕","ok");});
+if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 </script>
 </body>
 </html>
