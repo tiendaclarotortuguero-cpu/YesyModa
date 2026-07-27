@@ -653,18 +653,40 @@ function openCart(){ document.getElementById("scrim2").classList.add("show"); do
 function closeCart(){ document.getElementById("scrim2").classList.remove("show"); document.getElementById("drawer").classList.remove("show"); document.body.style.overflow=""; }
 
 /* ---------- WHATSAPP CHECKOUT ---------- */
-function checkout(){
+async function checkout(){
   if(!cart.length) return;
+  const w = window.open("", "_blank");            // reservar la ventana durante el toque (evita bloqueo de emergentes)
+  const folio = await crearPedidoOnline();        // registra el pedido como "pendiente" para la Caja
   const num = String(DATA.config.whatsapp||CONFIG.WHATSAPP||"").replace(/\D/g,"");
   const hi = DATA.config.mensaje || "¡Hola YesyModa! 💕 Quiero hacer este pedido:";
   let msg = hi + "\n\n";
+  if(folio) msg += `Pedido ${folio}\n\n`;
   cart.forEach((i,idx)=>{
     msg += `${idx+1}. ${i.nombre}\n   Talla ${i.talla} · Color ${i.color} · x${i.qty} — ${money(i.precio*i.qty)}\n`;
   });
   msg += `\n*Total: ${money(cartTotal())}*\n\nMi nombre es: \nDirección/entrega: `;
   const url = "https://wa.me/"+num+"?text="+encodeURIComponent(msg);
-  const w = window.open(url, "_blank");
-  if(!w){ window.location.href = url; }   // por si el navegador bloquea la ventana emergente
+  if(w && !w.closed){ w.location.href = url; } else { window.location.href = url; }
+}
+/* Registra el pedido como "pendiente" (la dueña lo confirma desde la Caja). No toca el inventario. */
+async function crearPedidoOnline(){
+  const items = cart.map(i=>({ producto_id:i.id, codigo:(DATA.products.find(x=>x.id===i.id)||{}).codigo||"", nombre:i.nombre, talla:i.talla, color:i.color, precio:i.precio, cantidad:i.qty }));
+  const pedido = { items:items, total: cartTotal() };
+  if(CONFIG.API_URL){
+    try{
+      const r = await fetch(CONFIG.API_URL, { method:"POST", body: JSON.stringify({ action:"crearPedido", pedido:pedido }) });
+      const j = await r.json();
+      return (j && j.folio) ? j.folio : "";
+    }catch(e){ return ""; }
+  }
+  // modo demostración: guardar en ym_pos para que la Caja lo vea
+  try{
+    const d = JSON.parse(localStorage.getItem("ym_pos")||'{"ventas":[],"pedidos":[]}');
+    const folio = "P-"+("0000"+((d.pedidos.length||0)+1)).slice(-4);
+    d.pedidos.push({ id:"ped"+Date.now(), folio:folio, fecha:"", dia:"", cliente:"", whatsapp:"", items_json:JSON.stringify(items), total:cartTotal(), estado:"pendiente", venta_folio:"" });
+    localStorage.setItem("ym_pos", JSON.stringify(d));
+    return folio;
+  }catch(e){ return ""; }
 }
 
 /* ---------- TOAST + SEARCH ---------- */

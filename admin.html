@@ -195,6 +195,7 @@ table.stock input:focus{border-color:var(--rosa-mid)}
     <div class="wrap top-in">
       <span class="logo serif">Yesy<b>Moda</b></span>
       <span class="pill" id="modePill"></span>
+      <a class="btn btn-soft btn-sm" href="pos.html" style="width:auto">🧮 Caja</a>
       <button class="iconbtn" title="Recargar" onclick="reload()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
       </button>
@@ -252,6 +253,10 @@ table.stock input:focus{border-color:var(--rosa-mid)}
             <input class="inp" id="edPrecio" type="number" inputmode="decimal" placeholder="450">
           </div>
           <div>
+            <label class="fl">Costo (opcional · para ver ganancia)</label>
+            <input class="inp" id="edCosto" type="number" inputmode="decimal" placeholder="—">
+          </div>
+          <div style="grid-column:1/-1">
             <label class="fl">Foto del producto</label>
             <div class="fotobox">
               <input type="file" id="edFoto" accept="image/*" class="hide">
@@ -520,7 +525,7 @@ function renderProducts(){
       <div class="th"><img src="${(p.imagen&&p.imagen.trim())?p.imagen:ph(p.nombre,cat.icono)}" onerror="imgErr(this)" alt=""></div>
       <div class="m">
         <div class="nm">${p.nombre} ${flags.join(" ")}</div>
-        <div class="sub">${cat.nombre||"—"} · ${nv} ${nv===1?"variante":"variantes"} · ${s} en stock</div>
+        <div class="sub">${p.codigo?`<b style="color:var(--rosa-ink)">${p.codigo}</b> · `:""}${cat.nombre||"—"} · ${nv} ${nv===1?"variante":"variantes"} · ${s} en stock</div>
       </div>
       <div class="pr">${money(p.precio)}</div>
       <div class="acts">
@@ -546,7 +551,7 @@ let ed={_editing:false,id:null,tallas:[],colores:[],stock:{}};
 function resetEditor(){
   ed={_editing:false,id:null,tallas:[],colores:[],stock:{},fotoData:null};
   document.getElementById("edTitle").textContent="Nuevo producto";
-  ["edNombre","edPrecio","edImagen","edDesc"].forEach(k=>document.getElementById(k).value="");
+  ["edNombre","edPrecio","edCosto","edImagen","edDesc"].forEach(k=>document.getElementById(k).value="");
   document.getElementById("edDestacado").checked=false;
   document.getElementById("edActivo").checked=true;
   showFoto("");
@@ -559,6 +564,7 @@ function editProduct(id){
   document.getElementById("edTitle").textContent="Editar producto";
   document.getElementById("edNombre").value=p.nombre||"";
   document.getElementById("edPrecio").value=p.precio||"";
+  document.getElementById("edCosto").value=p.costo||"";
   document.getElementById("edImagen").value=p.imagen||"";
   showFoto(p.imagen||"");
   document.getElementById("edDesc").value=p.descripcion||"";
@@ -682,6 +688,7 @@ async function saveProduct(addAnother){
   }
   const prod={
     id:ed.id||"", categoria, nombre, precio,
+    costo:+document.getElementById("edCosto").value||0,
     descripcion:document.getElementById("edDesc").value.trim(),
     imagen:imagen,
     destacado:document.getElementById("edDestacado").checked,
