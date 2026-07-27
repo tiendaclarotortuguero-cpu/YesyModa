@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{
   --bg:#fbf6f5; --surface:#ffffff; --surface-soft:#fdeef1;
@@ -255,6 +256,13 @@ table.stock input:focus{border-color:var(--rosa-mid)}
           <div>
             <label class="fl">Costo (opcional · para ver ganancia)</label>
             <input class="inp" id="edCosto" type="number" inputmode="decimal" placeholder="—">
+          </div>
+          <div>
+            <label class="fl">Código (para escanear · opcional)</label>
+            <div class="row-inline">
+              <input class="inp" id="edCodigo" placeholder="Se genera solo" style="flex:1">
+              <button class="btn btn-ghost btn-sm" onclick="escanearCodigo()" title="Escanear código de barras de fábrica">📷</button>
+            </div>
           </div>
           <div style="grid-column:1/-1">
             <label class="fl">Foto del producto</label>
@@ -551,7 +559,7 @@ let ed={_editing:false,id:null,tallas:[],colores:[],stock:{}};
 function resetEditor(){
   ed={_editing:false,id:null,tallas:[],colores:[],stock:{},fotoData:null};
   document.getElementById("edTitle").textContent="Nuevo producto";
-  ["edNombre","edPrecio","edCosto","edImagen","edDesc"].forEach(k=>document.getElementById(k).value="");
+  ["edNombre","edPrecio","edCosto","edCodigo","edImagen","edDesc"].forEach(k=>document.getElementById(k).value="");
   document.getElementById("edDestacado").checked=false;
   document.getElementById("edActivo").checked=true;
   showFoto("");
@@ -565,6 +573,7 @@ function editProduct(id){
   document.getElementById("edNombre").value=p.nombre||"";
   document.getElementById("edPrecio").value=p.precio||"";
   document.getElementById("edCosto").value=p.costo||"";
+  document.getElementById("edCodigo").value=p.codigo||"";
   document.getElementById("edImagen").value=p.imagen||"";
   showFoto(p.imagen||"");
   document.getElementById("edDesc").value=p.descripcion||"";
@@ -689,6 +698,7 @@ async function saveProduct(addAnother){
   const prod={
     id:ed.id||"", categoria, nombre, precio,
     costo:+document.getElementById("edCosto").value||0,
+    codigo:document.getElementById("edCodigo").value.trim(),
     descripcion:document.getElementById("edDesc").value.trim(),
     imagen:imagen,
     destacado:document.getElementById("edDestacado").checked,
@@ -882,9 +892,22 @@ function downloadTemplate(){
   XLSX.writeFile(wb,"YesyModa_plantilla.xlsx");
 }
 
+/* ---------- ESCÁNER DE CÓDIGO ---------- */
+let scannerA=null;
+function escanearCodigo(){
+  if(!window.Html5Qrcode){ toast("El escáner no cargó (revisa tu internet).",true); return; }
+  modal(`<div class="mh"><h3>Escanear código</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+    <div class="mb"><div id="readerA" style="width:100%;border-radius:12px;overflow:hidden"></div><p class="small muted" style="text-align:center;margin-top:8px">Apunta al código de barras de fábrica de la prenda.</p></div>`);
+  try{ scannerA=new Html5Qrcode("readerA");
+    scannerA.start({facingMode:"environment"},{fps:10,qrbox:{width:230,height:150}},function(t){ document.getElementById("edCodigo").value=String(t).trim(); closeModal(); toast("Código: "+String(t).trim()); },function(){}).catch(function(){toast("No pude abrir la cámara.",true);});
+  }catch(e){ toast("No se pudo iniciar el escáner.",true); }
+}
+/* auto-actualización de la lista (tiempo real) */
+setInterval(function(){ if(document.hidden||document.querySelector(".scrim.show")) return; if(document.getElementById("appView").classList.contains("hide")) return; if(TAB!=="productos") return; reload(); }, 30000);
+
 /* ---------- MODAL / TOAST / BUSY ---------- */
 function modal(html){ const m=document.getElementById("modal"); m.innerHTML=html; document.getElementById("scrim").classList.add("show"); m.classList.add("show"); }
-function closeModal(){ document.getElementById("scrim").classList.remove("show"); document.getElementById("modal").classList.remove("show"); }
+function closeModal(){ if(scannerA){ try{ scannerA.stop().then(function(){try{scannerA.clear();}catch(e){}}).catch(function(){}); }catch(e){} scannerA=null; } document.getElementById("scrim").classList.remove("show"); document.getElementById("modal").classList.remove("show"); }
 function confirmModal(title,msg,onOk,okLabel,danger){
   modal(`<div class="mh"><h3>${title}</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
   <div class="mb"><p style="margin:0">${msg}</p></div>

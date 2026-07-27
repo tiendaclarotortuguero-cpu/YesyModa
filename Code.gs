@@ -25,7 +25,8 @@ const TZ = "America/Managua";
 /* Pestañas de la hoja */
 const SH = {
   CFG:"Config", CAT:"Categorias", PROD:"Productos", VAR:"Variantes",
-  VEN:"Ventas", VITEM:"VentaItems", PED:"Pedidos", MOV:"Movimientos"
+  VEN:"Ventas", VITEM:"VentaItems", PED:"Pedidos", MOV:"Movimientos",
+  CLI:"Clientes", ABO:"Abonos"
 };
 
 /* ======================= API: LECTURA (pública) ======================= */
@@ -67,6 +68,10 @@ function doPost(e){
       case "getPedidos":       return json(getPedidos(body));
       case "confirmarPedido":  return json(confirmarPedido(body));
       case "descartarPedido":  return json(descartarPedido(body));
+      // --- Clientas / Fiado ---
+      case "getClientes":      return json(getClientes(body));
+      case "saveCliente":      return json(saveCliente(body.cliente));
+      case "registrarAbono":   return json(registrarAbono(body));
       default: return json({ ok:false, error:"acción no válida" });
     }
   }catch(err){
@@ -190,19 +195,21 @@ function venderItems(o){
   const folio = folioNext(SH.VEN, "V");
   const dia = today(), fecha = nowLocal();
   const nItems = items.reduce(function(s,it){ return s + num(it.cantidad); }, 0);
+  const estado = (o.pago === "credito") ? "credito" : "pagada";
 
-  sheet(SH.VEN).appendRow([ id, folio, fecha, dia, o.canal||"tienda", o.pago||"efectivo", subtotal, descuento, total, nItems, "pagada", o.pedidoFolio||"", o.nota||"" ]);
+  sheet(SH.VEN).appendRow([ id, folio, fecha, dia, o.canal||"tienda", o.pago||"efectivo", subtotal, descuento, total, nItems, estado, o.pedidoFolio||"", o.nota||"", o.clienteId||"" ]);
+  if(o.pago === "credito" && o.clienteId){ addSaldo(o.clienteId, total); }
 
   const vit = sheet(SH.VITEM), mov = sheet(SH.MOV);
   items.forEach(function(it){
     vit.appendRow([ id, it.producto_id, it.codigo||"", it.nombre||"", it.talla||"", it.color||"", num(it.cantidad), num(it.precio), num(it.costo), it._sub ]);
     mov.appendRow([ fecha, dia, it.producto_id, it.codigo||"", it.talla||"", it.color||"", "venta", -num(it.cantidad), folio, o.canal||"tienda" ]);
   });
-  return { ok:true, id:id, folio:folio, subtotal:subtotal, descuento:descuento, total:total };
+  return { ok:true, id:id, folio:folio, subtotal:subtotal, descuento:descuento, total:total, estado:estado };
 }
 
 function registrarVenta(body){
-  return venderItems({ items:body.items, descuento:body.descuento, pago:"efectivo", canal:"tienda", nota:body.nota });
+  return venderItems({ items:body.items, descuento:body.descuento, pago:body.pago||"efectivo", clienteId:body.clienteId||"", canal:"tienda", nota:body.nota });
 }
 
 function anularVenta(body){
@@ -211,11 +218,11 @@ function anularVenta(body){
   const sh = sheet(SH.VEN);
   const data = sh.getDataRange().getValues();
   const H = data[0].map(function(h){ return String(h).trim(); });
-  const cId = H.indexOf("id"), cEstado = H.indexOf("estado"), cFolio = H.indexOf("folio");
-  let vrow = -1, folio = "";
+  const cId=H.indexOf("id"), cEstado=H.indexOf("estado"), cFolio=H.indexOf("folio"), cPago=H.indexOf("pago"), cTotal=H.indexOf("total"), cCli=H.indexOf("cliente_id");
+  let vrow=-1, folio="", pago="", vtotal=0, cliId="";
   for(let r=1;r<data.length;r++){
     if(String(data[r][cId]) === id){
-      vrow = r; folio = data[r][cFolio];
+      vrow=r; folio=data[r][cFolio]; pago=String(data[r][cPago]||""); vtotal=num(data[r][cTotal]); cliId=(cCli>=0)?String(data[r][cCli]||""):"";
       if(String(data[r][cEstado]) === "anulada") return { ok:true, already:true };
       break;
     }
@@ -234,12 +241,18 @@ function anularVenta(body){
   });
   writeVariantes(vars);
   sh.getRange(vrow+1, cEstado+1).setValue("anulada");
+  if(pago === "credito" && cliId){ addSaldo(cliId, -vtotal); }   // si era fiado, baja lo que debía
   return { ok:true, folio:folio };
 }
 
 function getVentas(body){
   ensureSchema();
-  const v = readObjects(SH.VEN);
+  const cli = clientesMap();
+  const v = readObjects(SH.VEN).map(function(x){
+    return { id:String(x.id), folio:x.folio, fecha:fmtWhen(x.fecha), canal:x.canal, pago:x.pago,
+             total:num(x.total), items:num(x.items), estado:x.estado,
+             cliente: (x.cliente_id && cli[String(x.cliente_id)]) ? cli[String(x.cliente_id)].nombre : "" };
+  });
   v.reverse();
   return { ok:true, ventas: v.slice(0, (body && body.limit) || 150) };
 }
@@ -252,15 +265,25 @@ function getVentaItems(body){
 function reporteDia(body){
   ensureSchema();
   const dia = (body && body.dia) || today();
-  const ventas = readObjects(SH.VEN).filter(function(x){ return String(x.dia) === dia && String(x.estado) === "pagada"; });
-  let total = 0; const ids = {};
-  ventas.forEach(function(x){ total += num(x.total); ids[String(x.id)] = true; });
-  const canal = {};
-  ventas.forEach(function(x){ const c = x.canal||"tienda"; canal[c] = (canal[c]||0) + num(x.total); });
-  const top = {};
-  readObjects(SH.VITEM).forEach(function(it){ if(ids[String(it.venta_id)]){ const k = it.nombre||it.codigo; top[k] = (top[k]||0) + num(it.cantidad); } });
-  const topArr = Object.keys(top).map(function(k){ return { nombre:k, cant:top[k] }; }).sort(function(a,b){ return b.cant - a.cant; }).slice(0, 8);
-  return { ok:true, dia:dia, total:total, count:ventas.length, ticket: ventas.length ? total/ventas.length : 0, canal:canal, top:topArr };
+  const ventas = readObjects(SH.VEN).filter(function(x){ return toDia(x.dia) === dia && String(x.estado) !== "anulada"; });
+  let total=0, efectivo=0, fiado=0; const ids={};
+  ventas.forEach(function(x){ const t=num(x.total); total+=t; if(String(x.pago)==="credito") fiado+=t; else efectivo+=t; ids[String(x.id)]=true; });
+  const canal={};
+  ventas.forEach(function(x){ const c=x.canal||"tienda"; canal[c]=(canal[c]||0)+num(x.total); });
+  const top={}; let ingreso=0, costoTot=0;
+  readObjects(SH.VITEM).forEach(function(it){
+    if(ids[String(it.venta_id)]){
+      const k=it.nombre||it.codigo; top[k]=(top[k]||0)+num(it.cantidad);
+      ingreso += num(it.precio)*num(it.cantidad);
+      costoTot += num(it.costo)*num(it.cantidad);
+    }
+  });
+  const topArr=Object.keys(top).map(function(k){ return { nombre:k, cant:top[k] }; }).sort(function(a,b){ return b.cant-a.cant; }).slice(0,8);
+  let abonos=0;
+  readObjects(SH.ABO).forEach(function(a){ if(toDia(a.fecha)===dia) abonos+=num(a.monto); });
+  return { ok:true, dia:dia, total:total, count:ventas.length, ticket: ventas.length ? total/ventas.length : 0,
+           efectivo:efectivo, fiado:fiado, abonos:abonos, ingreso:ingreso, costo:costoTot, ganancia: ingreso-costoTot,
+           canal:canal, top:topArr };
 }
 
 /* ======================= PEDIDOS ONLINE ======================= */
@@ -279,7 +302,10 @@ function crearPedido(body){
 
 function getPedidos(body){
   ensureSchema();
-  const p = readObjects(SH.PED);
+  const p = readObjects(SH.PED).map(function(x){
+    return { id:String(x.id), folio:x.folio, fecha:fmtWhen(x.fecha), cliente:x.cliente, whatsapp:String(x.whatsapp||""),
+             items_json:x.items_json, total:num(x.total), estado:x.estado, venta_folio:x.venta_folio };
+  });
   p.reverse();
   return { ok:true, pedidos: p.slice(0, (body && body.limit) || 150) };
 }
@@ -317,6 +343,57 @@ function updatePedidoEstado(id, estado, ventaFolio){
       return;
     }
   }
+}
+
+/* ======================= CLIENTAS / FIADO ======================= */
+function getClientes(body){
+  ensureSchema();
+  return { ok:true, clientes: readObjects(SH.CLI).map(function(c){
+    return { id:String(c.id), nombre:c.nombre, whatsapp:String(c.whatsapp||""), saldo:num(c.saldo), notas:c.notas||"" };
+  }) };
+}
+function clientesMap(){
+  const m = {};
+  readObjects(SH.CLI).forEach(function(c){ m[String(c.id)] = { nombre:c.nombre, whatsapp:String(c.whatsapp||""), saldo:num(c.saldo) }; });
+  return m;
+}
+function clienteSaldo(id){
+  const c = readObjects(SH.CLI).find(function(x){ return String(x.id) === String(id); });
+  return c ? num(c.saldo) : 0;
+}
+function saveCliente(cli){
+  if(!cli) return { ok:false, error:"sin cliente" };
+  ensureSchema();
+  const sh = sheet(SH.CLI);
+  let id = cli.id && String(cli.id).trim();
+  const isNew = !id;
+  if(!id) id = "cli" + Date.now();
+  const saldo = (cli.saldo != null) ? num(cli.saldo) : (isNew ? 0 : clienteSaldo(id));
+  upsertById(sh, id, [ id, cli.nombre||"", String(cli.whatsapp||""), saldo, cli.notas||"" ]);
+  return { ok:true, id:id };
+}
+function addSaldo(id, delta){
+  const sh = sheet(SH.CLI);
+  const data = sh.getDataRange().getValues();
+  const H = data[0].map(function(h){ return String(h).trim(); });
+  const cId = H.indexOf("id"), cS = H.indexOf("saldo");
+  for(let r=1;r<data.length;r++){
+    if(String(data[r][cId]) === String(id)){
+      const ns = Math.max(0, num(data[r][cS]) + delta);
+      sh.getRange(r+1, cS+1).setValue(ns);
+      return ns;
+    }
+  }
+  return null;
+}
+function registrarAbono(body){
+  ensureSchema();
+  const monto = num(body.monto);
+  if(monto <= 0) return { ok:false, error:"monto inválido" };
+  const id = "ab" + Date.now();
+  sheet(SH.ABO).appendRow([ id, body.clienteId||"", body.ventaFolio||"", nowLocal(), monto ]);
+  const ns = addSaldo(body.clienteId, -monto);
+  return { ok:true, saldo: ns };
 }
 
 /* ======================= FOTOS (Google Drive) ======================= */
@@ -393,10 +470,21 @@ function setConfigValue(sh, key, val){
 /* ======================= ESQUEMA (migración automática) ======================= */
 function ensureSchema(){
   ensureColumns(SH.PROD, ["costo","codigo"]);
-  ensureSheetWithHeader(SH.VEN,   ["id","folio","fecha","dia","canal","pago","subtotal","descuento","total","items","estado","pedido_folio","nota"]);
+  ensureColumns(SH.VEN,  ["cliente_id"]);
+  ensureSheetWithHeader(SH.VEN,   ["id","folio","fecha","dia","canal","pago","subtotal","descuento","total","items","estado","pedido_folio","nota","cliente_id"]);
   ensureSheetWithHeader(SH.VITEM, ["venta_id","producto_id","codigo","nombre","talla","color","cantidad","precio","costo","subtotal"]);
   ensureSheetWithHeader(SH.PED,   ["id","folio","fecha","dia","cliente","whatsapp","items_json","total","estado","venta_folio"]);
   ensureSheetWithHeader(SH.MOV,   ["fecha","dia","producto_id","codigo","talla","color","tipo","cantidad","ref","nota"]);
+  ensureSheetWithHeader(SH.CLI,   ["id","nombre","whatsapp","saldo","notas"]);
+  ensureSheetWithHeader(SH.ABO,   ["id","cliente_id","venta_folio","fecha","monto"]);
+  [SH.VEN, SH.PED, SH.MOV, SH.ABO].forEach(formatDateCols);
+}
+/* fuerza las columnas de fecha a TEXTO para que Sheets no las convierta en fecha real
+   (esto es lo que hacía que las ventas no aparecieran en el reporte). */
+function formatDateCols(name){
+  const sh = ss().getSheetByName(name); if(!sh) return;
+  const H = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(),1)).getValues()[0].map(function(h){ return String(h).trim(); });
+  ["fecha","dia"].forEach(function(k){ const i = H.indexOf(k); if(i >= 0) sh.getRange(1, i+1, sh.getMaxRows(), 1).setNumberFormat("@"); });
 }
 function ensureColumns(name, cols){
   const sh = ss().getSheetByName(name); if(!sh) return;
@@ -419,6 +507,8 @@ function keyVar(pid, talla, color){ return String(pid)+"|"+String(talla)+"|"+Str
 function genCodigo(id){ return "YM" + String(id).replace(/\D/g,"").slice(-4); }
 function today(){ return Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"); }
 function nowLocal(){ return Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd HH:mm"); }
+function toDia(v){ return (v instanceof Date) ? Utilities.formatDate(v, TZ, "yyyy-MM-dd") : String(v||"").slice(0,10); }
+function fmtWhen(v){ return (v instanceof Date) ? Utilities.formatDate(v, TZ, "yyyy-MM-dd HH:mm") : String(v||""); }
 function folioNext(name, prefix){
   const sh = sheet(name);
   const n = Math.max(sh.getLastRow() - 1, 0) + 1; // filas de datos + 1
