@@ -176,6 +176,41 @@ table.stock input:focus{border-color:var(--rosa-mid)}
 .spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 .loadfull{min-height:60vh;display:grid;place-items:center;color:var(--muted)}
+
+/* ================================================================
+   EXPERIENCIA MÓVIL — el mismo panel, cómodo desde el celular
+   ================================================================ */
+html,body{max-width:100%}
+body{overflow-x:clip}
+.top-in{gap:8px}
+.top .logo{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{white-space:nowrap;flex:none}
+.top-in .iconbtn,.top-in .btn,.top-in a{flex:none}
+
+@media(max-width:760px){
+  .only-desk{display:none!important}
+  .wrap{padding:0 14px}
+  .top .logo{font-size:19px}
+  .iconbtn{width:38px;height:38px}
+  .stats{margin:14px 0 4px;gap:10px}
+  .tabs{margin:14px 0 6px}
+  /* la ficha del producto se acomoda: foto + datos + precio, y los botones abajo */
+  .prow{flex-wrap:wrap;gap:10px 11px;padding:11px}
+  .prow .th{order:1}
+  .prow .m{order:2;flex:1 1 calc(100% - 76px)}
+  .prow .pr{order:4;align-self:center;font-size:19px}
+  .prow .acts{order:5;flex:1 1 auto;justify-content:flex-end}
+  body{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+  /* el aviso aparece arriba: así nunca tapa los botones de las ventanas */
+  .toast{top:calc(14px + env(safe-area-inset-top));bottom:auto;transform:translate(-50%,-16px)}
+  .toast.show{transform:translate(-50%,0)}
+  /* las ventanas salen desde abajo, como en una app del teléfono */
+  .modal{left:0;top:auto;bottom:0;width:100%;max-width:100%;max-height:92vh;
+    border-radius:24px 24px 0 0;transform:translateY(100%);
+    padding-bottom:env(safe-area-inset-bottom)}
+  .modal.show{transform:translateY(0)}
+}
+@media(min-width:761px){ .only-mob{display:none!important} }
 </style>
 </head>
 <body>
@@ -203,11 +238,15 @@ table.stock input:focus{border-color:var(--rosa-mid)}
       <span class="logo serif">Yesy<b>Moda</b></span>
       <span class="pill" id="modePill"></span>
       <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
-      <a class="btn btn-soft btn-sm" href="pos.html" style="width:auto">🧮 Caja</a>
-      <button class="iconbtn" title="Recargar" onclick="reload()">
+      <a class="btn btn-soft btn-sm only-desk" href="pos.html" style="width:auto">🧮 Caja</a>
+      <a class="iconbtn only-mob" href="pos.html" title="Caja" style="font-size:16px">🧮</a>
+      <button class="iconbtn only-desk" title="Recargar" onclick="reload()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+      <button class="btn btn-ghost btn-sm only-desk" onclick="logout()">Salir</button>
+      <button class="iconbtn only-mob" onclick="openMenu()" title="Menú" aria-label="Menú">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+      </button>
     </div>
   </header>
 
@@ -438,7 +477,8 @@ function demoStore(){ try{ return JSON.parse(localStorage.getItem("ym_admin")||"
 function demoSave(d){ localStorage.setItem("ym_admin", JSON.stringify(d)); }
 async function apiGet(){
   if(LIVE){
-    const r=await fetch(CONFIG.API_URL+"?action=getCatalog",{method:"GET"});
+    // con token: la respuesta incluye el costo (dato privado de la dueña)
+    const r=await fetch(CONFIG.API_URL+"?action=getCatalog&token="+encodeURIComponent(getToken()),{method:"GET"});
     return await r.json();
   }
   let d=demoStore(); if(!d){ d=JSON.parse(JSON.stringify(SAMPLE)); demoSave(d); }
@@ -482,7 +522,7 @@ async function startApp(){
   document.getElementById("appView").classList.remove("hide");
   const pill=document.getElementById("modePill");
   pill.className="pill "+(LIVE?"live":"demo");
-  pill.textContent=LIVE?"● En vivo (Sheets)":"● Modo demostración";
+  pill.textContent = (window.innerWidth<=760) ? (LIVE?"● En vivo":"● Demo") : (LIVE?"● En vivo (Sheets)":"● Modo demostración");
   document.getElementById("connState").innerHTML = LIVE
     ? "<b style='color:var(--ok)'>Conectado a Google Sheets.</b>"
     : "<b style='color:var(--warn)'>Modo demostración</b> — los cambios se guardan solo en este dispositivo.";
@@ -935,6 +975,19 @@ function confirmModal(title,msg,onOk,okLabel,danger){
 let toastT;
 function toast(t,err){ const el=document.getElementById("toast"); el.textContent=t; el.className="toast show"+(err?" err":""); clearTimeout(toastT); toastT=setTimeout(()=>el.className="toast",2200); }
 function setBusy(b){ const btns=[document.getElementById("saveBtn"),document.getElementById("saveAddBtn")]; btns.forEach(x=>{if(x)x.disabled=b;}); if(b){const s=document.getElementById("saveBtn"); if(s&&!s.dataset.o){s.dataset.o=s.innerHTML;s.innerHTML='<span class="spin"></span> Guardando…';}} else {const s=document.getElementById("saveBtn"); if(s&&s.dataset.o){s.innerHTML=s.dataset.o;delete s.dataset.o;}} }
+
+/* menú del celular (las acciones que en la laptop están en el encabezado) */
+function openMenu(){
+  const B='class="btn btn-ghost" style="width:100%;margin-bottom:9px"';
+  modal(`<div class="mh"><h3>Menú</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+   <div class="mb">
+     <a class="btn btn-soft" style="width:100%;margin-bottom:9px" href="pos.html">🧮 Ir a la Caja</a>
+     <button ${B} onclick="closeModal();reload();toast('Actualizado')">🔄 Actualizar datos</button>
+     <button ${B} id="mnuInstall" onclick="closeModal();instalarApp()">📲 Instalar como app</button>
+     <button class="btn btn-ghost" style="width:100%;color:var(--danger);border-color:#e6c3c3" onclick="logout()">Cerrar sesión</button>
+   </div>`);
+  if(isStandalone()){const b=document.getElementById("mnuInstall");if(b)b.style.display="none";}
+}
 
 /* ---------- PWA: instalar como app + service worker ---------- */
 function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}

@@ -193,6 +193,52 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.9);back
 .spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 .loadfull{min-height:50vh;display:grid;place-items:center;color:var(--muted)}
+
+/* ================================================================
+   EXPERIENCIA MÓVIL — que se vea y se sienta como una app nativa
+   (celular: barra inferior + hojas desde abajo · laptop: pestañas arriba)
+   ================================================================ */
+html,body{max-width:100%}
+body{overflow-x:clip}
+.top-in{gap:8px}
+.top .logo{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{white-space:nowrap;flex:none}
+.top-in .iconbtn,.top-in .btn,.top-in a{flex:none}
+
+/* barra de navegación inferior (solo celular) */
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:55;display:none;grid-template-columns:repeat(5,1fr);
+  background:#fff;background:color-mix(in srgb,#fff 97%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -8px 26px -20px rgba(74,59,66,.55)}
+.bottomnav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:9px 2px 8px;color:var(--muted);font-size:10.5px;font-weight:600;transition:color .15s}
+.bottomnav button i{font-size:20px;font-style:normal;line-height:1;transition:transform .2s cubic-bezier(.2,1.3,.5,1)}
+.bottomnav button.active{color:var(--rosa-deep)}
+.bottomnav button.active i{transform:translateY(-2px) scale(1.08)}
+.bottomnav button:active i{transform:scale(.9)}
+.bottomnav .bdot{position:absolute;top:4px;left:calc(50% + 5px);min-width:16px;height:16px;padding:0 4px;
+  background:var(--rosa-deep);color:#fff;border-radius:999px;font-size:10px;font-weight:700;
+  display:grid;place-items:center;font-style:normal;box-shadow:0 0 0 2px #fff}
+
+@media(max-width:760px){
+  .only-desk{display:none!important}
+  .tabs{display:none}
+  .bottomnav{display:grid}
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  .wrap{padding:0 14px}
+  .top .logo{font-size:19px}
+  .panel{padding:12px 0 2px}
+  .ticketbar{bottom:calc(66px + env(safe-area-inset-bottom));padding-bottom:10px}
+  /* el aviso aparece arriba: así nunca tapa los botones de cobro ni la barra inferior */
+  .toast{top:calc(14px + env(safe-area-inset-top));bottom:auto;transform:translate(-50%,-16px)}
+  .toast.show{transform:translate(-50%,0)}
+  /* las ventanas salen desde abajo, como en una app del teléfono */
+  .modal{left:0;top:auto;bottom:0;width:100%;max-width:100%;max-height:92vh;
+    border-radius:24px 24px 0 0;transform:translateY(100%);
+    padding-bottom:env(safe-area-inset-bottom)}
+  .modal.show{transform:translateY(0)}
+  .modal .mf{position:sticky;bottom:0;background:var(--surface)}
+}
+@media(min-width:761px){ .only-mob{display:none!important} }
 </style>
 </head>
 <body>
@@ -218,13 +264,16 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.9);back
       <span class="logo serif">Yesy<b>Moda</b> <span style="font-size:12px;color:var(--muted);font-family:'Jost'">· Caja</span></span>
       <span class="pill" id="modePill"></span>
       <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
-      <a class="iconbtn" href="admin.html" title="Panel">
+      <a class="iconbtn only-desk" href="admin.html" title="Panel">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       </a>
-      <button class="iconbtn" onclick="refreshAll()" title="Recargar">
+      <button class="iconbtn only-desk" onclick="refreshAll()" title="Recargar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+      <button class="btn btn-ghost btn-sm only-desk" onclick="logout()">Salir</button>
+      <button class="iconbtn only-mob" onclick="openMenu()" title="Menú" aria-label="Menú">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+      </button>
     </div>
     <div class="tabs wrap" style="max-width:1080px">
       <button class="tab active" data-t="vender" onclick="setTab('vender')">🧮 Vender</button>
@@ -267,6 +316,15 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.9);back
       <div id="repArea"></div>
     </section>
   </main>
+
+  <!-- barra inferior (celular) -->
+  <nav class="bottomnav" id="bottomnav">
+    <button class="active" data-t="vender" onclick="setTab('vender')"><i>🧮</i><span>Vender</span></button>
+    <button data-t="pedidos" onclick="setTab('pedidos')"><i>📥</i><span>Pedidos</span><em class="bdot hide" id="pedDot2">0</em></button>
+    <button data-t="ventas" onclick="setTab('ventas')"><i>📄</i><span>Ventas</span></button>
+    <button data-t="fiados" onclick="setTab('fiados')"><i>🤝</i><span>Fiados</span></button>
+    <button data-t="reporte" onclick="setTab('reporte')"><i>📊</i><span>Reporte</span></button>
+  </nav>
 </div>
 
 <!-- ticket bar -->
@@ -343,7 +401,7 @@ function demoPosSave(d){localStorage.setItem("ym_pos",JSON.stringify(d));}
 
 /* ---------- API ---------- */
 async function apiGetCatalog(){
-  if(LIVE){const r=await fetch(CONFIG.API_URL+"?action=getCatalog");return await r.json();}
+  if(LIVE){const r=await fetch(CONFIG.API_URL+"?action=getCatalog&token="+encodeURIComponent(getToken()));return await r.json();}
   return demoCat();
 }
 async function apiCall(action,payload){
@@ -363,7 +421,11 @@ function demoCall(action,p){
     demoCatSave(cat);return null;
   };
   const cliById=id=>(pos.clientes||[]).find(c=>c.id===id);
-  const mkVenta=(items,descuento,canal,pedFolio,pago,clienteId)=>{
+  const mkVenta=(itemsIn,descuento,canal,pedFolio,pago,clienteId)=>{
+    // igual que el backend: el costo SIEMPRE sale del catálogo, no de lo que mandó el navegador
+    const items=(itemsIn||[]).map(it=>{const p=cat.products.find(x=>x.id===it.producto_id)||{};
+      return Object.assign({},it,{costo:(p.costo!=null?+p.costo:(+it.costo||0)),nombre:p.nombre||it.nombre,
+        codigo:p.codigo||it.codigo||"",categoria:p.categoria||it.categoria||""});});
     const sub=items.reduce((s,it)=>s+(+it.precio||0)*(+it.cantidad||0),0);
     const total=Math.max(0,sub-(+descuento||0));
     const folio="V-"+("0000"+(pos.ventas.length+1)).slice(-4);
@@ -393,7 +455,7 @@ function demoCall(action,p){
 async function startApp(){
   document.getElementById("loginView").classList.add("hide");
   document.getElementById("appView").classList.remove("hide");
-  const pill=document.getElementById("modePill");pill.className="pill "+(LIVE?"live":"demo");pill.textContent=LIVE?"● En vivo":"● Demostración";
+  const pill=document.getElementById("modePill");pill.className="pill "+(LIVE?"live":"demo");pill.textContent=LIVE?"● En vivo":((window.innerWidth<=760)?"● Demo":"● Demostración");
   await loadCatalog();
   loadPedidos();
   startPolling();
@@ -427,6 +489,7 @@ function refreshAll(){POLLSIG={ped:"",cat:"",ven:"",fia:""};loadCatalog();loadPe
 function setTab(t){
   TAB=t;
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.t===t));
+  document.querySelectorAll(".bottomnav button").forEach(b=>b.classList.toggle("active",b.dataset.t===t));
   ["vender","pedidos","ventas","fiados","reporte"].forEach(k=>document.getElementById("tab-"+k).classList.toggle("hide",k!==t));
   document.getElementById("ticketbar").classList.toggle("hide",t!=="vender");
   if(t==="pedidos")loadPedidos();
@@ -435,6 +498,17 @@ function setTab(t){
   if(t==="reporte")loadReporte();
   window.scrollTo({top:0,behavior:"smooth"});
   renderTicketBar();
+}
+/* menú del celular (las acciones que en la laptop están en el encabezado) */
+function openMenu(){
+  modal(`<div class="mh"><h3>Menú</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+   <div class="mb">
+     <a class="btn btn-ghost btn-block btn-lg" href="admin.html" style="margin-bottom:9px">🏠 Panel (productos e inventario)</a>
+     <button class="btn btn-ghost btn-block btn-lg" style="margin-bottom:9px" onclick="closeModal();refreshAll()">🔄 Actualizar datos</button>
+     <button class="btn btn-ghost btn-block btn-lg" id="mnuInstall" style="margin-bottom:9px" onclick="closeModal();instalarApp()">📲 Instalar como app</button>
+     <button class="btn btn-ghost btn-block btn-lg" style="color:var(--danger);border-color:#e6c3c3" onclick="logout()">Cerrar sesión</button>
+   </div>`);
+  if(isStandalone()){const b=document.getElementById("mnuInstall");if(b)b.style.display="none";}
 }
 
 /* ---------- vender: catálogo ---------- */
@@ -497,7 +571,7 @@ function addToTicket(){
   const key=p.id+"|"+sel.talla+"|"+color;
   const found=ticket.find(i=>i.producto_id===p.id&&i.talla===sel.talla&&i.color===color);
   if(found)found.cantidad+=sel.qty;
-  else ticket.push({producto_id:p.id,codigo:p.codigo||"",nombre:p.nombre,talla:sel.talla,color:color,precio:p.precio,costo:p.costo||0,cantidad:sel.qty,imagen:p.imagen||""});
+  else ticket.push({producto_id:p.id,codigo:p.codigo||"",nombre:p.nombre,categoria:p.categoria||"",talla:sel.talla,color:color,precio:p.precio,costo:p.costo||0,cantidad:sel.qty,imagen:p.imagen||""});
   closeSheet();renderTicketBar();renderGrid();toast("Agregado al ticket ✓","ok");
 }
 
@@ -517,7 +591,7 @@ function renderTicket(){
   const items=document.getElementById("ticketItems"),foot=document.getElementById("ticketFoot");
   if(!ticket.length){items.innerHTML=`<div class="empty2"><div class="big">🧾</div><p>Ticket vacío. Toca las prendas para agregarlas.</p></div>`;foot.innerHTML="";return;}
   items.innerHTML=ticket.map((i,idx)=>`<div class="ti">
-    <img class="th" src="${imgOf({imagen:i.imagen,categoria:''})}" onerror="imgErr(this)">
+    <img class="th" src="${imgOf({imagen:i.imagen,categoria:i.categoria||''})}" onerror="imgErr(this)">
     <div class="m"><div class="nm">${i.nombre}</div>
       <div class="vr">Talla ${i.talla}${i.color?` · <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:${colorHex(i.color)};display:inline-block"></span>${i.color}</span>`:""}</div>
       <div class="pr">${money(i.precio*i.cantidad)}</div>
@@ -578,10 +652,11 @@ function showVentaOK(v){
 
 /* ---------- pedidos ---------- */
 function pedSig(peds){return peds.map(p=>p.id+":"+p.estado+":"+(p.venta_folio||"")).join("|");}
-function updatePedBadge(peds){const pend=peds.filter(p=>p.estado==="pendiente");const dot=document.getElementById("pedDot");dot.textContent=pend.length;dot.classList.toggle("hide",pend.length===0);}
+function updatePedBadge(peds){const n=peds.filter(p=>p.estado==="pendiente").length;
+  ["pedDot","pedDot2"].forEach(function(id){const d=document.getElementById(id);if(d){d.textContent=n;d.classList.toggle("hide",n===0);}});}
 function pedCard(p){let items=[];try{items=JSON.parse(p.items_json||"[]");}catch(e){}
   const itemsHtml=items.map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:6px 0">
-    <img src="${(i.imagen&&String(i.imagen).trim())?i.imagen:ph('👗')}" onerror="imgErr(this)" style="width:38px;height:46px;border-radius:7px;object-fit:cover;background:var(--surface-soft);flex:none">
+    <img src="${(i.imagen&&String(i.imagen).trim())?i.imagen:ph(catIcon(i.categoria||''))}" onerror="imgErr(this)" style="width:38px;height:46px;border-radius:7px;object-fit:cover;background:var(--surface-soft);flex:none">
     <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--ink)">${i.nombre||""} ${i.codigo?`<span class="small" style="color:var(--rosa-ink);font-weight:700">${i.codigo}</span>`:""}</div><div class="small muted">T${i.talla}${i.color?" · "+i.color:""} · x${i.cantidad}</div></div>
     <b class="small">${money((+i.precio||0)*(+i.cantidad||0))}</b></div>`).join("");
   const b=p.estado==="pendiente"?"pend":(p.estado==="confirmado"?"conf":"desc");

@@ -91,6 +91,17 @@ const CONFIG = {
 
 ---
 
+## 📱💻 Una sola versión, que se adapta sola
+
+**No hay una versión para celular y otra para laptop: es la misma, y se acomoda al aparato.** Eso evita tener que arreglar cada cosa dos veces y que los datos se desincronicen.
+
+- **En el celular** la Caja muestra una **barra de navegación abajo** (Vender · Pedidos · Ventas · Fiados · Reporte), como cualquier app del teléfono; las ventanas (cobrar, fiar, recibo) **suben desde abajo**; y las acciones secundarias se guardan en el menú **⋯**.
+- **En la laptop** aparecen las **pestañas arriba**, la grilla se ensancha y todos los botones se ven en el encabezado.
+
+Es el mismo enlace y la misma información en los dos aparatos: si vende en el celular, lo ve en la laptop al instante.
+
+---
+
 ## 📲 Instalar como app (en el celular)
 
 El sistema se **ve y se siente como una app nativa** y se puede instalar en la pantalla de inicio, sin tiendas de apps ni costos:
@@ -122,7 +133,9 @@ Con visitas normales al catálogo no hace falta, pero no estorba.
 
 ## 🔒 Nota de seguridad
 
-La contraseña protege las escrituras (agregar/editar/borrar). Es adecuada para una tienda pequeña. Como el panel es una página pública, **no guardes ahí información sensible** y **cambia la contraseña** por una tuya. Si a futuro la tienda crece, se puede migrar a una base con autenticación más robusta (por ejemplo Supabase) sin rehacer el catálogo.
+La contraseña protege las escrituras (agregar/editar/borrar). Es adecuada para una tienda pequeña. Como el panel es una página pública, **no guardes ahí información sensible** y **cambia la contraseña** por una tuya.
+
+**Tus costos son privados:** el catálogo público nunca recibe el costo de las prendas (solo el precio de venta). El costo viaja únicamente al Panel y a la Caja, con la contraseña. Y la **ganancia se calcula en el servidor** tomando el costo de tu Hoja, así que ninguna venta —ni siquiera un pedido en línea— puede reportar una ganancia falsa. Si a futuro la tienda crece, se puede migrar a una base con autenticación más robusta (por ejemplo Supabase) sin rehacer el catálogo.
 
 ---
 

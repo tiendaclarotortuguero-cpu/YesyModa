@@ -32,7 +32,12 @@ const SH = {
 /* ======================= API: LECTURA (pública) ======================= */
 function doGet(e){
   const action = (e && e.parameter && e.parameter.action) || "getCatalog";
-  if(action === "getCatalog") return json(getCatalog());
+  // El costo (lo que te cuesta la prenda) solo se envía si viene la contraseña.
+  // Así el catálogo público NUNCA revela tus costos ni tu ganancia.
+  if(action === "getCatalog"){
+    const tk = (e && e.parameter && e.parameter.token) || "";
+    return json(getCatalog(tk === ADMIN_TOKEN));
+  }
   if(action === "ping")       return json({ ok:true, ts:new Date().toISOString() });
   return json({ ok:false, error:"acción no válida" });
 }
@@ -82,7 +87,7 @@ function doPost(e){
 }
 
 /* ======================= CATÁLOGO ======================= */
-function getCatalog(){
+function getCatalog(incluirCosto){
   const config = readConfig();
   const categories = readObjects(SH.CAT).map(function(c){
     return { id:String(c.id), nombre:c.nombre, icono:c.icono, orden:num(c.orden), visible:bool(c.visible) };
@@ -95,11 +100,13 @@ function getCatalog(){
   });
   const products = readObjects(SH.PROD).map(function(p){
     const id = String(p.id);
-    return {
+    const o = {
       id: id, categoria:String(p.categoria), nombre:p.nombre, descripcion:p.descripcion||"",
-      precio:num(p.precio), costo:num(p.costo), codigo:p.codigo||"", imagen:p.imagen||"",
+      precio:num(p.precio), codigo:p.codigo||"", imagen:p.imagen||"",
       destacado:bool(p.destacado), activo:bool(p.activo), variantes: byProd[id] || []
     };
+    if(incluirCosto) o.costo = num(p.costo);
+    return o;
   });
   return { config:config, categories:categories, products:products };
 }
@@ -169,6 +176,11 @@ function venderItems(o){
   const items = o.items || [];
   if(!items.length) return { ok:false, error:"sin items" };
 
+  // El costo SIEMPRE se toma de la hoja Productos (no de lo que manda el navegador).
+  // Así los pedidos en línea también calculan bien la ganancia.
+  const pmap = {};
+  readObjects(SH.PROD).forEach(function(p){ pmap[String(p.id)] = p; });
+
   // 1) validar stock
   for(let k=0;k<items.length;k++){
     const it = items[k];
@@ -202,8 +214,12 @@ function venderItems(o){
 
   const vit = sheet(SH.VITEM), mov = sheet(SH.MOV);
   items.forEach(function(it){
-    vit.appendRow([ id, it.producto_id, it.codigo||"", it.nombre||"", it.talla||"", it.color||"", num(it.cantidad), num(it.precio), num(it.costo), it._sub ]);
-    mov.appendRow([ fecha, dia, it.producto_id, it.codigo||"", it.talla||"", it.color||"", "venta", -num(it.cantidad), folio, o.canal||"tienda" ]);
+    const pr = pmap[String(it.producto_id)] || {};
+    const costoReal  = (pr.costo !== undefined && pr.costo !== "") ? num(pr.costo) : num(it.costo);
+    const codigoReal = pr.codigo || it.codigo || "";
+    const nombreReal = pr.nombre || it.nombre || "";
+    vit.appendRow([ id, it.producto_id, codigoReal, nombreReal, it.talla||"", it.color||"", num(it.cantidad), num(it.precio), costoReal, it._sub ]);
+    mov.appendRow([ fecha, dia, it.producto_id, codigoReal, it.talla||"", it.color||"", "venta", -num(it.cantidad), folio, o.canal||"tienda" ]);
   });
   return { ok:true, id:id, folio:folio, subtotal:subtotal, descuento:descuento, total:total, estado:estado };
 }
