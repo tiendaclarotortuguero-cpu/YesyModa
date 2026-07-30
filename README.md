@@ -1,6 +1,6 @@
-# 🌸 YesyModa — Catálogo + Inventario
+# 🌸 YosyModa — Catálogo + Inventario
 
-Tienda digital para **YesyModa**: un catálogo público donde las clientas arman su pedido y lo cierran por **WhatsApp**, y un **panel de administración** para que la dueña gestione productos, categorías, tallas/colores y stock. Base de datos gratis con **Google Sheets + Apps Script**, y sitio gratis en **GitHub Pages**.
+Tienda digital para **YosyModa**: un catálogo público donde las clientas arman su pedido y lo cierran por **WhatsApp**, y un **panel de administración** para que la dueña gestione productos, categorías, tallas/colores y stock. Base de datos gratis con **Google Sheets + Apps Script**, y sitio gratis en **GitHub Pages**.
 
 > ✅ **Funciona desde ya en "modo demostración"** (con productos de ejemplo) apenas abras `index.html`. Cuando conectes Google Sheets, pasa a funcionar "en vivo" con los datos reales de la tienda.
 
@@ -15,11 +15,13 @@ Tienda digital para **YesyModa**: un catálogo público donde las clientas arman
 | `admin.html` | El **panel de la dueña** (privado): productos, categorías, tallas/colores y stock. |
 | `config.js` | **Lo único que editas** para conectar la tienda (URL de la API y WhatsApp). |
 | `Code.gs` | El **backend**: se pega en Google Apps Script (no va a GitHub Pages, va en tu Hoja). |
-| `manifest.json`, `manifest-caja.json`, `manifest-admin.json`, `sw.js` | Hacen que **se instale como app** en el celular (Catálogo, Caja y Panel). |
+| `manifest.json`, `manifest-admin.json`, `sw.js` | Hacen que **se instale como app**: una para las clientas (catálogo) y una para la dueña (panel + caja). |
 | `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | Íconos de la app instalada. |
 | `.github/workflows/keepalive.yml` | Tarea opcional que mantiene "despierta" la base de datos. |
 
 > 📲 **Importante:** sube **todos** estos archivos a GitHub (incluidos los `manifest*.json`, `sw.js` y los `*.png`). Si falta el `sw.js` o los íconos, la instalación como app no aparece.
+>
+> 🗑️ Si actualizas sobre una versión anterior, **borra del repositorio el archivo `manifest-caja.json`**: ya no se usa (ahora hay una sola app para la dueña).
 
 ---
 
@@ -27,12 +29,12 @@ Tienda digital para **YesyModa**: un catálogo público donde las clientas arman
 
 ### Paso 1 · Crear la base de datos (Google Sheets + Apps Script)
 
-1. Entra a **[sheets.new](https://sheets.new)** para crear una hoja de cálculo nueva y vacía. Ponle nombre, por ejemplo *YesyModa DB*.
+1. Entra a **[sheets.new](https://sheets.new)** para crear una hoja de cálculo nueva y vacía. Ponle nombre, por ejemplo *YosyModa DB*.
 2. En el menú, abre **Extensiones ▸ Apps Script**.
 3. Borra el código que aparece y **pega todo el contenido de `Code.gs`**.
 4. En la línea de arriba, cambia la contraseña:
    ```js
-   const ADMIN_TOKEN = "yesymoda123";   // ← pon aquí una contraseña tuya
+   const ADMIN_TOKEN = "yosymoda123";   // ← pon aquí una contraseña tuya
    ```
 5. Arriba, elige la función **`setup`** y presiona **▶ Ejecutar**. La primera vez te pedirá **autorizar permisos** (acepta con tu cuenta de Google). Esto crea las pestañas *Config, Categorias, Productos, Variantes* con datos de ejemplo.
 6. Presiona **Implementar ▸ Nueva implementación**. Elige tipo **Aplicación web** con:
@@ -48,7 +50,7 @@ Abre **`config.js`** y pega la URL y el WhatsApp:
 const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfy.../exec",  // ← la URL del paso 1
   WHATSAPP: "50557528808",
-  STORE_NAME: "YesyModa",
+  STORE_NAME: "YosyModa",
   CURRENCY: "C$"
 };
 ```
@@ -106,11 +108,15 @@ Es el mismo enlace y la misma información en los dos aparatos: si vende en el c
 
 El sistema se **ve y se siente como una app nativa** y se puede instalar en la pantalla de inicio, sin tiendas de apps ni costos:
 
-- **Android (Chrome):** al abrir la Caja o el Panel aparece el botón **⬇️** arriba (o el menú ⋮ → *Instalar app*). Un toque y queda el ícono de YesyModa en el teléfono.
+- **Android (Chrome):** al abrir la Caja o el Panel aparece el botón **⬇️** arriba (o el menú ⋮ → *Instalar app*). Un toque y queda el ícono de YosyModa en el teléfono.
 - **iPhone (Safari):** toca **Compartir** ↑ y luego **Agregar a inicio**.
 - Una vez instalada, abre a pantalla completa (sin barra del navegador) y **arranca al instante** aunque el internet ande lento.
 
-> Se puede instalar por separado el **Catálogo** (para compartir), la **Caja** y el **Panel**. Para la dueña, con instalar la **Caja** basta: desde ahí llega también al Panel.
+> Hay **dos apps**: el **Catálogo** (la que compartes con las clientas) y **YosyModa Negocio** (la de la dueña, que abre en el Panel y desde ahí pasa a la Caja).
+
+### Una sola contraseña, una sola vez
+
+La dueña **entra una sola vez** y queda dentro: la sesión se guarda en su aparato y sirve para el Panel y para la Caja, sin volver a escribir la contraseña cada vez que abre la app. Para salir de verdad, usa **Menú ⋯ ▸ Cerrar sesión**.
 
 ---
 
@@ -139,7 +145,15 @@ La contraseña protege las escrituras (agregar/editar/borrar). Es adecuada para 
 
 ---
 
+## 🎨 Íconos e imágenes
+
+Los íconos del sistema **no son emojis**: son dibujos de línea propios de la marca, así que se ven exactamente igual en Android, iPhone y computadora. Cuando creas o editas una categoría, eliges su ícono de una lista visual (blusa, vestido, pantalón, falda, bolso, zapato, abrigo…). Si una prenda no tiene foto, se muestra una imagen elegante con el ícono de su categoría y el sello *YOSYMODA*.
+
+---
+
 ## 🔄 Cuando actualices el sistema (importante)
+
+> ⚠️ **Antes de pegar el `Code.gs`:** ese archivo trae la contraseña de ejemplo `yosymoda123`. Si tú ya venías usando **tu propia contraseña**, escríbela en esa línea (arriba del todo) **antes de guardar**; si no, tu contraseña anterior dejará de funcionar.
 
 Si cambias el **`Code.gs`** (el backend), no basta con guardarlo:
 1. Pega el `Code.gs` nuevo en Apps Script.
@@ -155,4 +169,4 @@ Si cambias el **`Code.gs`** (el backend), no basta con guardarlo:
 - Poner el logo y afinar los colores de la marca.
 - Más adelante (opcional): pago en línea, estadísticas de lo más pedido, o IA para descripciones y fotos.
 
-Hecho con cariño para **YesyModa** 🌸
+Hecho con cariño para **YosyModa** 🌸

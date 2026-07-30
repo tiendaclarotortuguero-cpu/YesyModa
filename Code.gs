@@ -1,5 +1,5 @@
 /*************************************************************
- * YESYMODA · Backend (Google Apps Script) — v2 (Ventas/POS)
+ * YOSYMODA · Backend (Google Apps Script) — v2 (Ventas/POS)
  * -----------------------------------------------------------
  * Convierte una Hoja de Google en la base de datos + API de la
  * tienda: catálogo, inventario, FOTOS en Drive, y ahora VENTAS
@@ -16,8 +16,13 @@
  * INSTALACIÓN NUEVA (desde cero): ejecuta  setup()  en vez de migrar().
  *************************************************************/
 
-/* ⚠️  CAMBIA ESTA CONTRASEÑA (la que usa la dueña en el panel y la caja) */
-const ADMIN_TOKEN = "yesymoda123";
+/* ============================================================
+   ⚠️  CONTRASEÑA — LEE ESTO ANTES DE PEGAR EL CÓDIGO
+   Si YA venías usando el sistema con TU propia contraseña,
+   ESCRÍBELA aquí abajo antes de guardar; si dejas la de ejemplo,
+   tu contraseña anterior deja de funcionar.
+   ============================================================ */
+const ADMIN_TOKEN = "yosymoda123";
 
 /* Zona horaria para fechas de ventas/reportes */
 const TZ = "America/Managua";
@@ -153,7 +158,7 @@ function saveCategory(cat){
   const sh = sheet(SH.CAT);
   let id = cat.id && String(cat.id).trim();
   if(!id) id = slug(cat.nombre) || ("c" + Date.now());
-  upsertById(sh, id, [ id, cat.nombre, cat.icono||"👗", num(cat.orden)||1, cat.visible!==false ]);
+  upsertById(sh, id, [ id, cat.nombre, cat.icono||"hanger", num(cat.orden)||1, cat.visible!==false ]);
   return { ok:true, id:id };
 }
 function deleteCategory(id){ removeById(sheet(SH.CAT), String(id)); return { ok:true }; }
@@ -429,7 +434,7 @@ function uploadImage(body){
   }catch(err){ return { ok:false, error:String(err) }; }
 }
 function getFotosFolder(){
-  var name = "YesyModa Fotos";
+  var name = "YosyModa Fotos";
   var it = DriveApp.getFoldersByName(name);
   return it.hasNext() ? it.next() : DriveApp.createFolder(name);
 }
@@ -552,12 +557,12 @@ function setup(){
   const s = ss();
   const cfg = sheet(SH.CFG); cfg.clear();
   cfg.getRange(1,1,1,2).setValues([["clave","valor"]]).setFontWeight("bold");
-  [["nombre","YesyModa"],["whatsapp","50557528808"],["moneda","C$"],["mensaje","¡Hola YesyModa! 💕 Quiero hacer este pedido:"]]
+  [["nombre","YosyModa"],["whatsapp","50557528808"],["moneda","C$"],["mensaje","¡Hola YosyModa! 💕 Quiero hacer este pedido:"]]
     .forEach(function(r){ cfg.appendRow(r); });
 
   const cat = sheet(SH.CAT); cat.clear();
   cat.getRange(1,1,1,5).setValues([["id","nombre","icono","orden","visible"]]).setFontWeight("bold");
-  [["blusas","Blusas","👚",1,true],["vestidos","Vestidos","👗",2,true],["pantalones","Pantalones","👖",3,true],["faldas","Faldas","🩱",4,true],["accesorios","Accesorios","👜",5,true]]
+  [["blusas","Blusas","shirt",1,true],["vestidos","Vestidos","dress",2,true],["pantalones","Pantalones","pants",3,true],["faldas","Faldas","skirt",4,true],["accesorios","Accesorios","bag",5,true]]
     .forEach(function(r){ cat.appendRow(r); });
 
   const prod = sheet(SH.PROD); prod.clear();

@@ -1,5 +1,5 @@
 /* ============================================================
-   YESYMODA · Configuración
+   YOSYMODA · Configuración
    ------------------------------------------------------------
    Este es el ÚNICO archivo que necesitas editar para conectar
    tu tienda. Lo usan tanto el catálogo (index.html) como el
@@ -14,6 +14,6 @@ const CONFIG = {
   // Número de WhatsApp de la tienda, con código de país y sin "+".
   WHATSAPP: "50557528808",
 
-  STORE_NAME: "YesyModa",
+  STORE_NAME: "YosyModa",
   CURRENCY: "C$"
 };

@@ -2,15 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#fbf6f5" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="YesyModa Admin" />
+<meta name="apple-mobile-web-app-title" content="YosyModa" />
 <link rel="manifest" href="manifest-admin.json" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<title>YesyModa · Panel de administración</title>
+<title>YosyModa · Panel de administración</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -177,6 +177,17 @@ table.stock input:focus{border-color:var(--rosa-mid)}
 @keyframes sp{to{transform:rotate(360deg)}}
 .loadfull{min-height:60vh;display:grid;place-items:center;color:var(--muted)}
 
+/* ===================== ÍCONOS ===================== */
+.ic{flex:none;display:inline-block;vertical-align:-.18em}
+.tab .ic,.btn .ic{vertical-align:-.2em}
+.empty2 .big{color:var(--rosa-mid);line-height:1}
+.empty2 .big .ic{stroke-width:1.25;vertical-align:middle}
+.tagmini.star .ic{vertical-align:-.1em}
+.iconpick{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.ipick{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--line-strong);background:var(--surface);
+  color:var(--muted);display:grid;place-items:center;transition:all .15s}
+.ipick.sel{border-color:var(--rosa-deep);background:var(--surface-soft);color:var(--rosa-deep);box-shadow:0 0 0 3px #fbe3ea}
+
 /* ================================================================
    EXPERIENCIA MÓVIL — el mismo panel, cómodo desde el celular
    ================================================================ */
@@ -211,6 +222,11 @@ body{overflow-x:clip}
   .modal.show{transform:translateY(0)}
 }
 @media(min-width:761px){ .only-mob{display:none!important} }
+
+/* ===== sensación de app: sin zoom, sin menú de "mantener presionado" ===== */
+html{touch-action:pan-x pan-y}
+body{-webkit-touch-callout:none}
+input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-user-select:text;user-select:text}
 </style>
 </head>
 <body>
@@ -219,7 +235,7 @@ body{overflow-x:clip}
 <!-- ===================== LOGIN ===================== -->
 <div class="login" id="loginView">
   <div class="box">
-    <div class="logo serif">Yesy<b>Moda</b></div>
+    <div class="logo serif">Yosy<b>Moda</b></div>
     <div class="tag">Panel de administración</div>
     <p>Ingresa tu contraseña para gestionar tu tienda.</p>
     <div class="field">
@@ -235,11 +251,11 @@ body{overflow-x:clip}
 <div id="appView" class="hide">
   <header class="top">
     <div class="wrap top-in">
-      <span class="logo serif">Yesy<b>Moda</b></span>
+      <span class="logo serif">Yosy<b>Moda</b></span>
       <span class="pill" id="modePill"></span>
       <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
-      <a class="btn btn-soft btn-sm only-desk" href="pos.html" style="width:auto">🧮 Caja</a>
-      <a class="iconbtn only-mob" href="pos.html" title="Caja" style="font-size:16px">🧮</a>
+      <a class="btn btn-soft btn-sm only-desk" href="pos.html" style="width:auto"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/></svg> Caja</a>
+      <a class="iconbtn only-mob" href="pos.html" title="Caja"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/></svg></a>
       <button class="iconbtn only-desk" title="Recargar" onclick="reload()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
       </button>
@@ -260,7 +276,7 @@ body{overflow-x:clip}
 
     <div class="tabs">
       <button class="tab active" data-t="productos" onclick="setTab('productos')">Productos</button>
-      <button class="tab" data-t="nuevo" onclick="newProduct()">＋ Nuevo</button>
+      <button class="tab" data-t="nuevo" onclick="newProduct()"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nuevo</button>
       <button class="tab" data-t="importar" onclick="setTab('importar')">Importar Excel</button>
       <button class="tab" data-t="categorias" onclick="setTab('categorias')">Categorías</button>
       <button class="tab" data-t="ajustes" onclick="setTab('ajustes')">Ajustes</button>
@@ -273,7 +289,7 @@ body{overflow-x:clip}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
           <input id="psearch" placeholder="Buscar producto…" oninput="renderProducts()">
         </div>
-        <button class="btn btn-soft btn-sm" onclick="newProduct()">＋ Nuevo producto</button>
+        <button class="btn btn-soft btn-sm" onclick="newProduct()"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nuevo producto</button>
       </div>
       <div class="plist" id="plist"></div>
     </section>
@@ -292,7 +308,7 @@ body{overflow-x:clip}
             <label class="fl">Categoría *</label>
             <div class="row-inline">
               <select class="inp" id="edCategoria" style="flex:1"></select>
-              <button class="btn btn-ghost btn-sm" onclick="quickCategory()" title="Nueva categoría">＋</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickCategory()" title="Nueva categoría"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
             </div>
           </div>
           <div>
@@ -307,7 +323,7 @@ body{overflow-x:clip}
             <label class="fl">Código (para escanear · opcional)</label>
             <div class="row-inline">
               <input class="inp" id="edCodigo" placeholder="Se genera solo" style="flex:1">
-              <button class="btn btn-ghost btn-sm" onclick="escanearCodigo()" title="Escanear código de barras de fábrica">📷</button>
+              <button class="btn btn-ghost btn-sm" onclick="escanearCodigo()" title="Escanear código de barras de fábrica"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.6h3.1l1.4-2.2h7l1.4 2.2H20a1.5 1.5 0 0 1 1.5 1.5V18a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9.1A1.5 1.5 0 0 1 4 7.6Z"/><circle cx="12" cy="13" r="3.3"/></svg></button>
             </div>
           </div>
           <div style="grid-column:1/-1">
@@ -316,7 +332,7 @@ body{overflow-x:clip}
               <input type="file" id="edFoto" accept="image/*" class="hide">
               <img id="edFotoPrev" class="fotoprev hide" onerror="imgErr(this)" alt="">
               <div id="fotoPlaceholder" class="fotoempty" onclick="document.getElementById('edFoto').click()">
-                <div style="font-size:28px">📷</div>
+                <svg class="ic" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--rosa-mid)"><path d="M4 7.6h3.1l1.4-2.2h7l1.4 2.2H20a1.5 1.5 0 0 1 1.5 1.5V18a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9.1A1.5 1.5 0 0 1 4 7.6Z"/><circle cx="12" cy="13" r="3.3"/></svg>
                 <div style="font-weight:600;margin-top:2px">Tomar o subir foto</div>
                 <div class="muted small">Cámara o galería del teléfono</div>
               </div>
@@ -335,7 +351,7 @@ body{overflow-x:clip}
         </div>
 
         <div class="row-inline" style="margin:14px 0 4px;gap:22px">
-          <label class="toggle"><input type="checkbox" id="edDestacado"><span class="tg"></span> Destacado ★</label>
+          <label class="toggle"><input type="checkbox" id="edDestacado"><span class="tg"></span> Destacado</label>
           <label class="toggle"><input type="checkbox" id="edActivo" checked><span class="tg"></span> Visible en el catálogo</label>
         </div>
 
@@ -344,8 +360,8 @@ body{overflow-x:clip}
         <label class="fl">Tallas</label>
         <div class="row-inline" style="margin-bottom:8px">
           <button class="presetbtn" onclick="addTallas(['S','M','L','XL'])">S · M · L · XL</button>
-          <button class="presetbtn" onclick="addTallas(['XS','S','M','L','XL','XXL'])">XS → XXL</button>
-          <button class="presetbtn" onclick="addTallas(['28','30','32','34','36'])">28 → 36</button>
+          <button class="presetbtn" onclick="addTallas(['XS','S','M','L','XL','XXL'])">XS a XXL</button>
+          <button class="presetbtn" onclick="addTallas(['28','30','32','34','36'])">28 a 36</button>
           <button class="presetbtn" onclick="addTallas(['Única'])">Única</button>
         </div>
         <div class="chipbar" id="tallaChips"></div>
@@ -376,7 +392,7 @@ body{overflow-x:clip}
           <button class="btn btn-soft btn-sm" onclick="downloadTemplate()">⬇ Descargar plantilla</button>
         </div>
         <label class="drop" for="xfile" id="drop">
-          <div class="big">📄</div>
+          <div class="big">${ic('receipt',38)}</div>
           <div style="font-weight:600;margin-top:6px">Toca para elegir tu archivo</div>
           <div class="muted small">o arrástralo aquí</div>
         </label>
@@ -391,7 +407,6 @@ body{overflow-x:clip}
         <h3 class="serif">Categorías</h3>
         <p class="muted small" style="margin:2px 0 12px">Agrega, edita y ordena las secciones de tu tienda.</p>
         <div class="addmini" style="margin-bottom:14px">
-          <input id="catIcon" placeholder="👗" style="width:56px;text-align:center">
           <input id="catName" placeholder="Nombre de categoría" style="width:200px">
           <button class="btn btn-primary btn-sm" style="width:auto" onclick="addCategory()">Agregar</button>
         </div>
@@ -407,7 +422,7 @@ body{overflow-x:clip}
           <div><label class="fl">Nombre de la tienda</label><input class="inp" id="cfgNombre"></div>
           <div><label class="fl">WhatsApp (con código país, sin +)</label><input class="inp" id="cfgWhatsapp" placeholder="50557528808"></div>
           <div><label class="fl">Símbolo de moneda</label><input class="inp" id="cfgMoneda" placeholder="C$"></div>
-          <div style="grid-column:1/-1"><label class="fl">Mensaje inicial del pedido de WhatsApp</label><input class="inp" id="cfgMensaje" placeholder="¡Hola YesyModa! 💕 Quiero hacer este pedido:"></div>
+          <div style="grid-column:1/-1"><label class="fl">Mensaje inicial del pedido de WhatsApp</label><input class="inp" id="cfgMensaje" placeholder="¡Hola YosyModa! 💕 Quiero hacer este pedido:"></div>
         </div>
         <button class="btn btn-primary" style="width:auto;margin-top:16px" onclick="saveConfig()">Guardar ajustes</button>
         <div class="hintbox" style="margin-top:16px">
@@ -425,7 +440,7 @@ body{overflow-x:clip}
 
 <script>
 /* ============================================================
-   YESYMODA · Admin logic
+   YOSYMODA · Admin logic
    ============================================================ */
 const CUR = (CONFIG.CURRENCY||"C$");
 const money = n => CUR+" "+(Math.round(n)).toLocaleString("es-NI");
@@ -434,13 +449,108 @@ const COLORS={"rosa":"#f4c9d6","rosado":"#f4c9d6","palo de rosa":"#e7b7c2","fucs
 const colorHex=c=>COLORS[norm(c)]||"#e3d3d9";
 const PRESET_COLORS=["Rosa","Blanco","Negro","Beige","Azul","Marino","Rojo","Vino","Verde","Café","Gris"];
 const LOW=3; // umbral bajo stock
-function ph(name,icon){const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='320' height='400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fdeef1'/><stop offset='1' stop-color='#f7ecd9'/></linearGradient></defs><rect width='320' height='400' fill='url(#g)'/><text x='160' y='196' font-size='80' text-anchor='middle'>${icon||"👗"}</text></svg>`;return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);}
-const PH_GEN="data:image/svg+xml;utf8,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='320' height='400'><rect width='320' height='400' fill='#fdeef1'/><text x='160' y='210' font-size='96' text-anchor='middle'>👗</text></svg>");
+
+/* ============================================================
+   ÍCONOS DE MARCA · trazo fino, misma línea gráfica de YosyModa
+   (reemplazan a los emojis: se ven iguales en Android, iPhone y PC)
+   ============================================================ */
+const ICONS={
+hanger:'<path d="M12 7.4a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.4v2.3"/><path d="m12 9.7 7.8 5a1.6 1.6 0 0 1-.9 3H5.1a1.6 1.6 0 0 1-.9-3Z"/>',
+shirt:'<path d="M8 3 4.5 4.8 3 8.6l3 1.1V21h12V9.7l3-1.1-1.5-3.8L16 3a4 4 0 0 1-8 0Z"/>',
+dress:'<path d="M9.4 3 8 6.4l1.5 2.6-4 9.1A2 2 0 0 0 7.3 21h9.4a2 2 0 0 0 1.8-2.9l-4-9.1L16 6.4 14.6 3"/><path d="M9.4 3a2.6 2.6 0 0 0 5.2 0"/>',
+pants:'<path d="M6.8 3h10.4l-.7 9-.6 9h-3.3L12 12l-.6 9H8.1l-.6-9Z"/><path d="M6.9 6.6h10.2"/>',
+skirt:'<path d="M7 3h10l.5 4 3.2 12a1.4 1.4 0 0 1-1.4 1.8H4.7A1.4 1.4 0 0 1 3.3 19L6.5 7Z"/><path d="M6.5 7h11"/>',
+bag:'<path d="M4.6 8h14.8l1 12.1a1 1 0 0 1-1 1.1H4.6a1 1 0 0 1-1-1.1Z"/><path d="M8.6 10.4V7a3.4 3.4 0 0 1 6.8 0v3.4"/>',
+heel:'<path d="M3 15.6h5.4l3.2-3.3a2 2 0 0 1 2.7-.2l4.9 3.7A2 2 0 0 1 20 19.4H3Z"/><path d="M3 10.5v5.1"/>',
+coat:'<path d="M9 3 5 5v16h14V5l-4-2"/><path d="M12 3.6V21"/><path d="M9 3a3 3 0 0 0 6 0"/>',
+sparkle:'<path d="M12 3.4 13.7 9l5.6 1.7-5.6 1.7L12 18l-1.7-5.6L4.7 10.7 10.3 9Z"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',
+camera:'<path d="M4 7.6h3.1l1.4-2.2h7l1.4 2.2H20a1.5 1.5 0 0 1 1.5 1.5V18a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9.1A1.5 1.5 0 0 1 4 7.6Z"/><circle cx="12" cy="13" r="3.3"/>',
+tag:'<path d="M3.6 11.6V4.6a1 1 0 0 1 1-1h7a1 1 0 0 1 .7.3l8 8a1 1 0 0 1 0 1.4l-7 7a1 1 0 0 1-1.4 0l-8-8a1 1 0 0 1-.3-.7Z"/><circle cx="8.1" cy="8.1" r="1.4"/>',
+inbox:'<path d="M3.6 13.6 6 5.3a1.5 1.5 0 0 1 1.4-1h9.2A1.5 1.5 0 0 1 18 5.3l2.4 8.3"/><path d="M3.6 13.6H8l1 2.4h6l1-2.4h4.4v4.7A1.5 1.5 0 0 1 19 19.8H5a1.5 1.5 0 0 1-1.4-1.5Z"/>',
+receipt:'<path d="M6 3.6h12v16.8l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z"/><path d="M9 8.4h6M9 12.2h6"/>',
+users:'<circle cx="9.2" cy="8" r="3.2"/><path d="M3.6 19.4a5.6 5.6 0 0 1 11.2 0"/><path d="M16.2 5.6a3.2 3.2 0 0 1 0 6.2"/><path d="M17.6 14.5a5.6 5.6 0 0 1 2.8 4.9"/>',
+chart:'<path d="M4 20V4M4 20h16"/><path d="M8.2 20v-5.4M12.5 20V9.2M16.8 20v-7.6"/>',
+cash:'<rect x="2.6" y="6" width="18.8" height="12" rx="2"/><circle cx="12" cy="12" r="2.7"/><path d="M6.2 9.6v4.8M17.8 9.6v4.8"/>',
+coins:'<ellipse cx="12" cy="6.6" rx="7.4" ry="2.9"/><path d="M4.6 6.6v4.8c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9V6.6"/><path d="M4.6 11.4v5c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9v-5"/>',
+trending:'<path d="M3.6 16.4 9 11l3.5 3.5 7.9-8.3"/><path d="M15.4 6.2h5v5"/>',
+download:'<path d="M12 3.6v10.8"/><path d="m7.6 10.4 4.4 4.4 4.4-4.4"/><path d="M4.6 17.4V19a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5v-1.6"/>',
+phone:'<rect x="6.2" y="2.6" width="11.6" height="18.8" rx="2.6"/><path d="M10.6 5.6h2.8"/><path d="M11 18.4h2"/>',
+refresh:'<path d="M20.4 12a8.4 8.4 0 1 1-2.5-6"/><path d="M20.4 3.2v5.5h-5.5"/>',
+home:'<path d="M3.6 10.2 12 3.6l8.4 6.6V19a1.5 1.5 0 0 1-1.5 1.5H5.1A1.5 1.5 0 0 1 3.6 19Z"/><path d="M9.6 20.5v-6h4.8v6"/>',
+store:'<path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/>',
+globe:'<circle cx="12" cy="12" r="8.4"/><path d="M3.6 12h16.8"/><path d="M12 3.6a13 13 0 0 1 0 16.8 13 13 0 0 1 0-16.8Z"/>',
+star:'<path d="m12 3.8 2.6 5.3 5.8.9-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.9Z"/>',
+check:'<path d="m4.6 12.4 5 5 9.8-10.8"/>',
+close:'<path d="m6 6 12 12M18 6 6 18"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+minus:'<path d="M5 12h14"/>',
+edit:'<path d="M12 20h8.4"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+trash:'<path d="M3.6 6h16.8M9 6V4h6v2"/><path d="M6.2 6l1 14h9.6l1-14"/>',
+calendar:'<rect x="3.6" y="5" width="16.8" height="15.4" rx="2"/><path d="M3.6 10h16.8M8.2 3.2v3.6M15.8 3.2v3.6"/>',
+cart:'<path d="M3 4.2h2.2l2.4 11.2h9.8l1.9-7.9H6.2"/><circle cx="9.6" cy="19.4" r="1.4"/><circle cx="17" cy="19.4" r="1.4"/>',
+menu:'<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>',
+arrowUp:'<path d="M12 19.4V5M6.2 10.8 12 5l5.8 5.8"/>',
+arrowDown:'<path d="M12 4.6V19M6.2 13.2 12 19l5.8-5.8"/>',
+arrowRight:'<path d="M4.2 12h15M13.2 6.2 19 12l-5.8 5.8"/>',
+heart:'<path d="M12 20.2 4.5 12.9a4.6 4.6 0 0 1 6.4-6.5l1.1 1 1.1-1a4.6 4.6 0 0 1 6.4 6.5Z"/>',
+flame:'<path d="M12 21c3.6 0 6-2.4 6-5.6 0-4-3.4-5.6-3.4-9.4-2 1-3 2.8-3 4.6 0 1.2-.8 1.8-1.5 1.2-.7-.6-.9-1.6-.9-2.6C7.2 11 6 12.8 6 15.4 6 18.6 8.4 21 12 21Z"/>',
+whatsapp:'<path fill="currentColor" stroke="none" d="M12 2.2A9.8 9.8 0 0 0 3.5 17L2.2 21.8l4.9-1.3A9.8 9.8 0 1 0 12 2.2Zm5.4 13.9c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .3-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 1-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.4.5-.3.3c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.4.3.2.4.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.2.1.7-.1 1.3Z"/>'
+};
+function ic(n,s,extra){
+  return '<svg class="ic" viewBox="0 0 24 24" width="'+(s||18)+'" height="'+(s||18)+'" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"'+(extra?' '+extra:'')+'>'+(ICONS[n]||ICONS.hanger)+'</svg>';
+}
+function icNorm(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();}
+/* lo guardado en la Hoja (emoji viejo o nombre) -> ícono de la marca */
+const ICMAP={"\u{1F45A}":"shirt","\u{1F455}":"shirt","\u{1F457}":"dress","\u{1F456}":"pants","\u{1FA73}":"pants","\u{1FA71}":"skirt","\u{1F45C}":"bag","\u{1F45B}":"bag","\u{1F392}":"bag","\u{1F460}":"heel","\u{1F45F}":"heel","\u{1F45E}":"heel","\u{1FA74}":"heel","\u{1F9E5}":"coat","\u{1F9E3}":"coat","\u{1F48D}":"sparkle","\u{1F576}":"sparkle","\u{1F9E2}":"bag","✨":"sparkle",
+"blusa":"shirt","blusas":"shirt","camisa":"shirt","camisas":"shirt","camiseta":"shirt","top":"shirt","tops":"shirt",
+"vestido":"dress","vestidos":"dress","enterizo":"dress","enterizos":"dress",
+"pantalon":"pants","pantalones":"pants","jean":"pants","jeans":"pants","short":"pants","shorts":"pants","leggin":"pants","leggins":"pants",
+"falda":"skirt","faldas":"skirt",
+"accesorio":"bag","accesorios":"bag","bolso":"bag","bolsos":"bag","cartera":"bag","carteras":"bag","mochila":"bag",
+"zapato":"heel","zapatos":"heel","calzado":"heel","sandalia":"heel","sandalias":"heel","tacon":"heel","tacones":"heel","tenis":"heel",
+"abrigo":"coat","abrigos":"coat","chaqueta":"coat","chaquetas":"coat","sueter":"coat","sueteres":"coat","blazer":"coat","chaleco":"coat"};
+function iconKey(icono,nombre){
+  var raw=String(icono==null?"":icono).trim();
+  if(ICONS[raw]) return raw;
+  if(ICMAP[raw]) return ICMAP[raw];
+  var n=icNorm(nombre);
+  if(ICMAP[n]) return ICMAP[n];
+  for(var k in ICMAP){ if(k.length>3 && n.indexOf(k)>=0) return ICMAP[k]; }
+  return "hanger";
+}
+/* imagen de respaldo elegante cuando la prenda no tiene foto */
+function phImg(key,w,h){
+  w=w||320; h=h||400;
+  var s=Math.round(w*0.30), x=Math.round((w-s)/2), y=Math.round((h-s)/2-h*0.05), k=(s/24).toFixed(3);
+  var svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"' viewBox='0 0 "+w+" "+h+"'>"
+    +"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fdeef1'/><stop offset='1' stop-color='#f7ecd9'/></linearGradient></defs>"
+    +"<rect width='"+w+"' height='"+h+"' fill='url(#g)'/>"
+    +"<g transform='translate("+x+","+y+") scale("+k+")' fill='none' stroke='#dcaabb' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'>"+(ICONS[key]||ICONS.hanger)+"</g>"
+    +"<text x='"+(w/2)+"' y='"+Math.round(h*0.80)+"' font-family='Georgia,serif' font-size='"+Math.round(w*0.050)+"' letter-spacing='"+(w*0.013).toFixed(1)+"' text-anchor='middle' fill='#cbad77'>YOSYMODA</text>"
+    +"</svg>";
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
+}
+
+function ph(name,icon){ return phImg(iconKey(icon,name),320,400); }
+/* selector visual de íconos para las categorías */
+const ICON_CHOICES=["shirt","dress","pants","skirt","bag","heel","coat","sparkle","star","tag","hanger"];
+function iconPicker(id,current){
+  const cur=iconKey(current,"");
+  return `<input type="hidden" id="${id}" value="${cur}"><div class="iconpick" id="${id}_p">`+
+    ICON_CHOICES.map(k=>`<button type="button" class="ipick ${k===cur?'sel':''}" data-k="${k}" onclick="pickIcon('${id}','${k}')">${ic(k,20)}</button>`).join("")+`</div>`;
+}
+function pickIcon(id,k){
+  const h=document.getElementById(id); if(h) h.value=k;
+  const p=document.getElementById(id+"_p");
+  if(p) p.querySelectorAll(".ipick").forEach(b=>b.classList.toggle("sel", b.dataset.k===k));
+}
+const PH_GEN=phImg("hanger",320,400);
 function imgErr(el){ el.onerror=null; el.src=PH_GEN; }
 
 /* ---------- SAMPLE (demo) ---------- */
-const SAMPLE={config:{nombre:"YesyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR,mensaje:"¡Hola YesyModa! 💕 Quiero hacer este pedido:"},
-categories:[{id:"blusas",nombre:"Blusas",icono:"👚",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"👗",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"👖",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"🩱",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"👜",orden:5,visible:true}],
+const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR,mensaje:"¡Hola YosyModa! 💕 Quiero hacer este pedido:"},
+categories:[{id:"blusas",nombre:"Blusas",icono:"shirt",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"dress",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"pants",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"skirt",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"bag",orden:5,visible:true}],
 products:[
 {id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"L",color:"Blanco",stock:2},{talla:"M",color:"Negro",stock:4},{talla:"L",color:"Negro",stock:3}]},
 {id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
@@ -458,14 +568,18 @@ let TAB="productos";
 const LIVE = !!CONFIG.API_URL;
 
 /* ---------- AUTH ---------- */
-function getToken(){ return sessionStorage.getItem("ym_token")||""; }
+/* La sesión se guarda en el aparato: se entra UNA sola vez y sirve
+   para el Panel y para la Caja (como en una app instalada). */
+function getToken(){try{return localStorage.getItem("ym_token")||sessionStorage.getItem("ym_token")||"";}catch(e){return sessionStorage.getItem("ym_token")||"";}}
+function setToken(v){try{localStorage.setItem("ym_token",v);}catch(e){}sessionStorage.setItem("ym_token",v);}
+function clearToken(){try{localStorage.removeItem("ym_token");}catch(e){}sessionStorage.removeItem("ym_token");}
 function doLogin(){
   const v=document.getElementById("pwd").value;
   if(!v){ document.getElementById("loginNote").textContent="Escribe tu contraseña."; return; }
-  sessionStorage.setItem("ym_token", v);
+  setToken(v);
   startApp();
 }
-function logout(){ sessionStorage.removeItem("ym_token"); location.reload(); }
+function logout(){ clearToken(); location.reload(); }
 document.getElementById("loginNote").innerHTML = LIVE
   ? "Se validará con tu Google Apps Script."
   : "Modo demostración: escribe cualquier cosa para entrar (los cambios no se guardan permanentemente hasta configurar Google Sheets).";
@@ -577,11 +691,11 @@ function renderProducts(){
   let list=DATA.products.slice();
   if(q) list=list.filter(p=>norm(p.nombre).includes(q)||norm((CATMAP[p.categoria]||{}).nombre).includes(q));
   const el=document.getElementById("plist");
-  if(!list.length){ el.innerHTML=`<div class="empty2"><div class="big">🛍️</div><p>Sin productos todavía. Usa <b>＋ Nuevo</b> o <b>Importar Excel</b>.</p></div>`; return; }
+  if(!list.length){ el.innerHTML=`<div class="empty2"><div class="big">${ic('hanger',38)}</div><p>Sin productos todavía. Usa <b>Nuevo</b> o <b>Importar Excel</b>.</p></div>`; return; }
   el.innerHTML=list.map(p=>{
     const s=stockOf(p); const cat=CATMAP[p.categoria]||{};
     const flags=[];
-    if(p.destacado) flags.push(`<span class="tagmini star">★</span>`);
+    if(p.destacado) flags.push(`<span class="tagmini star">${ic('star',11)}</span>`);
     if(p.activo===false) flags.push(`<span class="tagmini off">oculto</span>`);
     if(s===0) flags.push(`<span class="tagmini out">agotado</span>`);
     else if(s<=LOW) flags.push(`<span class="tagmini low">bajo (${s})</span>`);
@@ -594,7 +708,7 @@ function renderProducts(){
       </div>
       <div class="pr">${money(p.precio)}</div>
       <div class="acts">
-        <button class="iconbtn ${p.destacado?'on':''}" title="Destacado" onclick="toggleFlag('${p.id}','destacado')">★</button>
+        <button class="iconbtn ${p.destacado?'on':''}" title="Destacado" onclick="toggleFlag('${p.id}','destacado')">${ic('star',15)}</button>
         <button class="iconbtn" title="Editar" onclick="editProduct('${p.id}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </button>
@@ -647,12 +761,12 @@ function editProduct(id){
 }
 function fillCatSelect(sel){
   const s=document.getElementById("edCategoria");
-  s.innerHTML=DATA.categories.map(c=>`<option value="${c.id}" ${sel===c.id?"selected":""}>${c.icono||""} ${c.nombre}</option>`).join("")||`<option value="">(crea una categoría primero)</option>`;
+  s.innerHTML=DATA.categories.map(c=>`<option value="${c.id}" ${sel===c.id?"selected":""}>${c.nombre}</option>`).join("")||`<option value="">(crea una categoría primero)</option>`;
 }
 function addTallas(arr){ arr.map(t=>(t||"").trim()).filter(Boolean).forEach(t=>{ if(!ed.tallas.includes(t)) ed.tallas.push(t); }); renderTallaChips(); renderStockGrid(); }
 function removeTalla(t){ ed.tallas=ed.tallas.filter(x=>x!==t); renderTallaChips(); renderStockGrid(); }
 function renderTallaChips(){
-  document.getElementById("tallaChips").innerHTML=ed.tallas.map(t=>`<span class="tchip sel">${t} <span class="x" onclick="removeTalla('${t.replace(/'/g,"")}')">✕</span></span>`).join("")||`<span class="muted small">Elige o agrega tallas ↑</span>`;
+  document.getElementById("tallaChips").innerHTML=ed.tallas.map(t=>`<span class="tchip sel">${t} <span class="x" onclick="removeTalla('${t.replace(/'/g,"")}')"><svg class="ic" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></span></span>`).join("")||`<span class="muted small">Elige o agrega tallas arriba</span>`;
 }
 function renderColorPresets(){
   document.getElementById("colorPreset").innerHTML=PRESET_COLORS.map(c=>`<button class="tchip" onclick="addColores(['${c}'])"><span class="cd" style="background:${colorHex(c)}"></span>${c}</button>`).join("");
@@ -661,7 +775,7 @@ function addColores(arr){ arr.map(c=>(c||"").trim()).filter(Boolean).forEach(c=>
 function removeColor(c){ ed.colores=ed.colores.filter(x=>x!==c); renderColorChips(); renderStockGrid(); }
 function renderColorChips(){
   const real=ed.colores.filter(c=>c!=="");
-  document.getElementById("colorChips").innerHTML=real.map(c=>`<span class="tchip sel"><span class="cd" style="background:${colorHex(c)}"></span>${c} <span class="x" onclick="removeColor('${c.replace(/'/g,"")}')">✕</span></span>`).join("")||`<span class="muted small">Sin color (para accesorios puedes dejarlo vacío)</span>`;
+  document.getElementById("colorChips").innerHTML=real.map(c=>`<span class="tchip sel"><span class="cd" style="background:${colorHex(c)}"></span>${c} <span class="x" onclick="removeColor('${c.replace(/'/g,"")}')"><svg class="ic" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></span></span>`).join("")||`<span class="muted small">Sin color (para accesorios puedes dejarlo vacío)</span>`;
 }
 function renderStockGrid(){
   const area=document.getElementById("stockArea");
@@ -733,7 +847,7 @@ document.getElementById("edFoto").addEventListener("change", async function(e){
     ed.fotoData=dataUrl;
     document.getElementById("edImagen").value="";
     showFoto(dataUrl);
-    toast("Foto lista ✓");
+    toast("Foto lista");
   }catch(err){ toast("No pude leer la foto.", true); }
 });
 
@@ -762,7 +876,7 @@ async function saveProduct(addAnother){
     activo:document.getElementById("edActivo").checked,
     variantes:buildVariantes()
   };
-  await saveProductObj(prod, ed.id?"Producto actualizado ✓":"Producto agregado ✓");
+  await saveProductObj(prod, ed.id?"Producto actualizado":"Producto agregado");
   if(addAnother){ const cat=categoria; resetEditor(); fillCatSelect(cat); }
   else setTab("productos");
 }
@@ -782,15 +896,15 @@ function delProduct(id,name){
 /* ---------- CATEGORIES ---------- */
 function renderCategories(){
   const el=document.getElementById("clist");
-  if(!DATA.categories.length){ el.innerHTML=`<div class="empty2"><div class="big">🏷️</div><p>Aún no hay categorías.</p></div>`; return; }
+  if(!DATA.categories.length){ el.innerHTML=`<div class="empty2"><div class="big">${ic('tag',38)}</div><p>Aún no hay categorías.</p></div>`; return; }
   el.innerHTML=DATA.categories.map((c,i)=>{
     const n=DATA.products.filter(p=>p.categoria===c.id).length;
     return `<div class="prow">
-      <div style="width:44px;height:44px;border-radius:10px;background:var(--surface-soft);display:grid;place-items:center;font-size:22px;flex:none">${c.icono||"👗"}</div>
+      <div style="width:44px;height:44px;border-radius:10px;background:var(--surface-soft);display:grid;place-items:center;flex:none;color:var(--rosa-deep)">${ic(iconKey(c.icono,c.nombre),21)}</div>
       <div class="m"><div class="nm">${c.nombre}</div><div class="sub">${n} ${n===1?"producto":"productos"} ${c.visible===false?"· <span style='color:var(--warn)'>oculta</span>":""}</div></div>
       <div class="acts">
-        <button class="iconbtn" title="Subir" ${i===0?"disabled":""} onclick="moveCat('${c.id}',-1)">↑</button>
-        <button class="iconbtn" title="Bajar" ${i===DATA.categories.length-1?"disabled":""} onclick="moveCat('${c.id}',1)">↓</button>
+        <button class="iconbtn" title="Subir" ${i===0?"disabled":""} onclick="moveCat('${c.id}',-1)">${ic('arrowUp',15)}</button>
+        <button class="iconbtn" title="Bajar" ${i===DATA.categories.length-1?"disabled":""} onclick="moveCat('${c.id}',1)">${ic('arrowDown',15)}</button>
         <button class="iconbtn" title="Editar" onclick="editCat('${c.id}')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </button>
@@ -803,28 +917,28 @@ function renderCategories(){
 }
 async function addCategory(){
   const nombre=document.getElementById("catName").value.trim();
-  const icono=document.getElementById("catIcon").value.trim()||"👗";
+  const icono=iconKey("",document.getElementById("catName").value);
   if(!nombre){ toast("Escribe el nombre de la categoría.",true); return; }
   const orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
   setBusy(true); await apiWrite("saveCategory",{category:{nombre,icono,orden,visible:true}}); setBusy(false);
   document.getElementById("catName").value=""; document.getElementById("catIcon").value="";
-  await reload(); toast("Categoría agregada ✓");
+  await reload(); toast("Categoría agregada");
 }
 function editCat(id){
   const c=CATMAP[id]; if(!c) return;
-  modal(`<div class="mh"><h3>Editar categoría</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  modal(`<div class="mh"><h3>Editar categoría</h3><button class="iconbtn" onclick="closeModal()"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <div class="mb">
     <div class="grid2">
-      <div><label class="fl">Icono</label><input class="inp" id="mIcon" value="${c.icono||""}"></div>
-      <div><label class="fl">Nombre</label><input class="inp" id="mName" value="${c.nombre||""}"></div>
+      <div style="grid-column:1/-1"><label class="fl">Nombre</label><input class="inp" id="mName" value="${c.nombre||""}"></div>
+      <div style="grid-column:1/-1"><label class="fl">Icono</label>${iconPicker('mIcon',c.icono||c.nombre)}</div>
     </div>
     <label class="toggle" style="margin-top:14px"><input type="checkbox" id="mVis" ${c.visible!==false?"checked":""}><span class="tg"></span> Visible en el catálogo</label>
   </div>
   <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary btn-sm" style="width:auto" onclick="saveCatEdit('${id}')">Guardar</button></div>`);
 }
 async function saveCatEdit(id){
-  const c=Object.assign({},CATMAP[id],{icono:document.getElementById("mIcon").value.trim()||"👗",nombre:document.getElementById("mName").value.trim(),visible:document.getElementById("mVis").checked});
-  closeModal(); setBusy(true); await apiWrite("saveCategory",{category:c}); setBusy(false); await reload(); toast("Categoría actualizada ✓");
+  const c=Object.assign({},CATMAP[id],{icono:document.getElementById("mIcon").value.trim()||"hanger",nombre:document.getElementById("mName").value.trim(),visible:document.getElementById("mVis").checked});
+  closeModal(); setBusy(true); await apiWrite("saveCategory",{category:c}); setBusy(false); await reload(); toast("Categoría actualizada");
 }
 async function moveCat(id,dir){
   const i=DATA.categories.findIndex(c=>c.id===id); const j=i+dir;
@@ -840,31 +954,31 @@ function delCat(id,name,n){
   },"Eliminar",true);
 }
 function quickCategory(){
-  modal(`<div class="mh"><h3>Nueva categoría</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  modal(`<div class="mh"><h3>Nueva categoría</h3><button class="iconbtn" onclick="closeModal()"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <div class="mb"><div class="grid2">
-    <div><label class="fl">Icono</label><input class="inp" id="qIcon" placeholder="👗" value="👗"></div>
-    <div><label class="fl">Nombre</label><input class="inp" id="qName" placeholder="Ej. Abrigos"></div>
+    <div style="grid-column:1/-1"><label class="fl">Nombre</label><input class="inp" id="qName" placeholder="Ej. Abrigos" oninput="pickIcon('qIcon',iconKey('',this.value))"></div>
+    <div style="grid-column:1/-1"><label class="fl">Icono</label>${iconPicker('qIcon','hanger')}</div>
   </div></div>
   <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary btn-sm" style="width:auto" onclick="createQuickCat()">Crear</button></div>`);
 }
 async function createQuickCat(){
-  const nombre=document.getElementById("qName").value.trim(); const icono=document.getElementById("qIcon").value.trim()||"👗";
+  const nombre=document.getElementById("qName").value.trim(); const icono=document.getElementById("qIcon").value.trim()||"hanger";
   if(!nombre){ toast("Escribe el nombre.",true); return; }
   const orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
   closeModal(); setBusy(true); await apiWrite("saveCategory",{category:{nombre,icono,orden,visible:true}}); setBusy(false);
-  await reload(); const nc=DATA.categories.find(c=>norm(c.nombre)===norm(nombre)); fillCatSelect(nc?nc.id:undefined); toast("Categoría creada ✓");
+  await reload(); const nc=DATA.categories.find(c=>norm(c.nombre)===norm(nombre)); fillCatSelect(nc?nc.id:undefined); toast("Categoría creada");
 }
 
 /* ---------- CONFIG ---------- */
 function fillConfig(){
-  document.getElementById("cfgNombre").value=DATA.config.nombre||CONFIG.STORE_NAME||"YesyModa";
+  document.getElementById("cfgNombre").value=DATA.config.nombre||CONFIG.STORE_NAME||"YosyModa";
   document.getElementById("cfgWhatsapp").value=DATA.config.whatsapp||CONFIG.WHATSAPP||"";
   document.getElementById("cfgMoneda").value=DATA.config.moneda||CUR;
-  document.getElementById("cfgMensaje").value=DATA.config.mensaje||"¡Hola YesyModa! 💕 Quiero hacer este pedido:";
+  document.getElementById("cfgMensaje").value=DATA.config.mensaje||"¡Hola YosyModa! 💕 Quiero hacer este pedido:";
 }
 async function saveConfig(){
   const cfg={nombre:document.getElementById("cfgNombre").value.trim(),whatsapp:document.getElementById("cfgWhatsapp").value.replace(/\D/g,""),moneda:document.getElementById("cfgMoneda").value.trim()||"C$",mensaje:document.getElementById("cfgMensaje").value.trim()};
-  setBusy(true); await apiWrite("saveConfig",{config:cfg}); setBusy(false); await reload(); toast("Ajustes guardados ✓");
+  setBusy(true); await apiWrite("saveConfig",{config:cfg}); setBusy(false); await reload(); toast("Ajustes guardados");
 }
 
 /* ---------- IMPORT EXCEL ---------- */
@@ -928,7 +1042,7 @@ async function confirmImport(){
   let orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
   for(const p of IMPORT){
     const key=norm(p.categoriaNombre);
-    if(!existing[key]){ await apiWrite("saveCategory",{category:{nombre:p.categoriaNombre,icono:"👗",orden:orden++,visible:true}}); }
+    if(!existing[key]){ await apiWrite("saveCategory",{category:{nombre:p.categoriaNombre,icono:iconKey("",p.categoriaNombre),orden:orden++,visible:true}}); }
   }
   await reload();
   const emap={}; DATA.categories.forEach(c=>emap[norm(c.nombre)]=c.id);
@@ -936,7 +1050,7 @@ async function confirmImport(){
   await apiWrite("bulkAddProducts",{products});
   setBusy(false);
   IMPORT=[]; document.getElementById("importPreview").innerHTML=""; document.getElementById("xfile").value="";
-  await reload(); setTab("productos"); toast("Productos importados ✓");
+  await reload(); setTab("productos"); toast("Productos importados");
 }
 function downloadTemplate(){
   const rows=[
@@ -946,14 +1060,14 @@ function downloadTemplate(){
     {Nombre:"Vestido Floral",Categoria:"Vestidos",Precio:690,Talla:"M",Color:"Verde",Stock:3,Descripcion:"Estampado floral",ImagenURL:""}
   ];
   const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Productos");
-  XLSX.writeFile(wb,"YesyModa_plantilla.xlsx");
+  XLSX.writeFile(wb,"YosyModa_plantilla.xlsx");
 }
 
 /* ---------- ESCÁNER DE CÓDIGO ---------- */
 let scannerA=null;
 function escanearCodigo(){
   if(!window.Html5Qrcode){ toast("El escáner no cargó (revisa tu internet).",true); return; }
-  modal(`<div class="mh"><h3>Escanear código</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  modal(`<div class="mh"><h3>Escanear código</h3><button class="iconbtn" onclick="closeModal()"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="mb"><div id="readerA" style="width:100%;border-radius:12px;overflow:hidden"></div><p class="small muted" style="text-align:center;margin-top:8px">Apunta al código de barras de fábrica de la prenda.</p></div>`);
   try{ scannerA=new Html5Qrcode("readerA");
     scannerA.start({facingMode:"environment"},{fps:10,qrbox:{width:230,height:150}},function(t){ document.getElementById("edCodigo").value=String(t).trim(); closeModal(); toast("Código: "+String(t).trim()); },function(){}).catch(function(){toast("No pude abrir la cámara.",true);});
@@ -966,7 +1080,7 @@ setInterval(function(){ if(document.hidden||document.querySelector(".scrim.show"
 function modal(html){ const m=document.getElementById("modal"); m.innerHTML=html; document.getElementById("scrim").classList.add("show"); m.classList.add("show"); }
 function closeModal(){ if(scannerA){ try{ scannerA.stop().then(function(){try{scannerA.clear();}catch(e){}}).catch(function(){}); }catch(e){} scannerA=null; } document.getElementById("scrim").classList.remove("show"); document.getElementById("modal").classList.remove("show"); }
 function confirmModal(title,msg,onOk,okLabel,danger){
-  modal(`<div class="mh"><h3>${title}</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  modal(`<div class="mh"><h3>${title}</h3><button class="iconbtn" onclick="closeModal()"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <div class="mb"><p style="margin:0">${msg}</p></div>
   <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>
   <button class="btn btn-sm" style="width:auto;background:${danger?'var(--danger)':'var(--rosa-deep)'};color:#fff" id="cfBtn">${okLabel||"Aceptar"}</button></div>`);
@@ -979,11 +1093,11 @@ function setBusy(b){ const btns=[document.getElementById("saveBtn"),document.get
 /* menú del celular (las acciones que en la laptop están en el encabezado) */
 function openMenu(){
   const B='class="btn btn-ghost" style="width:100%;margin-bottom:9px"';
-  modal(`<div class="mh"><h3>Menú</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+  modal(`<div class="mh"><h3>Menú</h3><button class="iconbtn" onclick="closeModal()"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
    <div class="mb">
-     <a class="btn btn-soft" style="width:100%;margin-bottom:9px" href="pos.html">🧮 Ir a la Caja</a>
-     <button ${B} onclick="closeModal();reload();toast('Actualizado')">🔄 Actualizar datos</button>
-     <button ${B} id="mnuInstall" onclick="closeModal();instalarApp()">📲 Instalar como app</button>
+     <a class="btn btn-soft" style="width:100%;margin-bottom:9px" href="pos.html">${ic('store',18)} Ir a la Caja</a>
+     <button ${B} onclick="closeModal();reload();toast('Actualizado')">${ic('refresh',18)} Actualizar datos</button>
+     <button ${B} id="mnuInstall" onclick="closeModal();instalarApp()">${ic('phone',18)} Instalar como app</button>
      <button class="btn btn-ghost" style="width:100%;color:var(--danger);border-color:#e6c3c3" onclick="logout()">Cerrar sesión</button>
    </div>`);
   if(isStandalone()){const b=document.getElementById("mnuInstall");if(b)b.style.display="none";}
@@ -996,13 +1110,22 @@ function showInstall(){var b=document.getElementById('installBtn');if(b && !isSt
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();__deferredPrompt=e;showInstall();});
 (function(){ if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) showInstall(); })();
 function instalarApp(){
-  if(isStandalone()){toast("La app ya está instalada ✓");return;}
+  if(isStandalone()){toast("La app ya está instalada");return;}
   if(__deferredPrompt){__deferredPrompt.prompt();__deferredPrompt.userChoice.then(function(){__deferredPrompt=null;});return;}
   var iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  toast(iOS?"En iPhone: toca Compartir y luego 'Agregar a inicio'":"Menú del navegador → 'Instalar app' / 'Agregar a inicio'");
+  toast(iOS?"En iPhone: toca Compartir y luego 'Agregar a inicio'":"Menú del navegador: 'Instalar app'");
 }
 window.addEventListener('appinstalled',function(){var b=document.getElementById('installBtn');if(b)b.style.display='none';});
 if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+
+/* ---------- Se siente app, no navegador: bloquea el pellizco en iPhone ----------
+   (el doble-toque y el pellizco en Android los bloquea el CSS touch-action,
+    que NO interfiere con los toques rápidos en los botones +/−) */
+(function(){
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
+    document.addEventListener(ev,function(e){ e.preventDefault(); },{passive:false});
+  });
+})();
 </script>
 </body>
 </html>

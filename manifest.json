@@ -1,7 +1,7 @@
 {
-  "name": "YesyModa",
-  "short_name": "YesyModa",
-  "description": "Catálogo de YesyModa — ropa fina y elegante. Pedidos por WhatsApp.",
+  "name": "YosyModa",
+  "short_name": "YosyModa",
+  "description": "Catálogo de YosyModa — ropa fina y elegante. Pedidos por WhatsApp.",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",

@@ -1,9 +1,9 @@
-/* YesyModa · Service Worker (instalable + carga rápida)
+/* YosyModa · Service Worker (instalable + carga rápida)
    - HTML y config.js: red primero (siempre la última versión), con respaldo offline.
    - Íconos/manifest/librerías propias: caché primero (arranque instantáneo).
    - La API de Google Apps Script y los CDN nunca se interceptan (siempre red). */
-const C = 'yesymoda-v5';
-const ASSETS = ['index.html','admin.html','pos.html','config.js','manifest.json','manifest-caja.json','manifest-admin.json','icon-192.png','icon-512.png','apple-touch-icon.png'];
+const C = 'yosymoda-v6';
+const ASSETS = ['index.html','admin.html','pos.html','config.js','manifest.json','manifest-admin.json','icon-192.png','icon-512.png','apple-touch-icon.png'];
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(C).then(function(c){ return c.addAll(ASSETS).catch(function(){}); }).then(function(){ return self.skipWaiting(); }));
