@@ -797,7 +797,13 @@ function closeCart(){ document.getElementById("scrim2").classList.remove("show")
 async function checkout(){
   if(!cart.length) return;
   const w = window.open("", "_blank");            // reservar la ventana durante el toque (evita bloqueo de emergentes)
-  const folio = await crearPedidoOnline();        // registra el pedido como "pendiente" para la Caja
+  const res = await crearPedidoOnline();          // registra el pedido como "pendiente" para la Caja
+  if(res && res.faltantes && res.faltantes.length){
+    if(w && !w.closed) w.close();
+    closeCart(); avisarFaltantes(res.faltantes);
+    return;                                       // no se manda un pedido que la tienda no puede cumplir
+  }
+  const folio = (res && res.folio) || "";
   const num = String(DATA.config.whatsapp||CONFIG.WHATSAPP||"").replace(/\D/g,"");
   const hi = DATA.config.mensaje || "¡Hola YosyModa! 💕 Quiero hacer este pedido:";
   let msg = hi + "\n\n";
@@ -821,19 +827,59 @@ async function crearPedidoOnline(){
     try{
       const r = await fetch(CONFIG.API_URL, { method:"POST", body: JSON.stringify({ action:"crearPedido", pedido:pedido }) });
       const j = await r.json();
-      return (j && j.folio) ? j.folio : "";
-    }catch(e){ return ""; }
+      if(j && j.folio) return { folio:j.folio };
+      if(j && j.error === "stock") return { faltantes: j.faltantes||[] };
+      return { error: (j && j.error) || "desconocido" };
+    }catch(e){ return { error:"red" }; }
   }
-  // modo demostración: guardar en ym_pos para que la Caja lo vea
+  // modo demostración: revisar el inventario guardado igual que lo hace el servidor
   try{
+    const cat = JSON.parse(localStorage.getItem("ym_admin")||"null");
+    const falt = [];
+    if(cat && cat.products){
+      items.forEach(it=>{
+        const p=cat.products.find(x=>x.id===it.producto_id);
+        const v=p&&(p.variantes||[]).find(x=>String(x.talla)===String(it.talla)&&String(x.color||"")===String(it.color||""));
+        const have=v?(+v.stock||0):0;
+        if(it.cantidad>have) falt.push({producto_id:it.producto_id,nombre:it.nombre,talla:it.talla,color:it.color,pedido:it.cantidad,disponible:have});
+      });
+    }
+    if(falt.length) return { faltantes: falt };
     const d = JSON.parse(localStorage.getItem("ym_pos")||'{"ventas":[],"pedidos":[]}');
     const folio = "P-"+("0000"+((d.pedidos.length||0)+1)).slice(-4);
     const n=new Date(), z=v=>("0"+v).slice(-2);
     const dia=n.getFullYear()+"-"+z(n.getMonth()+1)+"-"+z(n.getDate());
     d.pedidos.push({ id:"ped"+Date.now(), folio:folio, fecha:dia+" "+z(n.getHours())+":"+z(n.getMinutes()), dia:dia, cliente:"", whatsapp:"", items_json:JSON.stringify(items), total:cartTotal(), estado:"pendiente", venta_folio:"" });
     localStorage.setItem("ym_pos", JSON.stringify(d));
-    return folio;
-  }catch(e){ return ""; }
+    return { folio:folio };
+  }catch(e){ return { error:"demo" }; }
+}
+
+/* Si una prenda ya no alcanza, se le explica a la clienta y se ajusta su pedido
+   ANTES de mandarlo por WhatsApp (antes se mandaba igual y la dueña no podía confirmarlo). */
+function avisarFaltantes(faltantes){
+  const filas = faltantes.map(f=>{
+    const t = "Talla "+f.talla+(f.color?" · "+f.color:"");
+    return `<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)">
+      <div><b>${f.nombre||""}</b><div class="small" style="color:var(--muted)">${t}</div></div>
+      <div style="text-align:right;flex:none"><div class="small" style="color:var(--muted)">pediste ${f.pedido}</div>
+      <b style="color:${f.disponible>0?'var(--gold)':'#c65a5a'}">${f.disponible>0?("quedan "+f.disponible):"agotada"}</b></div></div>`;
+  }).join("");
+  // ajustar el carrito a lo que sí hay
+  faltantes.forEach(f=>{
+    const i = cart.findIndex(c=>c.id===f.producto_id && String(c.talla)===String(f.talla) && String(c.color||"")===String(f.color||""));
+    if(i>=0){ if(f.disponible>0) cart[i].qty=f.disponible; else cart.splice(i,1); }
+  });
+  saveCart(); renderCart(); pollCatalog();   // refresca las existencias en pantalla
+  const el=document.getElementById("sheet");
+  el.innerHTML = `<div class="grab"></div><div class="content">
+    <h3 class="serif" style="margin-bottom:4px">Se acaban de vender</h3>
+    <p style="color:var(--muted);font-size:14.5px;margin:0 0 10px">Alguien compró antes que tú. Ya ajustamos tu pedido a lo que queda disponible.</p>
+    ${filas}
+    <button class="sheet-cta" style="margin-top:16px" onclick="closeSheet()">Entendido, revisar mi pedido</button>
+  </div>`;
+  document.getElementById("scrim").classList.add("show");
+  el.classList.add("show"); document.body.style.overflow="hidden";
 }
 
 /* ---------- TOAST + SEARCH ---------- */

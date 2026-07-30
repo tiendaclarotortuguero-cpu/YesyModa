@@ -586,7 +586,10 @@ function findVar(prod,t,c){return (prod.variantes||[]).find(v=>String(v.talla)==
 function demoCall(action,p){
   const cat=demoCat(); const pos=demoPos();
   const dropStock=(items)=>{ // valida y descuenta; devuelve error o null
-    for(const it of items){const prod=cat.products.find(x=>x.id===it.producto_id);const v=prod&&findVar(prod,it.talla,it.color);const have=v?(+v.stock||0):0;if((+it.cantidad||0)>have)return {ok:false,error:"stock",producto:it.nombre,talla:it.talla,color:it.color,disponible:have};}
+    const falt=[];
+    for(const it of items){const prod=cat.products.find(x=>x.id===it.producto_id);const v=prod&&findVar(prod,it.talla,it.color);const have=v?(+v.stock||0):0;
+      if((+it.cantidad||0)>have) falt.push({producto_id:it.producto_id,producto:it.nombre,nombre:it.nombre,talla:it.talla,color:it.color,disponible:have,pedido:+it.cantidad||0});}
+    if(falt.length){const f0=falt[0];return {ok:false,error:"stock",faltantes:falt,producto:f0.producto,talla:f0.talla,color:f0.color,disponible:f0.disponible,pedido:f0.pedido};}
     items.forEach(it=>{const prod=cat.products.find(x=>x.id===it.producto_id);const v=prod&&findVar(prod,it.talla,it.color);if(v)v.stock=(+v.stock||0)-(+it.cantidad||0);});
     demoCatSave(cat);return null;
   };
@@ -608,7 +611,7 @@ function demoCall(action,p){
   };
   if(action==="registrarVenta"){const err=dropStock(p.items);if(err)return err;const r=mkVenta(p.items,p.descuento,"tienda","",p.pago||"efectivo",p.clienteId||"");return {ok:true,folio:r.folio,total:r.total,estado:r.estado};}
   if(action==="crearPedido"){const q=p.pedido||{};const folio="P-"+("0000"+(pos.pedidos.length+1)).slice(-4);pos.pedidos.push({id:"ped"+Date.now(),folio,fecha:nowStr(),dia:todayStr(),cliente:q.cliente||"",whatsapp:q.whatsapp||"",items_json:JSON.stringify(q.items||[]),total:+q.total||0,estado:"pendiente",venta_folio:""});demoPosSave(pos);return {ok:true,folio};}
-  if(action==="confirmarPedido"){const ped=pos.pedidos.find(x=>x.id===p.id);if(!ped)return {ok:false,error:"no existe"};if(ped.estado!=="pendiente")return {ok:false,error:"ya procesado"};let items=[];try{items=JSON.parse(ped.items_json||"[]");}catch(e){}const err=dropStock(items);if(err)return err;const r=mkVenta(items,0,"online",ped.folio,p.pago||"efectivo",p.clienteId||"");ped.estado="confirmado";ped.venta_folio=r.folio;demoPosSave(pos);return {ok:true,folio:r.folio};}
+  if(action==="confirmarPedido"){const ped=pos.pedidos.find(x=>x.id===p.id);if(!ped)return {ok:false,error:"no existe"};if(ped.estado!=="pendiente")return {ok:false,error:"ya procesado"};let items=[];try{items=JSON.parse(ped.items_json||"[]");}catch(e){}if(p.items&&p.items.length)items=p.items;const err=dropStock(items);if(err)return err;const r=mkVenta(items,0,"online",ped.folio,p.pago||"efectivo",p.clienteId||"");ped.estado="confirmado";ped.venta_folio=r.folio;demoPosSave(pos);return {ok:true,folio:r.folio};}
   if(action==="descartarPedido"){const ped=pos.pedidos.find(x=>x.id===p.id);if(ped){ped.estado="descartado";demoPosSave(pos);}return {ok:true};}
   if(action==="anularVenta"){const v=pos.ventas.find(x=>x.id===p.id);if(!v)return {ok:false,error:"no existe"};if(v.estado==="anulada")return {ok:true};(v._items||[]).forEach(it=>{const prod=cat.products.find(x=>x.id===it.producto_id);const vr=prod&&findVar(prod,it.talla,it.color);if(vr)vr.stock=(+vr.stock||0)+(+it.cantidad||0);});demoCatSave(cat);if(v.pago==="credito"&&v.cliente_id){const cc=(pos.clientes||[]).find(c=>c.id===v.cliente_id);if(cc)cc.saldo=Math.max(0,(+cc.saldo||0)-(+v.total||0));}v.estado="anulada";demoPosSave(pos);return {ok:true,folio:v.folio};}
   if(action==="getVentas"){return {ok:true,ventas:pos.ventas.slice().reverse()};}
@@ -844,13 +847,29 @@ function pedCard(p){let items=[];try{items=JSON.parse(p.items_json||"[]");}catch
     <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--ink)">${i.nombre||""} ${i.codigo?`<span class="small" style="color:var(--rosa-ink);font-weight:700">${i.codigo}</span>`:""}</div><div class="small muted">T${i.talla}${i.color?" · "+i.color:""} · x${i.cantidad}</div></div>
     <b class="small">${money((+i.precio||0)*(+i.cantidad||0))}</b></div>`).join("");
   const b=p.estado==="pendiente"?"pend":(p.estado==="confirmado"?"conf":"desc");
+  const falt = p.estado==="pendiente" ? faltantesDePedido(items) : [];
   return `<div class="row"><div class="rh"><span class="folio">${p.folio}</span><span class="badge online">online</span><span class="badge ${b}">${p.estado}</span><span class="money">${money(p.total)}</span></div>
     <div class="sub">${p.fecha||""}${p.cliente?" · "+p.cliente:""}</div>
+    ${falt.length?`<div class="sub" style="color:var(--warn);font-weight:600;margin-top:5px">Ya no alcanza el inventario de ${falt.length} ${falt.length===1?"prenda":"prendas"}</div>`:""}
     <div style="margin-top:6px;border-top:1px dashed var(--line)">${itemsHtml||'<div class="sub">—</div>'}</div>
     ${p.estado==="pendiente"?`<div class="acts"><button class="btn btn-primary btn-sm" onclick="confirmarPed('${p.id}')">${ic('check',15)} Confirmar (vender)</button><button class="btn btn-ghost btn-sm" onclick="descartarPed('${p.id}','${p.folio}')">Descartar</button></div>`:(p.venta_folio?`<div class="sub" style="margin-top:6px">Venta ${p.venta_folio}</div>`:"")}</div>`;
 }
+let PEDIDOS_MAP={};
+/* Cuánto falta de cada prenda de un pedido, según el inventario que ya tenemos cargado */
+function faltantesDePedido(items){
+  const out=[];
+  (items||[]).forEach(it=>{
+    const prod=DATA.products.find(x=>x.id===it.producto_id);
+    if(!prod) return;                                   // prenda oculta o borrada: lo dirá el servidor
+    const v=findVar(prod,it.talla,it.color);
+    const have=v?(+v.stock||0):0;
+    if((+it.cantidad||0)>have) out.push(Object.assign({},it,{disponible:have}));
+  });
+  return out;
+}
 function renderPedidos(peds){
   updatePedBadge(peds);
+  PEDIDOS_MAP={}; peds.forEach(p=>{ let it=[]; try{it=JSON.parse(p.items_json||"[]");}catch(e){} PEDIDOS_MAP[p.id]={ped:p,items:it}; });
   const el=document.getElementById("pedList");if(!el)return;
   if(!peds.length){el.innerHTML=`<div class="empty2"><div class="big">${ic('inbox',38)}</div><p>No hay pedidos todavía.<br><span class="small">Los pedidos de la tienda en línea aparecerán aquí para confirmarlos.</span></p></div>`;return;}
   const pend=peds.filter(p=>p.estado==="pendiente");
@@ -879,11 +898,51 @@ async function silentPedidos(force){
 function confirmarPed(id){
   pagoChooser("Confirmar pedido en línea", ()=>doConfirmarPedido(id,'efectivo','',''), ()=>openClientePicker((cid,nom)=>doConfirmarPedido(id,'credito',cid,nom)));
 }
-async function doConfirmarPedido(id,pago,clienteId,nombre){
+async function doConfirmarPedido(id,pago,clienteId,nombre,itemsAjustados){
   closeModal();
-  const res=await apiCall("confirmarPedido",{id,pago,clienteId});
-  if(res&&res.ok){toast("Pedido confirmado · Venta "+(res.folio||"")+(pago==="credito"?" · fiado"+(nombre?" a "+nombre:""):"")+"","ok");await loadCatalog();silentPedidos(true);}
-  else{const msg=(res&&res.error==="stock")?`No hay stock para ${res.producto} (T${res.talla}${res.color?"/"+res.color:""}). Quedan ${res.disponible}.`:("No se pudo confirmar"+(res&&res.error?": "+res.error:""));toast(msg,true);}
+  const payload={id,pago,clienteId};
+  if(itemsAjustados) payload.items=itemsAjustados;
+  const res=await apiCall("confirmarPedido",payload);
+  if(res&&res.ok){
+    toast("Pedido confirmado · Venta "+(res.folio||"")+(pago==="credito"?" · fiado"+(nombre?" a "+nombre:""):""),"ok");
+    await loadCatalog(); silentPedidos(true); return;
+  }
+  if(res&&res.error==="stock"){ resolverFaltantes(id,pago,clienteId,nombre,res); return; }
+  toast("No se pudo confirmar"+(res&&res.error?": "+res.error:""),true);
+}
+
+/* Sin salida no: aquí se ve qué falta y se puede vender lo que sí hay */
+function resolverFaltantes(id,pago,clienteId,nombre,res){
+  const reg=PEDIDOS_MAP[id]||{items:[]};
+  const falt=(res&&res.faltantes&&res.faltantes.length)?res.faltantes
+            :[{producto_id:"",nombre:res.producto,talla:res.talla,color:res.color,pedido:res.pedido,disponible:res.disponible}];
+  const dispDe=(it)=>{
+    const f=falt.find(x=>String(x.nombre||"")===String(it.nombre||"")&&String(x.talla)===String(it.talla)&&String(x.color||"")===String(it.color||""));
+    return f?(+f.disponible||0):(+it.cantidad||0);
+  };
+  const ajustados=reg.items.map(it=>Object.assign({},it,{cantidad:Math.min(+it.cantidad||0,dispDe(it))})).filter(it=>it.cantidad>0);
+  const totalAjust=ajustados.reduce((s,it)=>s+(+it.precio||0)*(+it.cantidad||0),0);
+  const filas=reg.items.map(it=>{
+    const d=dispDe(it), falta=(+it.cantidad||0)>d;
+    return `<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)">
+      <div><b>${it.nombre||""}</b><div class="small muted">T${it.talla}${it.color?" · "+it.color:""} · pedido x${it.cantidad}</div></div>
+      <div style="text-align:right;flex:none"><b style="color:${falta?(d>0?'var(--warn)':'var(--danger)'):'var(--ok)'}">${falta?(d>0?("solo "+d):"agotada"):("x"+it.cantidad)}</b></div></div>`;
+  }).join("");
+  window.__ajustados=ajustados;
+  modal(`<div class="mh"><h3>No alcanza el inventario</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+   <div class="mb">
+     <p class="small muted" style="margin:0 0 10px">Estas prendas se vendieron después de que la clienta hizo el pedido. Puedes venderle lo que sí queda y avisarle por WhatsApp.</p>
+     ${filas}
+     ${ajustados.length?`<button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" onclick="confirmarSoloDisponible('${id}','${pago}','${clienteId||""}',${JSON.stringify(nombre||"").replace(/"/g,"&quot;")})">Vender solo lo disponible · ${money(totalAjust)}</button>`
+       :`<div class="small muted" style="margin-top:14px;text-align:center">No queda nada de este pedido.</div>`}
+     <button class="btn btn-ghost btn-block" style="margin-top:9px" onclick="closeModal()">Dejarlo pendiente</button>
+     <button class="btn btn-ghost btn-block" style="margin-top:9px;color:var(--danger);border-color:#e6c3c3" onclick="closeModal();descartarPed('${id}','${(reg.ped&&reg.ped.folio)||""}')">Descartar el pedido</button>
+   </div>`);
+}
+function confirmarSoloDisponible(id,pago,clienteId,nombre){
+  const items=window.__ajustados||[];
+  if(!items.length){ toast("No queda nada disponible.",true); return; }
+  doConfirmarPedido(id,pago,clienteId,nombre,items);
 }
 function descartarPed(id,folio){confirmModal("Descartar pedido","¿Descartar el pedido <b>"+folio+"</b>? No afecta el inventario.",async()=>{const r=await apiCall("descartarPedido",{id});if(!r||r.ok===false){toast("No se pudo descartar",true);return;}toast("Pedido descartado");silentPedidos(true);},"Descartar",true);}
 

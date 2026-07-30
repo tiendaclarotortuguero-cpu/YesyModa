@@ -137,6 +137,18 @@ Con visitas normales al catálogo no hace falta, pero no estorba.
 
 ---
 
+## 📦 Cómo se maneja el inventario con los pedidos en línea
+
+El inventario **no se aparta cuando la clienta hace el pedido**: baja recién cuando la dueña toca **Confirmar (vender)**. Así, un pedido que nunca se concreta no deja prendas bloqueadas.
+
+Para que eso no cause enredos, el sistema hace tres cosas:
+
+1. **Al pedir**, la tienda en línea revisa el inventario contra la Hoja de Google. Si una prenda ya no alcanza, se lo dice a la clienta ahí mismo ("Se acaban de vender"), le ajusta el pedido a lo que queda y **no manda un pedido imposible**.
+2. **En la lista de Pedidos**, un pendiente al que ya no le alcanza el inventario se marca en naranja: *"Ya no alcanza el inventario de N prendas"*, antes de que la dueña lo toque.
+3. **Al confirmar**, si alguna prenda se vendió en el mostrador mientras tanto, no se queda sin salida: aparece un detalle prenda por prenda y puede **vender solo lo disponible** (se cobra el resto y se descuenta bien), dejarlo pendiente o descartarlo.
+
+---
+
 ## 🆘 Si no aparecen los datos (pedidos, ventas, fiados, reporte)
 
 Casi siempre es la **contraseña**. El catálogo de prendas es público, pero pedidos, ventas, fiados y reporte se piden con contraseña: si no coincide con la de `Code.gs`, esas cuatro pestañas salen vacías.

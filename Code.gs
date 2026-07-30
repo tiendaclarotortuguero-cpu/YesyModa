@@ -190,14 +190,21 @@ function venderItems(o){
   const pmap = {};
   readObjects(SH.PROD).forEach(function(p){ pmap[String(p.id)] = p; });
 
-  // 1) validar stock
+  // 1) validar stock — se revisan TODAS las prendas, no solo la primera
+  const faltantes = [];
   for(let k=0;k<items.length;k++){
     const it = items[k];
     const vi = idx[ keyVar(it.producto_id, it.talla, it.color) ];
     const have = (vi!=null) ? num(vars[vi].stock) : 0;
     if(num(it.cantidad) > have){
-      return { ok:false, error:"stock", producto:it.nombre||it.producto_id, talla:it.talla, color:it.color, disponible:have, pedido:num(it.cantidad) };
+      faltantes.push({ producto_id:it.producto_id, producto:it.nombre||it.producto_id, nombre:it.nombre||"",
+                       talla:it.talla, color:it.color, disponible:have, pedido:num(it.cantidad) });
     }
+  }
+  if(faltantes.length){
+    const f0 = faltantes[0];
+    return { ok:false, error:"stock", faltantes:faltantes,
+             producto:f0.producto, talla:f0.talla, color:f0.color, disponible:f0.disponible, pedido:f0.pedido };
   }
 
   // 2) descontar stock + calcular
@@ -319,6 +326,22 @@ function crearPedido(body){
   const items = p.items || [];
   if(!items.length) return { ok:false, error:"sin items" };
   if(items.length > 80) return { ok:false, error:"demasiados items" };
+
+  // Antes se aceptaba cualquier pedido aunque la prenda estuviera agotada, y la dueña
+  // no podía confirmarlo después. Ahora se revisa el inventario aquí mismo.
+  const vars = readObjects(SH.VAR);
+  const disp = {};
+  vars.forEach(function(v){ disp[ keyVar(v.producto_id, v.talla, v.color) ] = num(v.stock); });
+  const faltantes = [];
+  items.forEach(function(it){
+    const have = disp[ keyVar(it.producto_id, it.talla, it.color) ] || 0;
+    if(num(it.cantidad) > have){
+      faltantes.push({ producto_id:String(it.producto_id), nombre:it.nombre||"", talla:it.talla||"",
+                       color:it.color||"", pedido:num(it.cantidad), disponible:have });
+    }
+  });
+  if(faltantes.length) return { ok:false, error:"stock", faltantes:faltantes };
+
   const id = "ped" + Date.now();
   const folio = folioNext(SH.PED, "P");
   sheet(SH.PED).appendRow([ id, folio, nowLocal(), today(), String(p.cliente||"").slice(0,80), String(p.whatsapp||"").slice(0,30), JSON.stringify(items).slice(0,45000), num(p.total), "pendiente", "" ]);
@@ -346,7 +369,10 @@ function confirmarPedido(body){
   if(String(ped.estado) !== "pendiente") return { ok:false, error:"ya procesado" };
   let items = [];
   try{ items = JSON.parse(ped.items_json || "[]"); }catch(e){}
-  const res = venderItems({ items:items, descuento:0, pago:(body.pago||"efectivo"), clienteId:(body.clienteId||""), canal:"online", pedidoFolio:ped.folio });
+  // La dueña puede confirmar solo lo que sí hay: manda las cantidades ajustadas.
+  let nota = "";
+  if(body.items && body.items.length){ items = body.items; nota = "parcial"; }
+  const res = venderItems({ items:items, descuento:0, pago:(body.pago||"efectivo"), clienteId:(body.clienteId||""), canal:"online", pedidoFolio:ped.folio, nota:nota });
   if(!res.ok) return res; // p.ej. sin stock
   updatePedidoEstado(id, "confirmado", res.folio);
   return { ok:true, folio:res.folio, total:res.total };
