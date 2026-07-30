@@ -265,7 +265,7 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
     <div class="tag">Caja · Punto de venta</div>
     <p class="muted" style="font-size:14px;margin:0 0 18px">Ingresa tu contraseña para vender.</p>
     <div style="text-align:left"><input class="inp" id="pwd" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="doLogin()">Entrar</button>
+    <button class="btn btn-primary btn-block" id="loginBtn" style="margin-top:14px" onclick="doLogin()">Entrar</button>
     <p class="small muted" id="loginNote" style="margin-top:16px"></p>
   </div>
 </div>
@@ -276,7 +276,7 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
     <div class="wrap top-in">
       <span class="logo serif">Yosy<b>Moda</b> <span style="font-size:12px;color:var(--muted);font-family:'Jost'">· Caja</span></span>
       <span class="pill" id="modePill"></span>
-      <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
+      <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v10.8"/><path d="m7.6 10.4 4.4 4.4 4.4-4.4"/><path d="M4.6 17.4V19a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5v-1.6"/></svg></button>
       <a class="iconbtn only-desk" href="admin.html" title="Panel">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       </a>
@@ -478,19 +478,87 @@ let repDia="";                               // día seleccionado en el reporte 
 function getToken(){try{return localStorage.getItem("ym_token")||sessionStorage.getItem("ym_token")||"";}catch(e){return sessionStorage.getItem("ym_token")||"";}}
 function setToken(v){try{localStorage.setItem("ym_token",v);}catch(e){}sessionStorage.setItem("ym_token",v);}
 function clearToken(){try{localStorage.removeItem("ym_token");}catch(e){}sessionStorage.removeItem("ym_token");}
-function doLogin(){const v=document.getElementById("pwd").value;if(!v){document.getElementById("loginNote").textContent="Escribe tu contraseña.";return;}setToken(v);startApp();}
+
+/* ============================================================
+   ACCESO: se comprueba la contraseña de verdad contra tu Hoja.
+   Si no coincide, se avisa (antes se guardaba mal y las listas
+   salían vacías sin explicar por qué).
+   ============================================================ */
+async function validarClave(v){          // "ok" | "clave" | "red"
+  try{
+    let r = await fetch(CONFIG.API_URL,{method:"POST",body:JSON.stringify({action:"checkAuth",token:v})});
+    let j = await r.json();
+    if(j && j.ok) return "ok";
+    if(j && j.error === "auth") return "clave";
+    // Versión anterior del backend: no conoce "checkAuth". Probamos con una acción que sí existe.
+    r = await fetch(CONFIG.API_URL,{method:"POST",body:JSON.stringify({action:"getClientes",token:v})});
+    j = await r.json();
+    if(j && j.ok) return "ok";
+    if(j && j.error === "auth") return "clave";
+    return "red";
+  }catch(e){ return "red"; }
+}
+let __authAvisado=false;
+function sesionInvalida(){
+  if(__authAvisado) return; __authAvisado=true;
+  clearToken();
+  const app=document.getElementById("appView"), log=document.getElementById("loginView");
+  if(app) app.classList.add("hide");
+  if(log){ log.classList.remove("hide"); log.style.display=""; }
+  const n=document.getElementById("loginNote");
+  if(n) n.innerHTML="<b style='color:var(--danger)'>La contraseña ya no coincide con la del sistema.</b><br>Escribe la que está en <b>ADMIN_TOKEN</b>, arriba del archivo <b>Code.gs</b>.";
+  const pw=document.getElementById("pwd"); if(pw){ pw.value=""; pw.focus(); }
+}
+function revisarRespuesta(j){
+  if(j && j.ok===false && j.error==="auth"){ sesionInvalida(); return false; }
+  return true;
+}
+/* Diagnóstico: dice exactamente qué está fallando */
+async function probarConexion(){
+  if(typeof closeModal==="function") closeModal();
+  if(!LIVE){ toast("Estás en modo demostración: config.js no tiene API_URL.",true); return; }
+  toast("Probando conexión…");
+  let cat="error";
+  try{ const r=await fetch(CONFIG.API_URL+"?action=ping"); const j=await r.json(); if(j&&j.ok) cat="ok"; }catch(e){}
+  const cl=await validarClave(getToken());
+  const fila=(t,ok,d)=>`<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)">
+      <span style="color:${ok?'var(--ok)':'var(--danger)'};flex:none">${ok?ic('check',17):ic('close',17)}</span>
+      <div><b>${t}</b><div class="small muted">${d}</div></div></div>`;
+  modal(`<div class="mh"><h3>Prueba de conexión</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+   <div class="mb">
+     ${fila("Conexión con Google Sheets", cat==="ok", cat==="ok"?"La URL de la API responde bien.":"No responde. Revisa tu internet y la <b>API_URL</b> en config.js.")}
+     ${fila("Contraseña", cl==="ok", cl==="ok"?"Coincide con la del archivo Code.gs.":(cl==="clave"?"<b>No coincide.</b> Usa la que está en <b>ADMIN_TOKEN</b> dentro de Code.gs, o cierra sesión y vuelve a entrar.":"No se pudo comprobar (sin conexión)."))}
+     <p class="small muted" style="margin-top:12px">Si la contraseña no coincide, toca <b>Cerrar sesión</b> y entra de nuevo con la correcta.</p>
+   </div>`);
+}
+
+async function doLogin(){
+  const v=document.getElementById("pwd").value.trim();
+  const note=document.getElementById("loginNote"), btn=document.getElementById("loginBtn");
+  if(!v){ note.textContent="Escribe tu contraseña."; return; }
+  if(!LIVE){ setToken(v); startApp(); return; }
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin"></span> Verificando…'; }
+  note.textContent="";
+  const r=await validarClave(v);
+  if(btn){ btn.disabled=false; btn.textContent="Entrar"; }
+  if(r==="ok"){ __authAvisado=false; setToken(v); startApp(); return; }
+  note.innerHTML = (r==="clave")
+    ? "<b style='color:var(--danger)'>Contraseña incorrecta.</b><br>Es la que está en <b>ADMIN_TOKEN</b>, arriba del archivo <b>Code.gs</b>."
+    : "<b style='color:var(--danger)'>No se pudo conectar.</b><br>Revisa tu internet y la <b>API_URL</b> en config.js.";
+}
 function logout(){clearToken();location.href="admin.html";}
 document.getElementById("loginNote").textContent = LIVE?"Se valida con tu Google Apps Script.":"Modo demostración: escribe cualquier cosa para entrar.";
-if(getToken()) startApp();
+/* el arranque automático se hace al final del script, cuando ya existe todo */
 
 /* ---------- SAMPLE (demo, mismo catálogo que el panel) ---------- */
 const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR},categories:[{id:"blusas",nombre:"Blusas",icono:"shirt",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"dress",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"pants",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"skirt",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"bag",orden:5,visible:true}],products:[
-{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",precio:450,costo:280,codigo:"YM1",imagen:"",activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"M",color:"Blanco",stock:5},{talla:"L",color:"Negro",stock:3}]},
-{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",precio:380,costo:230,codigo:"YM2",imagen:"",activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Celeste",stock:5}]},
-{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",precio:690,costo:410,codigo:"YM3",imagen:"",activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Verde",stock:3}]},
-{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",precio:720,costo:450,codigo:"YM5",imagen:"",activo:true,variantes:[{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
-{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",precio:520,costo:300,codigo:"YM6",imagen:"",activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Marino",stock:3}]},
-{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",precio:480,costo:260,codigo:"YM7",imagen:"",activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Rosa",stock:3}]}
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"M",color:"Negro",stock:4}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"M",color:"Vino",stock:2}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
 ]};
 
 /* ---------- demo stores (comparten catálogo con el panel: ym_admin) ---------- */
@@ -508,7 +576,9 @@ async function apiCall(action,payload){
   if(LIVE){
     const body=JSON.stringify(Object.assign({action,token:getToken()},payload||{}));
     const r=await fetch(CONFIG.API_URL,{method:"POST",body});
-    return await r.json();
+    const j=await r.json();
+    revisarRespuesta(j);
+    return j;
   }
   return demoCall(action,payload||{});
 }
@@ -570,13 +640,16 @@ function applyCatalog(d){
   POLLSIG.cat=catSig(DATA.categories,DATA.products);
 }
 async function loadCatalog(){
-  try{const d=await apiGetCatalog();applyCatalog(d);}
+  try{const d=await apiGetCatalog();
+    if(!d||!d.products){toast("No se pudo cargar el catálogo.",true);}
+    else applyCatalog(d);}
   catch(e){toast("No se pudo cargar el catálogo.",true);}
   renderCats();renderGrid();
 }
 /* Refresco silencioso del catálogo: solo re-dibuja si algo cambió realmente. */
 async function loadCatalogSilent(){
   let d;try{d=await apiGetCatalog();}catch(e){return;}
+  if(!d||!d.products) return;               // respuesta incompleta: no tocar la pantalla
   const cats=(d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0));
   const prods=(d.products||[]).filter(p=>p.activo!==false);
   if(catSig(cats,prods)===POLLSIG.cat)return;      // sin cambios → no tocar la pantalla
@@ -605,6 +678,7 @@ function openMenu(){
    <div class="mb">
      <a class="btn btn-ghost btn-block btn-lg" href="admin.html" style="margin-bottom:9px">${ic('home',18)} Panel (productos e inventario)</a>
      <button class="btn btn-ghost btn-block btn-lg" style="margin-bottom:9px" onclick="closeModal();refreshAll()">${ic('refresh',18)} Actualizar datos</button>
+     <button class="btn btn-ghost btn-block btn-lg" style="margin-bottom:9px" onclick="probarConexion()">${ic('globe',18)} Probar conexión</button>
      <button class="btn btn-ghost btn-block btn-lg" id="mnuInstall" style="margin-bottom:9px" onclick="closeModal();instalarApp()">${ic('phone',18)} Instalar como app</button>
      <button class="btn btn-ghost btn-block btn-lg" style="color:var(--danger);border-color:#e6c3c3" onclick="logout()">Cerrar sesión</button>
    </div>`);
@@ -750,6 +824,16 @@ function showVentaOK(v){
   </div>`);
 }
 
+/* Muestra un error claro en vez de una lista vacía engañosa */
+function panelError(id,res){
+  const el=document.getElementById(id); if(!el) return;
+  const det=(res&&res.error)?String(res.error):"";
+  el.innerHTML=`<div class="empty2"><div class="big" style="color:var(--danger)">${ic('close',36)}</div>
+    <p><b>No se pudieron cargar los datos.</b><br>
+    <span class="small">${det?("Detalle: "+det):"Revisa tu conexión a internet."}</span></p>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="probarConexion()">Probar conexión</button></div>`;
+}
+
 /* ---------- pedidos ---------- */
 function pedSig(peds){return peds.map(p=>p.id+":"+p.estado+":"+(p.venta_folio||"")).join("|");}
 function updatePedBadge(peds){const n=peds.filter(p=>p.estado==="pendiente").length;
@@ -777,12 +861,16 @@ function renderPedidos(peds){
   el.innerHTML=h;
 }
 async function loadPedidos(){
-  const res=await apiCall("getPedidos",{});const peds=(res&&res.pedidos)||[];
+  const res=await apiCall("getPedidos",{});
+  if(!res||res.ok===false){ panelError("pedList",res); return; }
+  const peds=res.pedidos||[];
   POLLSIG.ped=pedSig(peds);renderPedidos(peds);
 }
 /* Refresco silencioso: mantiene el badge al día y re-dibuja la lista SOLO si cambió. */
 async function silentPedidos(force){
-  const res=await apiCall("getPedidos",{});const peds=(res&&res.pedidos)||[];
+  const res=await apiCall("getPedidos",{});
+  if(!res||res.ok===false) return;          // un fallo pasajero NO borra lo que ya se ve
+  const peds=res.pedidos||[];
   updatePedBadge(peds);
   const sig=pedSig(peds);
   if(force||sig!==POLLSIG.ped){POLLSIG.ped=sig;if(TAB==="pedidos")renderPedidos(peds);}
@@ -797,34 +885,42 @@ async function doConfirmarPedido(id,pago,clienteId,nombre){
   if(res&&res.ok){toast("Pedido confirmado · Venta "+(res.folio||"")+(pago==="credito"?" · fiado"+(nombre?" a "+nombre:""):"")+"","ok");await loadCatalog();silentPedidos(true);}
   else{const msg=(res&&res.error==="stock")?`No hay stock para ${res.producto} (T${res.talla}${res.color?"/"+res.color:""}). Quedan ${res.disponible}.`:("No se pudo confirmar"+(res&&res.error?": "+res.error:""));toast(msg,true);}
 }
-function descartarPed(id,folio){confirmModal("Descartar pedido","¿Descartar el pedido <b>"+folio+"</b>? No afecta el inventario.",async()=>{await apiCall("descartarPedido",{id});toast("Pedido descartado");silentPedidos(true);},"Descartar",true);}
+function descartarPed(id,folio){confirmModal("Descartar pedido","¿Descartar el pedido <b>"+folio+"</b>? No afecta el inventario.",async()=>{const r=await apiCall("descartarPedido",{id});if(!r||r.ok===false){toast("No se pudo descartar",true);return;}toast("Pedido descartado");silentPedidos(true);},"Descartar",true);}
 
 /* ---------- ventas ---------- */
 function ventaSig(vs){return vs.map(v=>v.id+":"+v.estado+":"+v.total).join("|");}
+let VENTAS_MAP={};
 function renderVentas(vs){
+  VENTAS_MAP={}; vs.forEach(v=>VENTAS_MAP[v.id]=v);
   const el=document.getElementById("venList");
   if(!vs.length){el.innerHTML=`<div class="empty2"><div class="big">${ic('receipt',38)}</div><p>Aún no hay ventas.</p></div>`;return;}
   el.innerHTML=vs.map(v=>{const anul=v.estado==="anulada";
-    return `<div class="row" onclick="verVenta('${v.id}','${v.folio}',${v.total},'${v.estado}','${v.canal}')" style="cursor:pointer">
+    return `<div class="row" onclick="verVenta('${v.id}')" style="cursor:pointer">
       <div class="rh"><span class="folio">${v.folio}</span><span class="badge ${v.canal==='online'?'online':'tienda'}">${v.canal}</span>${anul?`<span class="badge anul">anulada</span>`:""}<span class="money" style="${anul?'text-decoration:line-through;opacity:.6':''}">${money(v.total)}</span></div>
       <div class="sub">${v.fecha||""} · ${v.items||0} art. · ${v.pago||"efectivo"}</div></div>`;
   }).join("");
 }
 async function loadVentas(){
   const el=document.getElementById("venList");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
-  const res=await apiCall("getVentas",{});const vs=(res&&res.ventas)||[];
+  const res=await apiCall("getVentas",{});
+  if(!res||res.ok===false){ panelError("venList",res); return; }
+  const vs=res.ventas||[];
   POLLSIG.ven=ventaSig(vs);renderVentas(vs);
 }
 async function refreshVentasSilent(){
-  const res=await apiCall("getVentas",{});const vs=(res&&res.ventas)||[];
+  const res=await apiCall("getVentas",{});
+  if(!res||res.ok===false) return;
+  const vs=res.ventas||[];
   const sig=ventaSig(vs);if(sig===POLLSIG.ven)return;POLLSIG.ven=sig;renderVentas(vs);
 }
-async function verVenta(id,folio,total,estado,canal){
+async function verVenta(id){
+  const v0=VENTAS_MAP[id]||{};
+  const folio=v0.folio||"", total=+v0.total||0, estado=v0.estado||"", canal=v0.canal||"tienda";
   modal(`<div class="mh"><h3>Venta ${folio}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="mb" id="vdet"><div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div></div>`);
   const res=await apiCall("getVentaItems",{id});const its=(res&&res.items)||[];
   const rows=its.map(i=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line)"><span>${i.nombre} <span class="muted small">T${i.talla}${i.color?"/"+i.color:""} ×${i.cantidad}</span></span><b>${money((+i.precio||0)*(+i.cantidad||0))}</b></div>`).join("");
-  window.__detVenta={folio:folio,fecha:"",total:total,pago:"",cliente:"",items:its.map(i=>({nombre:i.nombre,talla:i.talla,color:i.color,precio:+i.precio||0,cantidad:+i.cantidad||0}))};
+  window.__detVenta={folio:folio,fecha:v0.fecha||"",total:total,pago:v0.pago||"efectivo",cliente:v0.cliente||"",items:its.map(i=>({nombre:i.nombre,talla:i.talla,color:i.color,precio:+i.precio||0,cantidad:+i.cantidad||0}))};
   document.getElementById("vdet").innerHTML=`<div class="small muted" style="margin-bottom:6px">${canal==='online'?'Pedido en línea':'Venta en tienda'} · ${estado}</div>${rows}
     <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:18px"><b>Total</b><b class="serif" style="color:var(--rosa-deep)">${money(total)}</b></div>
     <button class="btn btn-ghost btn-block btn-sm" style="margin-top:14px" onclick="reciboImagen(window.__detVenta)">${ic('receipt',17)} Ver / descargar recibo</button>
@@ -837,7 +933,7 @@ async function loadReporte(dia){
   repDia=dia||repDia||todayStr();
   const el=document.getElementById("repArea");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
   const r=await apiCall("reporteDia",{dia:repDia});
-  if(!r||!r.ok){el.innerHTML=`<div class="empty2"><p>No se pudo cargar el reporte.</p></div>`;return;}
+  if(!r||!r.ok){ panelError("repArea",r); return; }
   const isHoy=repDia===todayStr(), isAyer=repDia===ayerStr();
   const enCaja=(+r.efectivo||0)+(+r.abonos||0);
   const canalRows=Object.keys(r.canal||{}).map(k=>`<div style="display:flex;justify-content:space-between;padding:6px 0"><span class="muted">${k==='online'?(ic('globe',14)+' En línea'):(ic('store',14)+' Mostrador')}</span><b>${money(r.canal[k])}</b></div>`).join("")||`<div class="muted small">Sin ventas este día.</div>`;
@@ -867,10 +963,14 @@ let CLIENTES=[];
 function fiaSig(cls){return cls.map(c=>c.id+":"+c.saldo+":"+c.nombre).join("|");}
 async function loadFiados(){
   const el=document.getElementById("fiaArea");el.innerHTML=`<div class="loadfull"><span class="spin" style="border-color:#e8cdd6;border-top-color:var(--rosa-deep)"></span></div>`;
-  const res=await apiCall("getClientes",{});CLIENTES=(res&&res.clientes)||[];POLLSIG.fia=fiaSig(CLIENTES);renderFiados();
+  const res=await apiCall("getClientes",{});
+  if(!res||res.ok===false){ panelError("fiaArea",res); return; }
+  CLIENTES=res.clientes||[];POLLSIG.fia=fiaSig(CLIENTES);renderFiados();
 }
 async function refreshFiadosSilent(){
-  const res=await apiCall("getClientes",{});const cls=(res&&res.clientes)||[];
+  const res=await apiCall("getClientes",{});
+  if(!res||res.ok===false) return;
+  const cls=res.clientes||[];
   const sig=fiaSig(cls);if(sig===POLLSIG.fia)return;POLLSIG.fia=sig;CLIENTES=cls;renderFiados();
 }
 function renderFiados(){
@@ -988,8 +1088,8 @@ function reciboImagen(v){
     <div class="mb" style="text-align:center">
       <img src="${png}" style="max-width:100%;border:1px solid var(--line);border-radius:12px">
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center">
-        <button class="btn btn-primary btn-sm" onclick="descargarRecibo('img')">⬇ Imagen</button>
-        <button class="btn btn-ghost btn-sm" onclick="descargarRecibo('pdf')">⬇ PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="descargarRecibo('img')">${ic('download',15)} Imagen</button>
+        <button class="btn btn-ghost btn-sm" onclick="descargarRecibo('pdf')">${ic('download',15)} PDF</button>
         <button class="btn btn-wa btn-sm" id="shareBtn" onclick="compartirRecibo()">Compartir</button>
       </div>
     </div>`);
@@ -1052,6 +1152,9 @@ if('serviceWorker' in navigator){ window.addEventListener('load',function(){ nav
     document.addEventListener(ev,function(e){ e.preventDefault(); },{passive:false});
   });
 })();
+
+/* Arranque: si ya hay sesión guardada, entra directo */
+if(getToken()) startApp();
 </script>
 </body>
 </html>

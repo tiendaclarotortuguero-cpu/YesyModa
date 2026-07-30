@@ -528,35 +528,14 @@ const SAMPLE = {
     {id:"accesorios", nombre:"Accesorios", icono:"bag", orden:5, visible:true}
   ],
   products:[
-    {id:"p1", codigo:"YM1", categoria:"blusas", nombre:"Blusa Manga Larga", descripcion:"Tela suave y fresca, corte clásico. Ideal para el día a día.", precio:450, imagen:"", destacado:true, activo:true,
-      variantes:[ {talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},
-                  {talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"L",color:"Blanco",stock:2},
-                  {talla:"M",color:"Negro",stock:4},{talla:"L",color:"Negro",stock:3} ]},
-    {id:"p2", codigo:"YM2", categoria:"blusas", nombre:"Blusa Casual Básica", descripcion:"Cómoda y versátil, combina con todo.", precio:380, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"L",color:"Beige",stock:0},
-                  {talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5} ]},
-    {id:"p3", codigo:"YM3", categoria:"vestidos", nombre:"Vestido Floral", descripcion:"Estampado floral primaveral, vuelo ligero.", precio:690, imagen:"", destacado:true, activo:true,
-      variantes:[ {talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"L",color:"Rosa",stock:2},
-                  {talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3} ]},
-    {id:"p4", codigo:"YM4", categoria:"vestidos", nombre:"Vestido Elegante de Noche", descripcion:"Corte entallado, perfecto para ocasiones especiales.", precio:980, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"L",color:"Negro",stock:1},
-                  {talla:"M",color:"Vino",stock:2},{talla:"L",color:"Vino",stock:2} ]},
-    {id:"p5", codigo:"YM5", categoria:"pantalones", nombre:"Pantalón Jean Clásico", descripcion:"Mezclilla resistente, tiro medio, muy cómodo.", precio:720, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4},{talla:"34",color:"Azul",stock:2},
-                  {talla:"30",color:"Negro",stock:3},{talla:"32",color:"Negro",stock:3} ]},
-    {id:"p6", codigo:"YM6", categoria:"pantalones", nombre:"Pantalón de Tela", descripcion:"Caída elegante, ideal para la oficina.", precio:650, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"S",color:"Beige",stock:4},{talla:"M",color:"Beige",stock:3},{talla:"L",color:"Beige",stock:2},
-                  {talla:"S",color:"Negro",stock:3},{talla:"M",color:"Negro",stock:4} ]},
-    {id:"p7", codigo:"YM7", categoria:"faldas", nombre:"Falda Midi Plisada", descripcion:"Movimiento elegante, largo a media pierna.", precio:520, imagen:"", destacado:true, activo:true,
-      variantes:[ {talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},
-                  {talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3},{talla:"L",color:"Marino",stock:2} ]},
-    {id:"p8", codigo:"YM8", categoria:"faldas", nombre:"Falda Corta Casual", descripcion:"Fresca y juvenil, fácil de combinar.", precio:410, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"S",color:"Beige",stock:4},{talla:"M",color:"Beige",stock:5},{talla:"L",color:"Beige",stock:3} ]},
-    {id:"p9", codigo:"YM9", categoria:"accesorios", nombre:"Bolso de Mano", descripcion:"Diseño sobrio y elegante, amplio interior.", precio:480, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3} ]},
-    {id:"p10", codigo:"YM10", categoria:"accesorios", nombre:"Collar de Perlas", descripcion:"Toque clásico y femenino para cualquier look.", precio:250, imagen:"", destacado:false, activo:true,
-      variantes:[ {talla:"Única",color:"Blanco",stock:8} ]}
-  ]
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"M",color:"Negro",stock:4}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"M",color:"Vino",stock:2}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
+]
 };
 
 /* ---------- LOAD ---------- */
@@ -569,7 +548,11 @@ async function load(){
       if(j && j.products){ DATA = normalize(j); afterLoad(); return; }
     }catch(e){ console.warn("No se pudo cargar en vivo, uso datos de ejemplo:", e); }
   }
-  DATA = normalize(SAMPLE);
+  // Modo demostración: usa el mismo catálogo que el Panel y la Caja (ym_admin)
+  let demo=null;
+  try{ demo=JSON.parse(localStorage.getItem("ym_admin")||"null"); }catch(e){}
+  if(!demo||!demo.products){ demo=JSON.parse(JSON.stringify(SAMPLE)); try{ localStorage.setItem("ym_admin",JSON.stringify(demo)); }catch(e){} }
+  DATA = normalize(demo);
   afterLoad();
 }
 function normalize(d){
@@ -702,9 +685,10 @@ function colorAvail(p,c){
 function drawSheet(){
   const p = sel.p; const el = document.getElementById("sheet");
   const tallas = tallasOf(p), colores = coloresOf(p);
-  const curStock = (sel.talla && sel.color) ? stockFor(p,sel.talla,sel.color) : 0;
-  const ready = sel.talla && sel.color && curStock>0;
   const needColor = colores.length>0;
+  const colorSel = needColor ? sel.color : "";            // si la prenda no maneja colores, no se exige
+  const curStock = (sel.talla && (sel.color || !needColor)) ? stockFor(p,sel.talla,colorSel) : 0;
+  const ready = sel.talla && (sel.color || !needColor) && curStock>0;
   el.innerHTML = `
     <div class="grab"></div>
     <div class="ph"><img src="${imgOf(p)}" onerror="imgErr(this)" alt="${p.nombre}"></div>
@@ -732,7 +716,7 @@ function drawSheet(){
           <span class="v">${sel.qty}</span>
           <button onclick="qtyStep(1)" ${ready&&sel.qty>=curStock?"disabled":""}>+</button>
         </div>
-        <span class="stock-note">${ ready ? (curStock<=3?`Solo quedan ${curStock}`:`Disponible`) : (sel.talla&&sel.color?"Sin stock en esta combinación":"Elige talla"+(needColor?" y color":"")) }</span>
+        <span class="stock-note">${ ready ? (curStock<=3?`Solo quedan ${curStock}`:`Disponible`) : (sel.talla&&(sel.color||!needColor)?"Sin stock en esta combinación":"Elige talla"+(needColor?" y color":"")) }</span>
       </div>
 
       <button class="sheet-cta" ${ready?"":"disabled"} onclick="addToCart()">
@@ -751,7 +735,9 @@ function saveCart(){ localStorage.setItem("ym_cart", JSON.stringify(cart)); }
 function cartCount(){ return cart.reduce((s,i)=>s+i.qty,0); }
 function cartTotal(){ return cart.reduce((s,i)=>s+i.precio*i.qty,0); }
 function addToCart(){
-  const p=sel.p; if(!(sel.talla&&sel.color)) return;
+  const p=sel.p; const needColor=coloresOf(p).length>0;
+  if(!sel.talla || (needColor && !sel.color)) return;
+  if(!needColor) sel.color="";
   const key = p.id+"|"+sel.talla+"|"+sel.color;
   const found = cart.find(i=>i.key===key);
   const max = stockFor(p,sel.talla,sel.color);
@@ -823,6 +809,8 @@ async function checkout(){
   });
   msg += `\n*Total: ${money(cartTotal())}*\n\nMi nombre es: \nDirección/entrega: `;
   const url = "https://wa.me/"+num+"?text="+encodeURIComponent(msg);
+  if(!folio) toast("Tu pedido se envía por WhatsApp, pero no se pudo registrar en la tienda. Confírmalo con la vendedora.");
+  else { cart = []; saveCart(); renderCart(); }      // pedido registrado: se vacía para no duplicarlo
   if(w && !w.closed){ w.location.href = url; } else { window.location.href = url; }
 }
 /* Registra el pedido como "pendiente" (la dueña lo confirma desde la Caja). No toca el inventario. */

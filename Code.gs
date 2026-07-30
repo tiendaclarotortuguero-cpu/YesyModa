@@ -50,7 +50,9 @@ function doGet(e){
 /* ======================= API: ESCRITURA / DATOS PRIVADOS ======================= */
 function doPost(e){
   const lock = LockService.getScriptLock();
-  lock.tryLock(25000);
+  // Si otra venta se está guardando, esperamos; si no se logra, avisamos en vez de
+  // seguir y arriesgar que dos ventas descuenten el mismo stock.
+  if(!lock.tryLock(25000)) return json({ ok:false, error:"El sistema está ocupado guardando otra venta. Intenta de nuevo." });
   try{
     const body = JSON.parse((e && e.postData && e.postData.contents) || "{}");
 
@@ -61,6 +63,8 @@ function doPost(e){
     if(body.token !== ADMIN_TOKEN) return json({ ok:false, error:"auth" });
 
     switch(body.action){
+      // Sirve para comprobar que la contraseña es correcta (login).
+      case "checkAuth":        return json({ ok:true, version:"v3" });
       case "saveProduct":      return json(saveProduct(body.product));
       case "deleteProduct":    return json(deleteProduct(body.id));
       case "bulkAddProducts":  return json(bulkAddProducts(body.products||[]));
@@ -525,7 +529,22 @@ function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
 function bool(v){ return v===true || v===1 || ["true","verdadero","si","sí","1","x","✓"].indexOf(String(v).toLowerCase().trim()) >= 0; }
 function slug(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); }
 function keyVar(pid, talla, color){ return String(pid)+"|"+String(talla)+"|"+String(color||""); }
-function genCodigo(id){ return "YM" + String(id).replace(/\D/g,"").slice(-4); }
+/* Código correlativo y ÚNICO: YM1, YM2, YM3… (antes salían del reloj y podían repetirse,
+   y al escanear se abría la prenda equivocada). */
+function genCodigo(id){
+  const usados = {};
+  let max = 0;
+  readObjects(SH.PROD).forEach(function(p){
+    const c = String(p.codigo||"").trim().toUpperCase();
+    if(!c) return;
+    usados[c] = true;
+    const m = c.match(/^YM(\d+)$/);
+    if(m){ const n = parseInt(m[1],10); if(n > max) max = n; }
+  });
+  let n = max + 1, cod = "YM" + n;
+  while(usados[cod]){ n++; cod = "YM" + n; }
+  return cod;
+}
 function today(){ return Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"); }
 function nowLocal(){ return Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd HH:mm"); }
 function toDia(v){ return (v instanceof Date) ? Utilities.formatDate(v, TZ, "yyyy-MM-dd") : String(v||"").slice(0,10); }

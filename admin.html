@@ -242,7 +242,7 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
       <label>Contraseña</label>
       <input class="inp" id="pwd" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
-    <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+    <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Entrar</button>
     <p class="small" id="loginNote" style="margin-top:16px"></p>
   </div>
 </div>
@@ -253,7 +253,7 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
     <div class="wrap top-in">
       <span class="logo serif">Yosy<b>Moda</b></span>
       <span class="pill" id="modePill"></span>
-      <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none">⬇️</button>
+      <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v10.8"/><path d="m7.6 10.4 4.4 4.4 4.4-4.4"/><path d="M4.6 17.4V19a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5v-1.6"/></svg></button>
       <a class="btn btn-soft btn-sm only-desk" href="pos.html" style="width:auto"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/></svg> Caja</a>
       <a class="iconbtn only-mob" href="pos.html" title="Caja"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/></svg></a>
       <button class="iconbtn only-desk" title="Recargar" onclick="reload()">
@@ -389,10 +389,10 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
         <h3 class="serif">Importar desde Excel</h3>
         <p class="muted small" style="margin:2px 0 14px">Sube un archivo <b>.xlsx</b> o <b>.csv</b>. Detectamos las columnas automáticamente (nombre, precio, talla, color, stock, categoría). Una fila por combinación talla/color.</p>
         <div class="row-inline" style="margin-bottom:12px">
-          <button class="btn btn-soft btn-sm" onclick="downloadTemplate()">⬇ Descargar plantilla</button>
+          <button class="btn btn-soft btn-sm" onclick="downloadTemplate()">Descargar plantilla</button>
         </div>
         <label class="drop" for="xfile" id="drop">
-          <div class="big">${ic('receipt',38)}</div>
+          <div class="big"><svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.6h12v16.8l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z"/><path d="M9 8.4h6M9 12.2h6"/></svg></div>
           <div style="font-weight:600;margin-top:6px">Toca para elegir tu archivo</div>
           <div class="muted small">o arrástralo aquí</div>
         </label>
@@ -552,13 +552,13 @@ function imgErr(el){ el.onerror=null; el.src=PH_GEN; }
 const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR,mensaje:"¡Hola YosyModa! 💕 Quiero hacer este pedido:"},
 categories:[{id:"blusas",nombre:"Blusas",icono:"shirt",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"dress",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"pants",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"skirt",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"bag",orden:5,visible:true}],
 products:[
-{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"L",color:"Blanco",stock:2},{talla:"M",color:"Negro",stock:4},{talla:"L",color:"Negro",stock:3}]},
-{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
-{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"L",color:"Rosa",stock:2},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
-{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"L",color:"Negro",stock:1},{talla:"M",color:"Vino",stock:2}]},
-{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4},{talla:"34",color:"Azul",stock:2}]},
-{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
-{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"M",color:"Negro",stock:4}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"M",color:"Vino",stock:2}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
 ]};
 
 /* ---------- STATE ---------- */
@@ -573,11 +573,73 @@ const LIVE = !!CONFIG.API_URL;
 function getToken(){try{return localStorage.getItem("ym_token")||sessionStorage.getItem("ym_token")||"";}catch(e){return sessionStorage.getItem("ym_token")||"";}}
 function setToken(v){try{localStorage.setItem("ym_token",v);}catch(e){}sessionStorage.setItem("ym_token",v);}
 function clearToken(){try{localStorage.removeItem("ym_token");}catch(e){}sessionStorage.removeItem("ym_token");}
-function doLogin(){
-  const v=document.getElementById("pwd").value;
-  if(!v){ document.getElementById("loginNote").textContent="Escribe tu contraseña."; return; }
-  setToken(v);
-  startApp();
+
+/* ============================================================
+   ACCESO: se comprueba la contraseña de verdad contra tu Hoja.
+   Si no coincide, se avisa (antes se guardaba mal y las listas
+   salían vacías sin explicar por qué).
+   ============================================================ */
+async function validarClave(v){          // "ok" | "clave" | "red"
+  try{
+    let r = await fetch(CONFIG.API_URL,{method:"POST",body:JSON.stringify({action:"checkAuth",token:v})});
+    let j = await r.json();
+    if(j && j.ok) return "ok";
+    if(j && j.error === "auth") return "clave";
+    // Versión anterior del backend: no conoce "checkAuth". Probamos con una acción que sí existe.
+    r = await fetch(CONFIG.API_URL,{method:"POST",body:JSON.stringify({action:"getClientes",token:v})});
+    j = await r.json();
+    if(j && j.ok) return "ok";
+    if(j && j.error === "auth") return "clave";
+    return "red";
+  }catch(e){ return "red"; }
+}
+let __authAvisado=false;
+function sesionInvalida(){
+  if(__authAvisado) return; __authAvisado=true;
+  clearToken();
+  const app=document.getElementById("appView"), log=document.getElementById("loginView");
+  if(app) app.classList.add("hide");
+  if(log){ log.classList.remove("hide"); log.style.display=""; }
+  const n=document.getElementById("loginNote");
+  if(n) n.innerHTML="<b style='color:var(--danger)'>La contraseña ya no coincide con la del sistema.</b><br>Escribe la que está en <b>ADMIN_TOKEN</b>, arriba del archivo <b>Code.gs</b>.";
+  const pw=document.getElementById("pwd"); if(pw){ pw.value=""; pw.focus(); }
+}
+function revisarRespuesta(j){
+  if(j && j.ok===false && j.error==="auth"){ sesionInvalida(); return false; }
+  return true;
+}
+/* Diagnóstico: dice exactamente qué está fallando */
+async function probarConexion(){
+  if(typeof closeModal==="function") closeModal();
+  if(!LIVE){ toast("Estás en modo demostración: config.js no tiene API_URL.",true); return; }
+  toast("Probando conexión…");
+  let cat="error";
+  try{ const r=await fetch(CONFIG.API_URL+"?action=ping"); const j=await r.json(); if(j&&j.ok) cat="ok"; }catch(e){}
+  const cl=await validarClave(getToken());
+  const fila=(t,ok,d)=>`<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)">
+      <span style="color:${ok?'var(--ok)':'var(--danger)'};flex:none">${ok?ic('check',17):ic('close',17)}</span>
+      <div><b>${t}</b><div class="small muted">${d}</div></div></div>`;
+  modal(`<div class="mh"><h3>Prueba de conexión</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+   <div class="mb">
+     ${fila("Conexión con Google Sheets", cat==="ok", cat==="ok"?"La URL de la API responde bien.":"No responde. Revisa tu internet y la <b>API_URL</b> en config.js.")}
+     ${fila("Contraseña", cl==="ok", cl==="ok"?"Coincide con la del archivo Code.gs.":(cl==="clave"?"<b>No coincide.</b> Usa la que está en <b>ADMIN_TOKEN</b> dentro de Code.gs, o cierra sesión y vuelve a entrar.":"No se pudo comprobar (sin conexión)."))}
+     <p class="small muted" style="margin-top:12px">Si la contraseña no coincide, toca <b>Cerrar sesión</b> y entra de nuevo con la correcta.</p>
+   </div>`);
+}
+
+async function doLogin(){
+  const v=document.getElementById("pwd").value.trim();
+  const note=document.getElementById("loginNote"), btn=document.getElementById("loginBtn");
+  if(!v){ note.textContent="Escribe tu contraseña."; return; }
+  if(!LIVE){ setToken(v); startApp(); return; }
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin"></span> Verificando…'; }
+  note.textContent="";
+  const r=await validarClave(v);
+  if(btn){ btn.disabled=false; btn.textContent="Entrar"; }
+  if(r==="ok"){ __authAvisado=false; setToken(v); startApp(); return; }
+  note.innerHTML = (r==="clave")
+    ? "<b style='color:var(--danger)'>Contraseña incorrecta.</b><br>Es la que está en <b>ADMIN_TOKEN</b>, arriba del archivo <b>Code.gs</b>."
+    : "<b style='color:var(--danger)'>No se pudo conectar.</b><br>Revisa tu internet y la <b>API_URL</b> en config.js.";
 }
 function logout(){ clearToken(); location.reload(); }
 document.getElementById("loginNote").innerHTML = LIVE
@@ -593,7 +655,7 @@ async function apiGet(){
   if(LIVE){
     // con token: la respuesta incluye el costo (dato privado de la dueña)
     const r=await fetch(CONFIG.API_URL+"?action=getCatalog&token="+encodeURIComponent(getToken()),{method:"GET"});
-    return await r.json();
+    return await r.json();  // el catálogo es público; la contraseña solo agrega el costo
   }
   let d=demoStore(); if(!d){ d=JSON.parse(JSON.stringify(SAMPLE)); demoSave(d); }
   return d;
@@ -604,8 +666,12 @@ async function apiWrite(action,payload){
     try{
       const r=await fetch(CONFIG.API_URL,{method:"POST",body}); // simple request → sin preflight
       let j=null; try{ j=await r.json(); }catch(e){}
-      if(j&&j.ok===false){ throw new Error(j.error||"Error"); }
-      return j||{ok:true,unverified:true};
+      if(j && j.ok===false){                 // el servidor SÍ respondió y dijo que no se pudo
+        if(j.error==="auth") sesionInvalida();
+        else toast("No se pudo guardar: "+(j.error||"error"), true);
+        return j;
+      }
+      return j||{ok:true,unverified:true};   // no se pudo leer la respuesta (CORS): la escritura suele completarse
     }catch(e){
       // posible bloqueo CORS al leer respuesta; la escritura suele completarse igual.
       return {ok:true,unverified:true,warn:String(e.message||e)};
@@ -614,15 +680,20 @@ async function apiWrite(action,payload){
   // ---- DEMO ----
   return demoWrite(action,payload);
 }
+function demoCodigo(d){            // igual que el backend: YM1, YM2, YM3…
+  let max=0; (d.products||[]).forEach(p=>{const m=String(p.codigo||"").toUpperCase().match(/^YM(\d+)$/); if(m){const n=+m[1]; if(n>max)max=n;}});
+  return "YM"+(max+1);
+}
 function demoWrite(action,p){
   let d=demoStore()||JSON.parse(JSON.stringify(SAMPLE));
   if(action==="saveProduct"){
     const prod=p.product;
     if(!prod.id) prod.id="p"+Date.now();
+    if(!prod.codigo) prod.codigo=demoCodigo(d);
     const i=d.products.findIndex(x=>x.id===prod.id);
     if(i>=0) d.products[i]=prod; else d.products.push(prod);
   }else if(action==="deleteProduct"){ d.products=d.products.filter(x=>x.id!==p.id);
-  }else if(action==="bulkAddProducts"){ (p.products||[]).forEach(pr=>{ pr.id="p"+Date.now()+Math.floor(Math.random()*999); d.products.push(pr); });
+  }else if(action==="bulkAddProducts"){ (p.products||[]).forEach(pr=>{ pr.id="p"+Date.now()+Math.floor(Math.random()*999); if(!pr.codigo) pr.codigo=demoCodigo(d); d.products.push(pr); });
   }else if(action==="saveCategory"){ const c=p.category; if(!c.id) c.id=norm(c.nombre).replace(/\s+/g,"-")||("c"+Date.now()); const i=d.categories.findIndex(x=>x.id===c.id); if(i>=0)d.categories[i]=c; else d.categories.push(c);
   }else if(action==="deleteCategory"){ d.categories=d.categories.filter(x=>x.id!==p.id);
   }else if(action==="saveConfig"){ d.config=Object.assign(d.config||{},p.config); }
@@ -648,6 +719,7 @@ function admSig(d){return (d.products||[]).map(p=>p.id+"·"+p.nombre+"·"+p.prec
 async function reload(){
   try{
     const d=await apiGet();
+    if(!d||!d.products){ toast("No se pudo cargar. Revisa la URL de la API.",true); return; }
     DATA={config:d.config||{},categories:(d.categories||[]).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:d.products||[]};
     try{ __admSig=admSig(d); }catch(e){}
   }catch(e){ toast("No se pudo cargar. Revisa la URL de la API.",true); DATA={config:{},categories:[],products:[]}; }
@@ -656,7 +728,7 @@ async function reload(){
 }
 /* Refresco silencioso: solo re-dibuja si algo cambió (sin parpadeo mientras la dueña trabaja). */
 async function reloadSilent(){
-  try{ const d=await apiGet(); const sig=admSig(d); if(sig===__admSig) return; __admSig=sig;
+  try{ const d=await apiGet(); if(!d||!d.products) return; const sig=admSig(d); if(sig===__admSig) return; __admSig=sig;
     DATA={config:d.config||{},categories:(d.categories||[]).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:d.products||[]};
     CATMAP={}; DATA.categories.forEach(c=>CATMAP[c.id]=c); renderAll();
   }catch(e){}
@@ -889,7 +961,7 @@ async function saveProductObj(prod,msg){
 }
 function delProduct(id,name){
   confirmModal("Eliminar producto","¿Seguro que quieres eliminar <b>"+name+"</b>? Esta acción no se puede deshacer.", async()=>{
-    setBusy(true); await apiWrite("deleteProduct",{id}); setBusy(false); await reload(); toast("Producto eliminado");
+    setBusy(true); const r=await apiWrite("deleteProduct",{id}); setBusy(false); if(r&&r.ok===false) return; await reload(); toast("Producto eliminado");
   },"Eliminar",true);
 }
 
@@ -920,8 +992,9 @@ async function addCategory(){
   const icono=iconKey("",document.getElementById("catName").value);
   if(!nombre){ toast("Escribe el nombre de la categoría.",true); return; }
   const orden=(DATA.categories.reduce((m,c)=>Math.max(m,c.orden||0),0))+1;
-  setBusy(true); await apiWrite("saveCategory",{category:{nombre,icono,orden,visible:true}}); setBusy(false);
-  document.getElementById("catName").value=""; document.getElementById("catIcon").value="";
+  setBusy(true); const r=await apiWrite("saveCategory",{category:{nombre,icono,orden,visible:true}}); setBusy(false);
+  if(r&&r.ok===false) return;
+  document.getElementById("catName").value="";
   await reload(); toast("Categoría agregada");
 }
 function editCat(id){
@@ -938,7 +1011,7 @@ function editCat(id){
 }
 async function saveCatEdit(id){
   const c=Object.assign({},CATMAP[id],{icono:document.getElementById("mIcon").value.trim()||"hanger",nombre:document.getElementById("mName").value.trim(),visible:document.getElementById("mVis").checked});
-  closeModal(); setBusy(true); await apiWrite("saveCategory",{category:c}); setBusy(false); await reload(); toast("Categoría actualizada");
+  closeModal(); setBusy(true); const r=await apiWrite("saveCategory",{category:c}); setBusy(false); if(r&&r.ok===false) return; await reload(); toast("Categoría actualizada");
 }
 async function moveCat(id,dir){
   const i=DATA.categories.findIndex(c=>c.id===id); const j=i+dir;
@@ -950,7 +1023,7 @@ async function moveCat(id,dir){
 function delCat(id,name,n){
   if(n>0){ toast("Mueve o elimina primero los "+n+" productos de esta categoría.",true); return; }
   confirmModal("Eliminar categoría","¿Eliminar la categoría <b>"+name+"</b>?", async()=>{
-    setBusy(true); await apiWrite("deleteCategory",{id}); setBusy(false); await reload(); toast("Categoría eliminada");
+    setBusy(true); const r=await apiWrite("deleteCategory",{id}); setBusy(false); if(r&&r.ok===false) return; await reload(); toast("Categoría eliminada");
   },"Eliminar",true);
 }
 function quickCategory(){
@@ -978,7 +1051,7 @@ function fillConfig(){
 }
 async function saveConfig(){
   const cfg={nombre:document.getElementById("cfgNombre").value.trim(),whatsapp:document.getElementById("cfgWhatsapp").value.replace(/\D/g,""),moneda:document.getElementById("cfgMoneda").value.trim()||"C$",mensaje:document.getElementById("cfgMensaje").value.trim()};
-  setBusy(true); await apiWrite("saveConfig",{config:cfg}); setBusy(false); await reload(); toast("Ajustes guardados");
+  setBusy(true); const r=await apiWrite("saveConfig",{config:cfg}); setBusy(false); if(r&&r.ok===false) return; await reload(); toast("Ajustes guardados");
 }
 
 /* ---------- IMPORT EXCEL ---------- */
@@ -1097,6 +1170,7 @@ function openMenu(){
    <div class="mb">
      <a class="btn btn-soft" style="width:100%;margin-bottom:9px" href="pos.html">${ic('store',18)} Ir a la Caja</a>
      <button ${B} onclick="closeModal();reload();toast('Actualizado')">${ic('refresh',18)} Actualizar datos</button>
+     <button ${B} onclick="probarConexion()">${ic('globe',18)} Probar conexión</button>
      <button ${B} id="mnuInstall" onclick="closeModal();instalarApp()">${ic('phone',18)} Instalar como app</button>
      <button class="btn btn-ghost" style="width:100%;color:var(--danger);border-color:#e6c3c3" onclick="logout()">Cerrar sesión</button>
    </div>`);

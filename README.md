@@ -137,6 +137,16 @@ Con visitas normales al catálogo no hace falta, pero no estorba.
 
 ---
 
+## 🆘 Si no aparecen los datos (pedidos, ventas, fiados, reporte)
+
+Casi siempre es la **contraseña**. El catálogo de prendas es público, pero pedidos, ventas, fiados y reporte se piden con contraseña: si no coincide con la de `Code.gs`, esas cuatro pestañas salen vacías.
+
+El sistema ahora te lo dice: al entrar comprueba la contraseña de verdad, y si deja de coincidir te devuelve a la pantalla de acceso con el aviso. También tienes **Menú ⋯ ▸ Probar conexión**, que revisa dos cosas por separado: si la Hoja de Google responde y si la contraseña coincide.
+
+Para arreglarlo: **Menú ⋯ ▸ Cerrar sesión** y entra con la contraseña que esté escrita en `ADMIN_TOKEN`, arriba del archivo `Code.gs`.
+
+---
+
 ## 🔒 Nota de seguridad
 
 La contraseña protege las escrituras (agregar/editar/borrar). Es adecuada para una tienda pequeña. Como el panel es una página pública, **no guardes ahí información sensible** y **cambia la contraseña** por una tuya.
