@@ -282,7 +282,7 @@ footer{margin-top:20px; border-top:1px solid var(--line); background:var(--surfa
 .wa-hint .ic,.install-chip .ic{vertical-align:-.2em}
 
 /* ================================================================
-   EXPERIENCIA MÓVIL — que la clienta lo sienta como una app
+   EXPERIENCIA MÓVIL — que el cliente lo sienta como una app
    ================================================================ */
 html,body{max-width:100%}
 body{overflow-x:clip}
@@ -393,7 +393,7 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
 /* ============================================================
    YOSYMODA · Storefront logic
    ============================================================ */
-const CUR = CONFIG.CURRENCY || "C$";
+let CUR = CONFIG.CURRENCY || "C$";   // se actualiza con lo que la dueña guarde en Ajustes
 const money = n => CUR + " " + (Math.round(n)).toLocaleString("es-NI");
 
 /* --- color name -> swatch hex (para mostrar puntos de color) --- */
@@ -414,6 +414,8 @@ const colorHex = c => COLORS[(c||"").toLowerCase().trim()] || "#e3d3d9";
    (reemplazan a los emojis: se ven iguales en Android, iPhone y PC)
    ============================================================ */
 const ICONS={
+bell:'<path d="M18 8.6a6 6 0 1 0-12 0c0 5-2.2 6.4-2.2 6.4h16.4S18 13.6 18 8.6Z"/><path d="M13.7 20.3a2 2 0 0 1-3.4 0"/>',
+box:'<path d="M20.5 7.8 12 3.5 3.5 7.8v8.4L12 20.5l8.5-4.3Z"/><path d="m3.5 7.8 8.5 4.3 8.5-4.3M12 12.1v8.4"/>',
 hanger:'<path d="M12 7.4a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.4v2.3"/><path d="m12 9.7 7.8 5a1.6 1.6 0 0 1-.9 3H5.1a1.6 1.6 0 0 1-.9-3Z"/>',
 shirt:'<path d="M8 3 4.5 4.8 3 8.6l3 1.1V21h12V9.7l3-1.1-1.5-3.8L16 3a4 4 0 0 1-8 0Z"/>',
 dress:'<path d="M9.4 3 8 6.4l1.5 2.6-4 9.1A2 2 0 0 0 7.3 21h9.4a2 2 0 0 0 1.8-2.9l-4-9.1L16 6.4 14.6 3"/><path d="M9.4 3a2.6 2.6 0 0 0 5.2 0"/>',
@@ -513,13 +515,14 @@ let filterCat = "all", query = "";
 let cart = loadCart();
 
 function catIcon(id){ const c=CATMAP[id]||{}; return iconKey(c.icono, c.nombre); }
+function lowStoreLimit(){ const n=parseInt(DATA.config&&DATA.config.stock_min,10); return (isNaN(n)||n<0)?3:n; }
 function catName(id){ return (CATMAP[id]&&CATMAP[id].nombre) || ""; }
 function stockOf(p){ return (p.variantes||[]).reduce((s,v)=>s+(+v.stock||0),0); }
 function colorsOf(p){ const s=[]; (p.variantes||[]).forEach(v=>{ if((+v.stock||0)>0 && v.color && !s.includes(v.color)) s.push(v.color);}); return s; }
 
 /* ---------- SAMPLE DATA (modo demostración) ---------- */
 const SAMPLE = {
-  config:{ nombre:"YosyModa", whatsapp:CONFIG.WHATSAPP, moneda:CUR, mensaje:"¡Hola YosyModa! 💕 Quiero hacer este pedido:" },
+  config:{ nombre:"YosyModa", whatsapp:CONFIG.WHATSAPP, moneda:CUR, stock_min:3, mensaje:"¡Hola YosyModa! Quiero hacer este pedido:" },
   categories:[
     {id:"blusas", nombre:"Blusas", icono:"shirt", orden:1, visible:true},
     {id:"vestidos", nombre:"Vestidos", icono:"dress", orden:2, visible:true},
@@ -528,13 +531,13 @@ const SAMPLE = {
     {id:"accesorios", nombre:"Accesorios", icono:"bag", orden:5, visible:true}
   ],
   products:[
-{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"M",color:"Negro",stock:4}]},
-{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
-{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
-{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"M",color:"Vino",stock:2}]},
-{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
-{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
-{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:10},{talla:"M",color:"Rosa",stock:14},{talla:"L",color:"Rosa",stock:9},{talla:"S",color:"Blanco",stock:11},{talla:"M",color:"Blanco",stock:12},{talla:"M",color:"Negro",stock:8}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:12},{talla:"M",color:"Beige",stock:10},{talla:"S",color:"Celeste",stock:9},{talla:"M",color:"Celeste",stock:11}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:8},{talla:"M",color:"Rosa",stock:11},{talla:"S",color:"Verde",stock:7},{talla:"M",color:"Verde",stock:9}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:6},{talla:"M",color:"Negro",stock:2},{talla:"M",color:"Vino",stock:5}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:9},{talla:"30",color:"Azul",stock:13},{talla:"32",color:"Azul",stock:10}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:8},{talla:"M",color:"Rosa",stock:10},{talla:"S",color:"Marino",stock:7},{talla:"M",color:"Marino",stock:6}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:11},{talla:"Única",color:"Café",stock:2},{talla:"Única",color:"Rosa",stock:7}]}
 ]
 };
 
@@ -557,6 +560,7 @@ async function load(){
 }
 function normalize(d){
   const cfg = d.config||{};
+  if(cfg.moneda) CUR = String(cfg.moneda);   // moneda configurada por la dueña
   const cats = (d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0));
   const prods = (d.products||[]).filter(p=>p.activo!==false);
   return { config:cfg, categories:cats, products:prods };
@@ -716,7 +720,7 @@ function drawSheet(){
           <span class="v">${sel.qty}</span>
           <button onclick="qtyStep(1)" ${ready&&sel.qty>=curStock?"disabled":""}>+</button>
         </div>
-        <span class="stock-note">${ ready ? (curStock<=3?`Solo quedan ${curStock}`:`Disponible`) : (sel.talla&&(sel.color||!needColor)?"Sin stock en esta combinación":"Elige talla"+(needColor?" y color":"")) }</span>
+        <span class="stock-note">${ ready ? (curStock<=lowStoreLimit()?`Solo quedan ${curStock}`:`Disponible`) : (sel.talla&&(sel.color||!needColor)?"Sin stock en esta combinación":"Elige talla"+(needColor?" y color":"")) }</span>
       </div>
 
       <button class="sheet-cta" ${ready?"":"disabled"} onclick="addToCart()">
@@ -727,7 +731,11 @@ function drawSheet(){
 }
 function pickTalla(t){ t=decodeURIComponent(t); sel.talla = (sel.talla===t?null:t); sel.qty=1; drawSheet(); }
 function pickColor(c){ c=decodeURIComponent(c); sel.color = (sel.color===c?null:c); sel.qty=1; drawSheet(); }
-function qtyStep(d){ const p=sel.p; const max=stockFor(p,sel.talla,sel.color)||1; sel.qty=Math.max(1,Math.min(max,sel.qty+d)); drawSheet(); }
+function qtyStep(d){
+  const p=sel.p; const needColor=coloresOf(p).length>0;
+  const max=stockFor(p,sel.talla,needColor?sel.color:"")||1;   // sin colores, la variante se guarda con color ""
+  sel.qty=Math.max(1,Math.min(max,sel.qty+d)); drawSheet();
+}
 
 /* ---------- CART ---------- */
 function loadCart(){ try{ return JSON.parse(localStorage.getItem("ym_cart")||"[]"); }catch(e){ return []; } }
@@ -744,7 +752,7 @@ function addToCart(){
   if(found){ found.qty=Math.min(max, found.qty+sel.qty); }
   else{ cart.push({ key, id:p.id, nombre:p.nombre, categoria:p.categoria, precio:p.precio, talla:sel.talla, color:sel.color, qty:sel.qty, imagen:p.imagen||"" }); }
   saveCart(); renderCart(); closeSheet();
-  toast(`${p.nombre} agregada`);
+  toast(`${p.nombre} · agregado al pedido`);
 }
 function changeQty(key,d){
   const it=cart.find(i=>i.key===key); if(!it) return;
@@ -762,7 +770,7 @@ function renderCart(){
 
   const items=document.getElementById("cartItems"), foot=document.getElementById("cartFoot");
   if(!cart.length){
-    items.innerHTML=`<div class="cart-empty"><div class="big">${ic('cart',38)}</div><p>Tu pedido está vacío.<br>¡Agrega tus prendas favoritas!</p></div>`;
+    items.innerHTML=`<div class="cart-empty"><div class="big">${ic('cart',38)}</div><p>Tu pedido está vacío.<br>¡Agrega lo que te guste!</p></div>`;
     foot.innerHTML=""; return;
   }
   items.innerHTML = cart.map(i=>{
@@ -771,7 +779,7 @@ function renderCart(){
       <div class="th"><img src="${imgOf({imagen:i.imagen,nombre:i.nombre,categoria:i.categoria})}" onerror="imgErr(this)" alt=""></div>
       <div class="info">
         <div class="nm">${i.nombre}</div>
-        <div class="vr">Talla ${i.talla} · <span style="display:inline-flex;align-items:center;gap:5px"><span class="sw" style="width:11px;height:11px;background:${colorHex(i.color)}"></span>${i.color}</span></div>
+        <div class="vr">Talla ${i.talla}${i.color?` · <span style="display:inline-flex;align-items:center;gap:5px"><span class="sw" style="width:11px;height:11px;background:${colorHex(i.color)}"></span>${i.color}</span>`:""}</div>
         <div class="pr">${money(i.precio*i.qty)}</div>
         <div class="mini">
           <button onclick="changeQty('${i.key}',-1)">−</button>
@@ -805,13 +813,13 @@ async function checkout(){
   }
   const folio = (res && res.folio) || "";
   const num = String(DATA.config.whatsapp||CONFIG.WHATSAPP||"").replace(/\D/g,"");
-  const hi = DATA.config.mensaje || "¡Hola YosyModa! 💕 Quiero hacer este pedido:";
+  const hi = DATA.config.mensaje || "¡Hola YosyModa! Quiero hacer este pedido:";
   let msg = hi + "\n\n";
   if(folio) msg += `Pedido ${folio}\n\n`;
   const base = location.origin + location.pathname;
   cart.forEach((i,idx)=>{
     const p = DATA.products.find(x=>x.id===i.id)||{};
-    msg += `${idx+1}. ${i.nombre}${p.codigo?" ("+p.codigo+")":""}\n   Talla ${i.talla} · Color ${i.color} · x${i.qty} — ${money(i.precio*i.qty)}\n   Ver: ${base}?prod=${i.id}\n`;
+    msg += `${idx+1}. ${i.nombre}${p.codigo?" ("+p.codigo+")":""}\n   Talla ${i.talla}${i.color?" · Color "+i.color:""} · x${i.qty} — ${money(i.precio*i.qty)}\n   Ver: ${base}?prod=${i.id}\n`;
   });
   msg += `\n*Total: ${money(cartTotal())}*\n\nMi nombre es: \nDirección/entrega: `;
   const url = "https://wa.me/"+num+"?text="+encodeURIComponent(msg);
@@ -855,7 +863,7 @@ async function crearPedidoOnline(){
   }catch(e){ return { error:"demo" }; }
 }
 
-/* Si una prenda ya no alcanza, se le explica a la clienta y se ajusta su pedido
+/* Si una prenda ya no alcanza, se le explica al cliente y se ajusta su pedido
    ANTES de mandarlo por WhatsApp (antes se mandaba igual y la dueña no podía confirmarlo). */
 function avisarFaltantes(faltantes){
   const filas = faltantes.map(f=>{

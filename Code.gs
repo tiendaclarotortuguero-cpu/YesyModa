@@ -82,7 +82,7 @@ function doPost(e){
       case "getPedidos":       return json(getPedidos(body));
       case "confirmarPedido":  return json(confirmarPedido(body));
       case "descartarPedido":  return json(descartarPedido(body));
-      // --- Clientas / Fiado ---
+      // --- Clientes / Fiado ---
       case "getClientes":      return json(getClientes(body));
       case "saveCliente":      return json(saveCliente(body.cliente));
       case "registrarAbono":   return json(registrarAbono(body));
@@ -396,7 +396,7 @@ function updatePedidoEstado(id, estado, ventaFolio){
   }
 }
 
-/* ======================= CLIENTAS / FIADO ======================= */
+/* ======================= CLIENTES / FIADO ======================= */
 function getClientes(body){
   ensureSchema();
   return { ok:true, clientes: readObjects(SH.CLI).map(function(c){
@@ -602,7 +602,7 @@ function setup(){
   const s = ss();
   const cfg = sheet(SH.CFG); cfg.clear();
   cfg.getRange(1,1,1,2).setValues([["clave","valor"]]).setFontWeight("bold");
-  [["nombre","YosyModa"],["whatsapp","50557528808"],["moneda","C$"],["mensaje","¡Hola YosyModa! 💕 Quiero hacer este pedido:"]]
+  [["nombre","YosyModa"],["whatsapp","50557528808"],["moneda","C$"],["mensaje","¡Hola YosyModa! Quiero hacer este pedido:"],["stock_min","3"]]
     .forEach(function(r){ cfg.appendRow(r); });
 
   const cat = sheet(SH.CAT); cat.clear();

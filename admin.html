@@ -70,7 +70,18 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.86);bac
 .pill.demo{background:var(--warn-soft);color:var(--warn)}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 6px}
 @media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm);
+  text-align:left;width:100%;font:inherit;color:inherit;transition:transform .12s,border-color .18s,box-shadow .18s;position:relative}
+button.stat{cursor:pointer}
+button.stat:hover{border-color:var(--rosa-mid);box-shadow:var(--shadow)}
+button.stat:active{transform:scale(.98)}
+button.stat::after{content:"";position:absolute;right:12px;top:12px;width:6px;height:6px;border-right:1.6px solid var(--faint);border-top:1.6px solid var(--faint);transform:rotate(45deg);opacity:.7}
+.stat .k .ic{vertical-align:-.15em;opacity:.75}
+.belltn{position:relative}
+.ndot{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;background:var(--danger);color:#fff;
+  border-radius:999px;font-size:10.5px;font-weight:700;display:grid;place-items:center;font-style:normal;box-shadow:0 0 0 2px var(--bg)}
+.filtrochip{display:inline-flex;align-items:center;gap:6px;margin:10px 0 0;padding:7px 14px;border-radius:999px;
+  background:var(--warn-soft);color:var(--warn);border:1px solid #e8d3a8;font-size:13px;font-weight:500}
 .stat .k{font-size:12px;color:var(--muted);font-weight:500}
 .stat .v{font-family:"Playfair Display",serif;font-size:26px;font-weight:700;color:var(--ink-strong);margin-top:2px}
 .stat.warn .v{color:var(--warn)}
@@ -253,6 +264,10 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
     <div class="wrap top-in">
       <span class="logo serif">Yosy<b>Moda</b></span>
       <span class="pill" id="modePill"></span>
+      <button class="iconbtn belltn" onclick="abrirAvisos()" title="Avisos de inventario" aria-label="Avisos">
+        <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.6a6 6 0 1 0-12 0c0 5-2.2 6.4-2.2 6.4h16.4S18 13.6 18 8.6Z"/><path d="M13.7 20.3a2 2 0 0 1-3.4 0"/></svg>
+        <em class="ndot hide" id="avisoDot">0</em>
+      </button>
       <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v10.8"/><path d="m7.6 10.4 4.4 4.4 4.4-4.4"/><path d="M4.6 17.4V19a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5v-1.6"/></svg></button>
       <a class="btn btn-soft btn-sm only-desk" href="pos.html" style="width:auto"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/></svg> Caja</a>
       <a class="iconbtn only-mob" href="pos.html" title="Caja"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.6V19a1.5 1.5 0 0 0 1.5 1.5h12.6A1.5 1.5 0 0 0 19.8 19V9.6"/><path d="M3 9.6 4.8 4.5a1.2 1.2 0 0 1 1.2-.9h12a1.2 1.2 0 0 1 1.2.9L21 9.6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/></svg></a>
@@ -268,10 +283,10 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
 
   <main class="wrap">
     <div class="stats">
-      <div class="stat"><div class="k">Productos</div><div class="v" id="stProd">0</div></div>
-      <div class="stat"><div class="k">Categorías</div><div class="v" id="stCat">0</div></div>
-      <div class="stat"><div class="k">Prendas en stock</div><div class="v" id="stStock">0</div></div>
-      <div class="stat warn"><div class="k">Bajo stock</div><div class="v" id="stLow">0</div></div>
+      <button class="stat" onclick="verFiltro('all')" title="Ver todos los productos"><div class="k">Productos</div><div class="v" id="stProd">0</div></button>
+      <button class="stat" onclick="setTab('categorias')" title="Ir a categorías"><div class="k">Categorías</div><div class="v" id="stCat">0</div></button>
+      <button class="stat" onclick="verFiltro('all')" title="Ver todo el inventario"><div class="k">Piezas en stock</div><div class="v" id="stStock">0</div></button>
+      <button class="stat warn" onclick="verFiltro('low')" title="Ver lo que hay que reponer"><div class="k">Por reponer</div><div class="v" id="stLow">0</div></button>
     </div>
 
     <div class="tabs">
@@ -291,6 +306,8 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
         </div>
         <button class="btn btn-soft btn-sm" onclick="newProduct()"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nuevo producto</button>
       </div>
+      <button class="filtrochip hide" id="filtroChip" onclick="verFiltro('all')">
+        Mostrando solo lo que hay que reponer · <b>quitar filtro</b></button>
       <div class="plist" id="plist"></div>
     </section>
 
@@ -422,7 +439,11 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
           <div><label class="fl">Nombre de la tienda</label><input class="inp" id="cfgNombre"></div>
           <div><label class="fl">WhatsApp (con código país, sin +)</label><input class="inp" id="cfgWhatsapp" placeholder="50557528808"></div>
           <div><label class="fl">Símbolo de moneda</label><input class="inp" id="cfgMoneda" placeholder="C$"></div>
-          <div style="grid-column:1/-1"><label class="fl">Mensaje inicial del pedido de WhatsApp</label><input class="inp" id="cfgMensaje" placeholder="¡Hola YosyModa! 💕 Quiero hacer este pedido:"></div>
+          <div><label class="fl">Avisarme cuando queden</label>
+            <div class="row-inline"><input class="inp" id="cfgStockMin" type="number" min="0" max="99" inputmode="numeric" placeholder="3" style="flex:1">
+            <span class="muted small" style="flex:none">o menos</span></div>
+            <div class="muted small" style="margin-top:4px">Se cuenta por talla y color de cada prenda.</div></div>
+          <div style="grid-column:1/-1"><label class="fl">Mensaje inicial del pedido de WhatsApp</label><input class="inp" id="cfgMensaje" placeholder="¡Hola YosyModa! Quiero hacer este pedido:"></div>
         </div>
         <button class="btn btn-primary" style="width:auto;margin-top:16px" onclick="saveConfig()">Guardar ajustes</button>
         <div class="hintbox" style="margin-top:16px">
@@ -442,19 +463,22 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
 /* ============================================================
    YOSYMODA · Admin logic
    ============================================================ */
-const CUR = (CONFIG.CURRENCY||"C$");
+let CUR = (CONFIG.CURRENCY||"C$");   // se actualiza con lo que la dueña guarde en Ajustes
 const money = n => CUR+" "+(Math.round(n)).toLocaleString("es-NI");
 const norm = s => (s||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
 const COLORS={"rosa":"#f4c9d6","rosado":"#f4c9d6","palo de rosa":"#e7b7c2","fucsia":"#d6468f","blanco":"#ffffff","negro":"#2f2b2e","gris":"#b9b3b6","beige":"#e8d9c5","crema":"#f3ead9","azul":"#8fa9cf","celeste":"#bcd4ea","marino":"#3a4a6b","rojo":"#c85a5f","vino":"#7d2f42","verde":"#9bb894","menta":"#c3e0cf","amarillo":"#f0d585","mostaza":"#d1a24a","morado":"#a98bc4","lila":"#d7c6e8","cafe":"#8a6552","dorado":"#d8b45f","coral":"#f39d8a","turquesa":"#7fc9c2","naranja":"#e79a5c"};
 const colorHex=c=>COLORS[norm(c)]||"#e3d3d9";
 const PRESET_COLORS=["Rosa","Blanco","Negro","Beige","Azul","Marino","Rojo","Vino","Verde","Café","Gris"];
-const LOW=3; // umbral bajo stock
+/* Umbral de aviso: lo configura la dueña desde Ajustes y se guarda en la Hoja */
+function lowLimit(){ const n=parseInt(DATA.config&&DATA.config.stock_min,10); return (isNaN(n)||n<0)?3:n; }
 
 /* ============================================================
    ÍCONOS DE MARCA · trazo fino, misma línea gráfica de YosyModa
    (reemplazan a los emojis: se ven iguales en Android, iPhone y PC)
    ============================================================ */
 const ICONS={
+bell:'<path d="M18 8.6a6 6 0 1 0-12 0c0 5-2.2 6.4-2.2 6.4h16.4S18 13.6 18 8.6Z"/><path d="M13.7 20.3a2 2 0 0 1-3.4 0"/>',
+box:'<path d="M20.5 7.8 12 3.5 3.5 7.8v8.4L12 20.5l8.5-4.3Z"/><path d="m3.5 7.8 8.5 4.3 8.5-4.3M12 12.1v8.4"/>',
 hanger:'<path d="M12 7.4a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.4v2.3"/><path d="m12 9.7 7.8 5a1.6 1.6 0 0 1-.9 3H5.1a1.6 1.6 0 0 1-.9-3Z"/>',
 shirt:'<path d="M8 3 4.5 4.8 3 8.6l3 1.1V21h12V9.7l3-1.1-1.5-3.8L16 3a4 4 0 0 1-8 0Z"/>',
 dress:'<path d="M9.4 3 8 6.4l1.5 2.6-4 9.1A2 2 0 0 0 7.3 21h9.4a2 2 0 0 0 1.8-2.9l-4-9.1L16 6.4 14.6 3"/><path d="M9.4 3a2.6 2.6 0 0 0 5.2 0"/>',
@@ -549,16 +573,16 @@ const PH_GEN=phImg("hanger",320,400);
 function imgErr(el){ el.onerror=null; el.src=PH_GEN; }
 
 /* ---------- SAMPLE (demo) ---------- */
-const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR,mensaje:"¡Hola YosyModa! 💕 Quiero hacer este pedido:"},
+const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR, stock_min:3,mensaje:"¡Hola YosyModa! Quiero hacer este pedido:"},
 categories:[{id:"blusas",nombre:"Blusas",icono:"shirt",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"dress",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"pants",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"skirt",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"bag",orden:5,visible:true}],
 products:[
-{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"M",color:"Negro",stock:4}]},
-{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
-{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
-{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"M",color:"Vino",stock:2}]},
-{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
-{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
-{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:10},{talla:"M",color:"Rosa",stock:14},{talla:"L",color:"Rosa",stock:9},{talla:"S",color:"Blanco",stock:11},{talla:"M",color:"Blanco",stock:12},{talla:"M",color:"Negro",stock:8}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:12},{talla:"M",color:"Beige",stock:10},{talla:"S",color:"Celeste",stock:9},{talla:"M",color:"Celeste",stock:11}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:8},{talla:"M",color:"Rosa",stock:11},{talla:"S",color:"Verde",stock:7},{talla:"M",color:"Verde",stock:9}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:6},{talla:"M",color:"Negro",stock:2},{talla:"M",color:"Vino",stock:5}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:9},{talla:"30",color:"Azul",stock:13},{talla:"32",color:"Azul",stock:10}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:8},{talla:"M",color:"Rosa",stock:10},{talla:"S",color:"Marino",stock:7},{talla:"M",color:"Marino",stock:6}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:11},{talla:"Única",color:"Café",stock:2},{talla:"Única",color:"Rosa",stock:7}]}
 ]};
 
 /* ---------- STATE ---------- */
@@ -646,6 +670,14 @@ document.getElementById("loginNote").innerHTML = LIVE
   ? "Se validará con tu Google Apps Script."
   : "Modo demostración: escribe cualquier cosa para entrar (los cambios no se guardan permanentemente hasta configurar Google Sheets).";
 
+/* Enlace desde la Caja: admin.html?edit=<id> abre la prenda lista para reponer */
+async function abrirDesdeEnlace(){
+  try{
+    const id=new URLSearchParams(location.search).get("edit");
+    if(!id) return;
+    if(DATA.products.find(p=>p.id===id)){ reponer(id); history.replaceState({},"",location.pathname); }
+  }catch(e){}
+}
 if(getToken()) startApp();
 
 /* ---------- API ---------- */
@@ -693,7 +725,7 @@ function demoWrite(action,p){
     const i=d.products.findIndex(x=>x.id===prod.id);
     if(i>=0) d.products[i]=prod; else d.products.push(prod);
   }else if(action==="deleteProduct"){ d.products=d.products.filter(x=>x.id!==p.id);
-  }else if(action==="bulkAddProducts"){ (p.products||[]).forEach(pr=>{ pr.id="p"+Date.now()+Math.floor(Math.random()*999); if(!pr.codigo) pr.codigo=demoCodigo(d); d.products.push(pr); });
+  }else if(action==="bulkAddProducts"){ (p.products||[]).forEach((pr,i)=>{ pr.id="p"+Date.now()+"_"+i; if(!pr.codigo) pr.codigo=demoCodigo(d); d.products.push(pr); });
   }else if(action==="saveCategory"){ const c=p.category; if(!c.id) c.id=norm(c.nombre).replace(/\s+/g,"-")||("c"+Date.now()); const i=d.categories.findIndex(x=>x.id===c.id); if(i>=0)d.categories[i]=c; else d.categories.push(c);
   }else if(action==="deleteCategory"){ d.categories=d.categories.filter(x=>x.id!==p.id);
   }else if(action==="saveConfig"){ d.config=Object.assign(d.config||{},p.config); }
@@ -713,6 +745,7 @@ async function startApp(){
     : "<b style='color:var(--warn)'>Modo demostración</b> — los cambios se guardan solo en este dispositivo.";
   document.getElementById("curLbl").textContent=CUR;
   await reload();
+  abrirDesdeEnlace();
 }
 var __admSig="";
 function admSig(d){return (d.products||[]).map(p=>p.id+"·"+p.nombre+"·"+p.precio+"·"+(p.costo||0)+"·"+(p.codigo||"")+"·"+(p.activo!==false)+"·"+(p.destacado?1:0)+"·"+(p.imagen||"")+"·"+(p.variantes||[]).map(v=>v.talla+"/"+v.color+"/"+v.stock).join(",")).join("|")+"##"+(d.categories||[]).map(c=>c.id+c.nombre+(c.orden||0)+(c.visible!==false)).join("|")+"##"+JSON.stringify(d.config||{});}
@@ -723,6 +756,7 @@ async function reload(){
     DATA={config:d.config||{},categories:(d.categories||[]).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:d.products||[]};
     try{ __admSig=admSig(d); }catch(e){}
   }catch(e){ toast("No se pudo cargar. Revisa la URL de la API.",true); DATA={config:{},categories:[],products:[]}; }
+  if(DATA.config && DATA.config.moneda) CUR = String(DATA.config.moneda);
   CATMAP={}; DATA.categories.forEach(c=>CATMAP[c.id]=c);
   renderAll();
 }
@@ -733,17 +767,93 @@ async function reloadSilent(){
     CATMAP={}; DATA.categories.forEach(c=>CATMAP[c.id]=c); renderAll();
   }catch(e){}
 }
-function renderAll(){ renderStats(); renderProducts(); renderCategories(); fillCatSelect(); fillConfig(); renderColorPresets(); }
+function renderAll(){ renderStats(); renderProducts(); renderCategories(); fillCatSelect(); fillConfig(); renderColorPresets(); renderAvisos(); }
 
 /* ---------- STATS ---------- */
 function stockOf(p){ return (p.variantes||[]).reduce((s,v)=>s+(+v.stock||0),0); }
+function pintarIconosStats(){
+  const m={stProd:'hanger',stCat:'tag',stStock:'box',stLow:'bell'};
+  Object.keys(m).forEach(id=>{
+    const k=document.getElementById(id); if(!k) return;
+    const lab=k.parentNode.querySelector('.k');
+    if(lab && !lab.querySelector('svg')) lab.insertAdjacentHTML('afterbegin', ic(m[id],13)+' ');
+  });
+}
 function renderStats(){
   document.getElementById("stProd").textContent=DATA.products.length;
   document.getElementById("stCat").textContent=DATA.categories.length;
-  let tot=0,low=0;
-  DATA.products.forEach(p=>{const s=stockOf(p);tot+=s;if(s>0&&s<=LOW)low++;if(s===0)low++;});
+  let tot=0;
+  DATA.products.forEach(p=>{ tot+=stockOf(p); });
   document.getElementById("stStock").textContent=tot;
-  document.getElementById("stLow").textContent=low;
+  document.getElementById("stLow").textContent=bajoStock().length;
+  pintarIconosStats();
+}
+
+/* ---------- AVISOS DE INVENTARIO ---------- */
+/* Una prenda entra al aviso si ALGUNA de sus tallas/colores llegó al límite. */
+/* Una prenda entra al aviso si alguna talla/color está por acabarse (entre 1 y el
+   límite) o si la prenda entera quedó en cero. Las combinaciones que la tienda
+   nunca manejó no generan avisos. */
+function bajoStock(){
+  const lim=lowLimit(), out=[];
+  (DATA.products||[]).forEach(p=>{
+    if(p.activo===false) return;
+    const total=stockOf(p);
+    const bajas=(p.variantes||[]).filter(v=>{const s=+v.stock||0; return s>0 && s<=lim;});
+    if(!bajas.length && total!==0) return;
+    out.push({ p:p, total:total, bajas:bajas, agotado:total===0 });
+  });
+  return out.sort((a,b)=>a.total-b.total);
+}
+function renderAvisos(){
+  const n=bajoStock().length, b=document.getElementById("avisoDot");
+  if(b){ b.textContent=n; b.classList.toggle("hide", n===0); }
+}
+function abrirAvisos(){
+  const lista=bajoStock(), lim=lowLimit();
+  if(!lista.length){
+    modal(`<div class="mh"><h3>Avisos de inventario</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+     <div class="mb"><div class="empty2"><div class="big" style="color:var(--ok)">${ic('check',36)}</div>
+       <p>Todo con inventario suficiente.<br><span class="small">Te avisamos cuando algo baje a <b>${lim}</b> o menos.</span></p></div></div>`);
+    return;
+  }
+  const filas=lista.map(x=>{
+    const det=x.bajas.map(v=>`<span style="display:inline-block;margin:2px 5px 2px 0;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:600;background:${(+v.stock||0)===0?'var(--danger-soft)':'var(--warn-soft)'};color:${(+v.stock||0)===0?'var(--danger)':'var(--warn)'}">${v.talla}${v.color?" · "+v.color:""}: ${(+v.stock||0)===0?"agotado":v.stock}</span>`).join("");
+    return `<button class="prow" style="width:100%;text-align:left;margin-bottom:9px" onclick="closeModal();reponer('${x.p.id}')">
+      <div class="th"><img src="${(x.p.imagen&&x.p.imagen.trim())?x.p.imagen:ph(x.p.nombre,(CATMAP[x.p.categoria]||{}).icono)}" onerror="imgErr(this)" alt=""></div>
+      <div class="m"><div class="nm">${x.p.nombre} ${x.agotado?`<span class="tagmini out">agotado</span>`:""}</div>
+        <div style="margin-top:4px">${det}</div>
+        <div class="sub" style="margin-top:3px;color:var(--rosa-deep);font-weight:600">Toca para reponer</div></div>
+    </button>`;
+  }).join("");
+  modal(`<div class="mh"><h3>Por reponer (${lista.length})</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+   <div class="mb">
+     <p class="small muted" style="margin:0 0 12px">Estas prendas quedaron en <b>${lim}</b> o menos. Toca una para agregarle inventario.</p>
+     ${filas}
+     <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="closeModal();setTab('ajustes')">Cambiar cuándo avisarme</button>
+   </div>`);
+}
+/* Lleva directo a la prenda, con el foco puesto en las existencias */
+function reponer(id){
+  editProduct(id);
+  setTimeout(function(){
+    const g=document.getElementById("stockArea");
+    if(!g) return;
+    g.scrollIntoView({behavior:"smooth",block:"center"});
+    // enfoca la primera casilla que está por acabarse (no la primera de la grilla)
+    const lim=lowLimit();
+    const inputs=Array.from(g.querySelectorAll("input"));
+    const baja=inputs.find(i=>{const v=parseInt(i.value,10); return !isNaN(v) && v<=lim;}) || inputs[0];
+    if(baja){ baja.focus(); baja.select&&baja.select(); }
+    toast("Ajusta las cantidades y guarda");
+  },350);
+}
+
+/* ---------- FILTRO desde las tarjetas ---------- */
+let stockFilter="all";
+function verFiltro(f){
+  stockFilter=f; setTab("productos"); renderProducts();
+  if(f==="low") toast("Mostrando lo que hay que reponer");
 }
 
 /* ---------- TABS ---------- */
@@ -762,15 +872,24 @@ function renderProducts(){
   const q=norm(document.getElementById("psearch").value);
   let list=DATA.products.slice();
   if(q) list=list.filter(p=>norm(p.nombre).includes(q)||norm((CATMAP[p.categoria]||{}).nombre).includes(q));
+  if(stockFilter==="low"){ const ids={}; bajoStock().forEach(x=>ids[x.p.id]=1); list=list.filter(p=>ids[p.id]); }
   const el=document.getElementById("plist");
-  if(!list.length){ el.innerHTML=`<div class="empty2"><div class="big">${ic('hanger',38)}</div><p>Sin productos todavía. Usa <b>Nuevo</b> o <b>Importar Excel</b>.</p></div>`; return; }
+  const fc=document.getElementById("filtroChip");
+  if(fc) fc.classList.toggle("hide", stockFilter==="all");
+  if(!list.length){
+    const filtrando = q || stockFilter!=="all";
+    el.innerHTML = filtrando
+      ? `<div class="empty2"><div class="big">${ic('search',38)}</div><p>${stockFilter==="low"?"Nada por reponer. Todo con inventario suficiente.":"Sin resultados para esa búsqueda."}</p></div>`
+      : `<div class="empty2"><div class="big">${ic('hanger',38)}</div><p>Sin productos todavía. Usa <b>Nuevo</b> o <b>Importar Excel</b>.</p></div>`;
+    return; }
   el.innerHTML=list.map(p=>{
     const s=stockOf(p); const cat=CATMAP[p.categoria]||{};
     const flags=[];
     if(p.destacado) flags.push(`<span class="tagmini star">${ic('star',11)}</span>`);
     if(p.activo===false) flags.push(`<span class="tagmini off">oculto</span>`);
+    const bajasV=(p.variantes||[]).filter(v=>{const q=+v.stock||0; return q>0 && q<=lowLimit();});
     if(s===0) flags.push(`<span class="tagmini out">agotado</span>`);
-    else if(s<=LOW) flags.push(`<span class="tagmini low">bajo (${s})</span>`);
+    else if(bajasV.length) flags.push(`<span class="tagmini low">quedan pocas</span>`);
     const nv=(p.variantes||[]).length;
     return `<div class="prow">
       <div class="th"><img src="${(p.imagen&&p.imagen.trim())?p.imagen:ph(p.nombre,cat.icono)}" onerror="imgErr(this)" alt=""></div>
@@ -784,7 +903,7 @@ function renderProducts(){
         <button class="iconbtn" title="Editar" onclick="editProduct('${p.id}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </button>
-        <button class="iconbtn" title="Eliminar" onclick="delProduct('${p.id}','${(p.nombre||'').replace(/'/g,"")}')">
+        <button class="iconbtn" title="Eliminar" onclick="delProduct('${p.id}','${(p.nombre||'').replace(/['"<>]/g,"")}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
         </button>
       </div>
@@ -868,7 +987,9 @@ function buildVariantes(){
   const vs=[];
   ed.tallas.forEach(t=>cols.forEach(c=>{
     const st=+ed.stock[t+"||"+c]||0;
-    vs.push({talla:t,color:c,stock:st,sku:skuOf(t,c)});
+    // Solo se guardan las combinaciones que la tienda SÍ maneja.
+    // Si dejas 0 en una talla/color, simplemente no existe (y no genera avisos falsos).
+    if(st>0) vs.push({talla:t,color:c,stock:st,sku:skuOf(t,c)});
   }));
   return vs;
 }
@@ -1047,10 +1168,11 @@ function fillConfig(){
   document.getElementById("cfgNombre").value=DATA.config.nombre||CONFIG.STORE_NAME||"YosyModa";
   document.getElementById("cfgWhatsapp").value=DATA.config.whatsapp||CONFIG.WHATSAPP||"";
   document.getElementById("cfgMoneda").value=DATA.config.moneda||CUR;
-  document.getElementById("cfgMensaje").value=DATA.config.mensaje||"¡Hola YosyModa! 💕 Quiero hacer este pedido:";
+  document.getElementById("cfgMensaje").value=DATA.config.mensaje||"¡Hola YosyModa! Quiero hacer este pedido:";
+  document.getElementById("cfgStockMin").value=(DATA.config.stock_min!=null&&DATA.config.stock_min!=="")?DATA.config.stock_min:3;
 }
 async function saveConfig(){
-  const cfg={nombre:document.getElementById("cfgNombre").value.trim(),whatsapp:document.getElementById("cfgWhatsapp").value.replace(/\D/g,""),moneda:document.getElementById("cfgMoneda").value.trim()||"C$",mensaje:document.getElementById("cfgMensaje").value.trim()};
+  const cfg={nombre:document.getElementById("cfgNombre").value.trim(),whatsapp:document.getElementById("cfgWhatsapp").value.replace(/\D/g,""),moneda:document.getElementById("cfgMoneda").value.trim()||"C$",mensaje:document.getElementById("cfgMensaje").value.trim(),stock_min:String(Math.max(0,parseInt(document.getElementById("cfgStockMin").value,10)||0))};
   setBusy(true); const r=await apiWrite("saveConfig",{config:cfg}); setBusy(false); if(r&&r.ok===false) return; await reload(); toast("Ajustes guardados");
 }
 

@@ -1,6 +1,6 @@
 # 🌸 YosyModa — Catálogo + Inventario
 
-Tienda digital para **YosyModa**: un catálogo público donde las clientas arman su pedido y lo cierran por **WhatsApp**, y un **panel de administración** para que la dueña gestione productos, categorías, tallas/colores y stock. Base de datos gratis con **Google Sheets + Apps Script**, y sitio gratis en **GitHub Pages**.
+Tienda digital para **YosyModa**: un catálogo público donde los clientes arman su pedido y lo cierran por **WhatsApp**, y un **panel de administración** para que la dueña gestione productos, categorías, tallas/colores y stock. Base de datos gratis con **Google Sheets + Apps Script**, y sitio gratis en **GitHub Pages**.
 
 > ✅ **Funciona desde ya en "modo demostración"** (con productos de ejemplo) apenas abras `index.html`. Cuando conectes Google Sheets, pasa a funcionar "en vivo" con los datos reales de la tienda.
 
@@ -10,12 +10,12 @@ Tienda digital para **YosyModa**: un catálogo público donde las clientas arman
 
 | Archivo | Qué es |
 |---|---|
-| `index.html` | El **catálogo público** (lo que ven las clientas). |
+| `index.html` | El **catálogo público** (lo que ven los clientes). |
 | `pos.html` | La **Caja / Punto de venta** (privado): vender en el local, pedidos en línea, fiados y reporte. |
 | `admin.html` | El **panel de la dueña** (privado): productos, categorías, tallas/colores y stock. |
 | `config.js` | **Lo único que editas** para conectar la tienda (URL de la API y WhatsApp). |
 | `Code.gs` | El **backend**: se pega en Google Apps Script (no va a GitHub Pages, va en tu Hoja). |
-| `manifest.json`, `manifest-admin.json`, `sw.js` | Hacen que **se instale como app**: una para las clientas (catálogo) y una para la dueña (panel + caja). |
+| `manifest.json`, `manifest-admin.json`, `sw.js` | Hacen que **se instale como app**: una para los clientes (catálogo) y una para la dueña (panel + caja). |
 | `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | Íconos de la app instalada. |
 | `.github/workflows/keepalive.yml` | Tarea opcional que mantiene "despierta" la base de datos. |
 
@@ -36,7 +36,7 @@ Tienda digital para **YosyModa**: un catálogo público donde las clientas arman
    ```js
    const ADMIN_TOKEN = "yosymoda123";   // ← pon aquí una contraseña tuya
    ```
-5. Arriba, elige la función **`setup`** y presiona **▶ Ejecutar**. La primera vez te pedirá **autorizar permisos** (acepta con tu cuenta de Google). Esto crea las pestañas *Config, Categorias, Productos, Variantes* con datos de ejemplo.
+5. Arriba, elige la función **`setup`** y presiona **▶ Ejecutar**. La primera vez te pedirá **autorizar permisos** (acepta con tu cuenta de Google). Esto crea todas las pestañas (*Config, Categorias, Productos, Variantes, Ventas, VentaItems, Pedidos, Movimientos, Clientes, Abonos*) con datos de ejemplo.
 6. Presiona **Implementar ▸ Nueva implementación**. Elige tipo **Aplicación web** con:
    - **Ejecutar como:** Yo (tu cuenta)
    - **Quién tiene acceso:** **Cualquier persona**
@@ -69,7 +69,7 @@ const CONFIG = {
    - Catálogo público → esa dirección (`index.html`).
    - Panel de la dueña → esa dirección + `/admin.html`.
 
-¡Listo! Comparte el link del catálogo por WhatsApp, Instagram o el estado. 💕
+¡Listo! Comparte el link del catálogo por WhatsApp, Instagram o el estado.
 
 ---
 
@@ -80,15 +80,16 @@ const CONFIG = {
 - **＋ Nuevo**: agrega una prenda, elige tallas y colores (chips) y llena el stock en la grilla.
 - **Importar Excel**: sube un `.xlsx`/`.csv` (usa el botón *Descargar plantilla*). Detecta las columnas solo.
 - **Categorías**: crea, ordena y oculta secciones.
-- **Ajustes**: nombre, WhatsApp, moneda y el mensaje del pedido.
+- **Ajustes**: nombre, WhatsApp, moneda, el mensaje del pedido y **cuándo avisarte de bajo inventario**.
+- **Tarjetas de arriba**: son botones. *Por reponer* filtra la lista a lo que hay que surtir; *Categorías* te lleva a esa pestaña.
 
 **La dueña (Caja `pos.html`):**
 - **Vender**: toca las prendas, arma el ticket y **Cobrar** → elige **Efectivo** o **Fiar** (a crédito). El inventario baja solo.
 - **Pedidos**: los pedidos que llegan del catálogo en línea aparecen aquí; al **Confirmar** eliges también **Efectivo o Fiado**, y recién ahí se descuenta el stock.
-- **Fiados**: lista de clientas que deben, con abonos y recordatorio por WhatsApp.
+- **Fiados**: lista de clientes que deben, con abonos y recordatorio por WhatsApp.
 - **Reporte / Cierre de caja**: con **selector de fecha** (Hoy, Ayer o cualquier día) para *arquear*. Muestra el **efectivo esperado en caja** (ventas en efectivo + abonos), lo fiado y la ganancia estimada.
 
-**La clienta (catálogo `index.html`):**
+**El cliente (catálogo `index.html`):**
 - Explora, filtra por categoría, elige talla/color, arma el carrito y toca **Pedir por WhatsApp**. Se abre el chat con el pedido escrito hacia el número de la tienda. Sin registrarse.
 
 ---
@@ -112,7 +113,7 @@ El sistema se **ve y se siente como una app nativa** y se puede instalar en la p
 - **iPhone (Safari):** toca **Compartir** ↑ y luego **Agregar a inicio**.
 - Una vez instalada, abre a pantalla completa (sin barra del navegador) y **arranca al instante** aunque el internet ande lento.
 
-> Hay **dos apps**: el **Catálogo** (la que compartes con las clientas) y **YosyModa Negocio** (la de la dueña, que abre en el Panel y desde ahí pasa a la Caja).
+> Hay **dos apps**: el **Catálogo** (el que compartes con los clientes) y **YosyModa Negocio** (la de la dueña, que abre en el Panel y desde ahí pasa a la Caja).
 
 ### Una sola contraseña, una sola vez
 
@@ -122,7 +123,7 @@ La dueña **entra una sola vez** y queda dentro: la sesión se guarda en su apar
 
 ## 📷 Fotos de los productos
 
-En el campo *URL de la foto* pega un **enlace público** de la imagen (por ejemplo desde Google Drive con permiso "cualquiera con el enlace", Imgur, o Cloudinary). Si lo dejas vacío, se muestra una imagen elegante generada automáticamente con el nombre de la prenda. Así la tienda nunca se ve "rota".
+Puedes **tomar la foto con la cámara o subirla de la galería** desde el mismo formulario del producto (se guarda en tu Google Drive). Si prefieres, abre *o pegar un enlace (URL)* y pega un **enlace público** de la imagen (por ejemplo desde Google Drive con permiso "cualquiera con el enlace", Imgur, o Cloudinary). Si lo dejas vacío, se muestra una imagen elegante generada automáticamente con el nombre de la prenda. Así la tienda nunca se ve "rota".
 
 ---
 
@@ -137,13 +138,24 @@ Con visitas normales al catálogo no hace falta, pero no estorba.
 
 ---
 
+## 🔔 Avisos de bajo inventario
+
+Arriba, junto al nombre de la tienda, hay una **campana** con el número de prendas que hay que surtir (está en el Panel y en la Caja).
+
+- **Tú decides cuándo avisar:** en **Ajustes ▸ Avisarme cuando queden ___ o menos**. Se cuenta **por talla y color**, no por el total de la prenda: si te quedan 2 blusas talla M rosadas, te avisa aunque tengas 30 blusas en total.
+- **Los avisos son interactivos:** toca uno y te lleva directo a esa prenda con el cursor puesto en la casilla que está baja, lista para escribir cuánto entró. Desde la Caja, el aviso abre el Panel en esa misma prenda.
+- **Al cobrar**, si la venta dejó algo por debajo del límite, el comprobante muestra un aviso naranja con el botón *Toca para reponer*.
+- Solo se avisa de lo que **sí manejas**: si dejas una talla/color en 0 al crear la prenda, esa combinación simplemente no existe y no genera avisos falsos.
+
+---
+
 ## 📦 Cómo se maneja el inventario con los pedidos en línea
 
-El inventario **no se aparta cuando la clienta hace el pedido**: baja recién cuando la dueña toca **Confirmar (vender)**. Así, un pedido que nunca se concreta no deja prendas bloqueadas.
+El inventario **no se aparta cuando el cliente hace el pedido**: baja recién cuando la dueña toca **Confirmar (vender)**. Así, un pedido que nunca se concreta no deja prendas bloqueadas.
 
 Para que eso no cause enredos, el sistema hace tres cosas:
 
-1. **Al pedir**, la tienda en línea revisa el inventario contra la Hoja de Google. Si una prenda ya no alcanza, se lo dice a la clienta ahí mismo ("Se acaban de vender"), le ajusta el pedido a lo que queda y **no manda un pedido imposible**.
+1. **Al pedir**, la tienda en línea revisa el inventario contra la Hoja de Google. Si una prenda ya no alcanza, se lo dice al cliente ahí mismo ("Se acaban de vender"), le ajusta el pedido a lo que queda y **no manda un pedido imposible**.
 2. **En la lista de Pedidos**, un pendiente al que ya no le alcanza el inventario se marca en naranja: *"Ya no alcanza el inventario de N prendas"*, antes de que la dueña lo toque.
 3. **Al confirmar**, si alguna prenda se vendió en el mostrador mientras tanto, no se queda sin salida: aparece un detalle prenda por prenda y puede **vender solo lo disponible** (se cobra el resto y se descuenta bien), dejarlo pendiente o descartarlo.
 

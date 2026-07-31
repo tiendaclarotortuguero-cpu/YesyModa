@@ -194,6 +194,11 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(251,246,245,.9);back
 @keyframes sp{to{transform:rotate(360deg)}}
 .loadfull{min-height:50vh;display:grid;place-items:center;color:var(--muted)}
 
+/* campana de avisos */
+.belltn{position:relative}
+.ndot{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;background:var(--danger);color:#fff;
+  border-radius:999px;font-size:10.5px;font-weight:700;display:grid;place-items:center;font-style:normal;box-shadow:0 0 0 2px var(--bg)}
+
 /* ===================== ÍCONOS ===================== */
 .ic{flex:none;display:inline-block;vertical-align:-.18em}
 .tab .ic,.btn .ic,.chip .ic,.stat .k .ic{vertical-align:-.2em}
@@ -276,6 +281,10 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
     <div class="wrap top-in">
       <span class="logo serif">Yosy<b>Moda</b> <span style="font-size:12px;color:var(--muted);font-family:'Jost'">· Caja</span></span>
       <span class="pill" id="modePill"></span>
+      <button class="iconbtn belltn" onclick="abrirAvisos()" title="Avisos de inventario" aria-label="Avisos">
+        <svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.6a6 6 0 1 0-12 0c0 5-2.2 6.4-2.2 6.4h16.4S18 13.6 18 8.6Z"/><path d="M13.7 20.3a2 2 0 0 1-3.4 0"/></svg>
+        <em class="ndot hide" id="avisoDot">0</em>
+      </button>
       <button class="iconbtn" id="installBtn" onclick="instalarApp()" title="Instalar app" style="display:none"><svg class="ic" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v10.8"/><path d="m7.6 10.4 4.4 4.4 4.4-4.4"/><path d="M4.6 17.4V19a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5v-1.6"/></svg></button>
       <a class="iconbtn only-desk" href="admin.html" title="Panel">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -368,7 +377,7 @@ input,textarea,select,[contenteditable]{-webkit-touch-callout:default;-webkit-us
 /* ============================================================
    YOSYMODA · Caja / POS
    ============================================================ */
-const CUR=(CONFIG.CURRENCY||"C$");
+let CUR=(CONFIG.CURRENCY||"C$");     // se actualiza con lo que la dueña guarde en Ajustes
 const money=n=>CUR+" "+(Math.round(n)).toLocaleString("es-NI");
 const norm=s=>(s||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
 const COLORS={"rosa":"#f4c9d6","rosado":"#f4c9d6","palo de rosa":"#e7b7c2","fucsia":"#d6468f","blanco":"#ffffff","negro":"#2f2b2e","gris":"#b9b3b6","beige":"#e8d9c5","crema":"#f3ead9","azul":"#8fa9cf","celeste":"#bcd4ea","marino":"#3a4a6b","rojo":"#c85a5f","vino":"#7d2f42","verde":"#9bb894","menta":"#c3e0cf","amarillo":"#f0d585","mostaza":"#d1a24a","morado":"#a98bc4","lila":"#d7c6e8","cafe":"#8a6552","dorado":"#d8b45f","coral":"#f39d8a","turquesa":"#7fc9c2","naranja":"#e79a5c"};
@@ -379,6 +388,8 @@ const colorHex=c=>COLORS[norm(c)]||"#e3d3d9";
    (reemplazan a los emojis: se ven iguales en Android, iPhone y PC)
    ============================================================ */
 const ICONS={
+bell:'<path d="M18 8.6a6 6 0 1 0-12 0c0 5-2.2 6.4-2.2 6.4h16.4S18 13.6 18 8.6Z"/><path d="M13.7 20.3a2 2 0 0 1-3.4 0"/>',
+box:'<path d="M20.5 7.8 12 3.5 3.5 7.8v8.4L12 20.5l8.5-4.3Z"/><path d="m3.5 7.8 8.5 4.3 8.5-4.3M12 12.1v8.4"/>',
 hanger:'<path d="M12 7.4a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.4v2.3"/><path d="m12 9.7 7.8 5a1.6 1.6 0 0 1-.9 3H5.1a1.6 1.6 0 0 1-.9-3Z"/>',
 shirt:'<path d="M8 3 4.5 4.8 3 8.6l3 1.1V21h12V9.7l3-1.1-1.5-3.8L16 3a4 4 0 0 1-8 0Z"/>',
 dress:'<path d="M9.4 3 8 6.4l1.5 2.6-4 9.1A2 2 0 0 0 7.3 21h9.4a2 2 0 0 0 1.8-2.9l-4-9.1L16 6.4 14.6 3"/><path d="M9.4 3a2.6 2.6 0 0 0 5.2 0"/>',
@@ -551,14 +562,14 @@ document.getElementById("loginNote").textContent = LIVE?"Se valida con tu Google
 /* el arranque automático se hace al final del script, cuando ya existe todo */
 
 /* ---------- SAMPLE (demo, mismo catálogo que el panel) ---------- */
-const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR},categories:[{id:"blusas",nombre:"Blusas",icono:"shirt",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"dress",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"pants",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"skirt",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"bag",orden:5,visible:true}],products:[
-{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:4},{talla:"M",color:"Rosa",stock:6},{talla:"L",color:"Rosa",stock:3},{talla:"S",color:"Blanco",stock:5},{talla:"M",color:"Blanco",stock:5},{talla:"M",color:"Negro",stock:4}]},
-{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:6},{talla:"M",color:"Beige",stock:4},{talla:"S",color:"Celeste",stock:3},{talla:"M",color:"Celeste",stock:5}]},
-{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Verde",stock:2},{talla:"M",color:"Verde",stock:3}]},
-{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:2},{talla:"M",color:"Negro",stock:3},{talla:"M",color:"Vino",stock:2}]},
-{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:5},{talla:"30",color:"Azul",stock:6},{talla:"32",color:"Azul",stock:4}]},
-{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:3},{talla:"M",color:"Rosa",stock:4},{talla:"S",color:"Marino",stock:2},{talla:"M",color:"Marino",stock:3}]},
-{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:5},{talla:"Única",color:"Café",stock:4},{talla:"Única",color:"Rosa",stock:3}]}
+const SAMPLE={config:{nombre:"YosyModa",whatsapp:CONFIG.WHATSAPP,moneda:CUR, stock_min:3},categories:[{id:"blusas",nombre:"Blusas",icono:"shirt",orden:1,visible:true},{id:"vestidos",nombre:"Vestidos",icono:"dress",orden:2,visible:true},{id:"pantalones",nombre:"Pantalones",icono:"pants",orden:3,visible:true},{id:"faldas",nombre:"Faldas",icono:"skirt",orden:4,visible:true},{id:"accesorios",nombre:"Accesorios",icono:"bag",orden:5,visible:true}],products:[
+{id:"p1",categoria:"blusas",nombre:"Blusa Manga Larga",descripcion:"Tela suave y fresca, corte clásico.",precio:450,costo:280,codigo:"YM1",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:10},{talla:"M",color:"Rosa",stock:14},{talla:"L",color:"Rosa",stock:9},{talla:"S",color:"Blanco",stock:11},{talla:"M",color:"Blanco",stock:12},{talla:"M",color:"Negro",stock:8}]},
+{id:"p2",categoria:"blusas",nombre:"Blusa Casual Básica",descripcion:"Cómoda y versátil.",precio:380,costo:230,codigo:"YM2",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Beige",stock:12},{talla:"M",color:"Beige",stock:10},{talla:"S",color:"Celeste",stock:9},{talla:"M",color:"Celeste",stock:11}]},
+{id:"p3",categoria:"vestidos",nombre:"Vestido Floral",descripcion:"Estampado floral, vuelo ligero.",precio:690,costo:410,codigo:"YM3",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:8},{talla:"M",color:"Rosa",stock:11},{talla:"S",color:"Verde",stock:7},{talla:"M",color:"Verde",stock:9}]},
+{id:"p4",categoria:"vestidos",nombre:"Vestido Elegante de Noche",descripcion:"Corte entallado para ocasiones especiales.",precio:980,costo:600,codigo:"YM4",imagen:"",destacado:false,activo:true,variantes:[{talla:"S",color:"Negro",stock:6},{talla:"M",color:"Negro",stock:2},{talla:"M",color:"Vino",stock:5}]},
+{id:"p5",categoria:"pantalones",nombre:"Pantalón Jean Clásico",descripcion:"Mezclilla resistente, tiro medio.",precio:720,costo:450,codigo:"YM5",imagen:"",destacado:false,activo:true,variantes:[{talla:"28",color:"Azul",stock:9},{talla:"30",color:"Azul",stock:13},{talla:"32",color:"Azul",stock:10}]},
+{id:"p6",categoria:"faldas",nombre:"Falda Midi Plisada",descripcion:"Movimiento elegante, media pierna.",precio:520,costo:300,codigo:"YM6",imagen:"",destacado:true,activo:true,variantes:[{talla:"S",color:"Rosa",stock:8},{talla:"M",color:"Rosa",stock:10},{talla:"S",color:"Marino",stock:7},{talla:"M",color:"Marino",stock:6}]},
+{id:"p7",categoria:"accesorios",nombre:"Bolso de Mano",descripcion:"Diseño sobrio y elegante.",precio:480,costo:260,codigo:"YM7",imagen:"",destacado:false,activo:true,variantes:[{talla:"Única",color:"Negro",stock:11},{talla:"Única",color:"Café",stock:2},{talla:"Única",color:"Rosa",stock:7}]}
 ]};
 
 /* ---------- demo stores (comparten catálogo con el panel: ym_admin) ---------- */
@@ -569,16 +580,22 @@ function demoPosSave(d){localStorage.setItem("ym_pos",JSON.stringify(d));}
 
 /* ---------- API ---------- */
 async function apiGetCatalog(){
-  if(LIVE){const r=await fetch(CONFIG.API_URL+"?action=getCatalog&token="+encodeURIComponent(getToken()));return await r.json();}
+  if(LIVE){ try{ const r=await fetch(CONFIG.API_URL+"?action=getCatalog&token="+encodeURIComponent(getToken())); return await r.json(); }catch(e){ return null; } }
   return demoCat();
 }
 async function apiCall(action,payload){
   if(LIVE){
     const body=JSON.stringify(Object.assign({action,token:getToken()},payload||{}));
-    const r=await fetch(CONFIG.API_URL,{method:"POST",body});
-    const j=await r.json();
-    revisarRespuesta(j);
-    return j;
+    try{
+      const r=await fetch(CONFIG.API_URL,{method:"POST",body});
+      const j=await r.json();
+      revisarRespuesta(j);
+      return j;
+    }catch(e){
+      // Sin internet o servidor caído: se avisa SIEMPRE. Nunca se queda callado.
+      toast("Sin conexión. Revisa tu internet e intenta de nuevo.",true);
+      return { ok:false, error:"red" };
+    }
   }
   return demoCall(action,payload||{});
 }
@@ -638,9 +655,11 @@ function catSig(cats,prods){
     +"##"+(prods||[]).map(p=>p.id+"·"+p.nombre+"·"+p.precio+"·"+(p.activo!==false)+"·"+(p.imagen||"")+"·"+(p.codigo||"")+"·"+(p.variantes||[]).map(v=>v.talla+"/"+v.color+"/"+v.stock).join(",")).join("|");
 }
 function applyCatalog(d){
+  if(d && d.config && d.config.moneda) CUR = String(d.config.moneda);
   DATA={config:d.config||{},categories:(d.categories||[]).filter(c=>c.visible!==false).sort((a,b)=>(a.orden||0)-(b.orden||0)),products:(d.products||[]).filter(p=>p.activo!==false)};
   CATMAP={};DATA.categories.forEach(c=>CATMAP[c.id]=c);
   POLLSIG.cat=catSig(DATA.categories,DATA.products);
+  renderAvisos();
 }
 async function loadCatalog(){
   try{const d=await apiGetCatalog();
@@ -660,6 +679,39 @@ async function loadCatalogSilent(){
   if(TAB==="vender"){renderCats();renderGrid();}
 }
 function refreshAll(){POLLSIG={ped:"",cat:"",ven:"",fia:""};loadCatalog();loadPedidos();if(TAB==="ventas")loadVentas();if(TAB==="fiados")loadFiados();if(TAB==="reporte")loadReporte(repDia);toast("Actualizado");}
+
+/* ---------- AVISOS DE INVENTARIO ---------- */
+function lowLimit(){ const n=parseInt(DATA.config&&DATA.config.stock_min,10); return (isNaN(n)||n<0)?3:n; }
+function bajoStock(){
+  const lim=lowLimit(), out=[];
+  (DATA.products||[]).forEach(p=>{
+    const bajas=(p.variantes||[]).filter(v=>(+v.stock||0)<=lim);
+    if(bajas.length) out.push({p:p,total:stockOf(p),bajas:bajas,agotado:stockOf(p)===0});
+  });
+  return out.sort((a,b)=>a.total-b.total);
+}
+function renderAvisos(){
+  const n=bajoStock().length, b=document.getElementById("avisoDot");
+  if(b){ b.textContent=n; b.classList.toggle("hide", n===0); }
+}
+function abrirAvisos(){
+  const lista=bajoStock(), lim=lowLimit();
+  if(!lista.length){
+    modal(`<div class="mh"><h3>Avisos de inventario</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+     <div class="mb"><div class="empty2"><div class="big" style="color:var(--ok)">${ic('check',36)}</div>
+       <p>Todo con inventario suficiente.<br><span class="small">Te avisamos cuando algo baje a <b>${lim}</b> o menos.</span></p></div></div>`);
+    return;
+  }
+  const filas=lista.map(x=>{
+    const det=x.bajas.map(v=>`<span style="display:inline-block;margin:2px 5px 2px 0;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:600;background:${(+v.stock||0)===0?'var(--danger-soft)':'var(--warn-soft)'};color:${(+v.stock||0)===0?'var(--danger)':'var(--warn)'}">${v.talla}${v.color?" · "+v.color:""}: ${(+v.stock||0)===0?"agotado":v.stock}</span>`).join("");
+    return `<a class="row" style="display:block;margin-bottom:9px" href="admin.html?edit=${encodeURIComponent(x.p.id)}">
+      <div class="rh"><span class="folio">${x.p.nombre}</span>${x.agotado?`<span class="badge anul">agotado</span>`:""}<span class="money" style="font-size:14px">${x.total} pzas</span></div>
+      <div style="margin-top:5px">${det}</div>
+      <div class="sub" style="color:var(--rosa-deep);font-weight:600;margin-top:3px">Toca para reponer en el Panel</div></a>`;
+  }).join("");
+  modal(`<div class="mh"><h3>Por reponer (${lista.length})</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
+   <div class="mb"><p class="small muted" style="margin:0 0 12px">Quedaron en <b>${lim}</b> o menos. Toca una prenda para agregarle inventario.</p>${filas}</div>`);
+}
 
 /* ---------- tabs ---------- */
 function setTab(t){
@@ -735,7 +787,7 @@ function drawSheet(){
      <div class="pl">Talla</div><div class="opts">${tallas.map(t=>`<button class="opt ${sel.talla===t?'sel':''}" ${tallaOk(p,t)?"":"disabled"} onclick="pickT('${encodeURIComponent(t)}')">${t}</button>`).join("")}</div>
      ${needC?`<div class="pl">Color</div><div class="opts">${colores.map(c=>`<button class="opt color ${sel.color===c?'sel':''}" ${colorOk(p,c)?"":"disabled"} onclick="pickC('${encodeURIComponent(c)}')"><span class="cd" style="background:${colorHex(c)}"></span>${c}</button>`).join("")}</div>`:""}
      <div class="qtyrow"><div class="stepper"><button onclick="qStep(-1)" ${sel.qty<=1?"disabled":""}>−</button><span class="v">${sel.qty}</span><button onclick="qStep(1)" ${ready&&sel.qty>=avail?"disabled":""}>+</button></div>
-       <span class="stnote">${ready?(avail<=3?`Quedan ${avail}`:"Disponible"):(sel.talla&&(sel.color||!needC)?"Sin stock":"Elige talla"+(needC?" y color":""))}</span></div>
+       <span class="stnote">${ready?(avail<=lowLimit()?`Quedan ${avail}`:"Disponible"):(sel.talla&&(sel.color||!needC)?"Sin stock":"Elige talla"+(needC?" y color":""))}</span></div>
      <button class="btn btn-primary btn-block btn-lg" style="margin-top:18px" ${ready?"":"disabled"} onclick="addToTicket()">Agregar al ticket · ${money(p.precio*sel.qty)}</button>
    </div>`;
 }
@@ -786,7 +838,7 @@ function cobrar(){
 function pagoChooser(titulo,onEfectivo,onFiar){
   modal(`<div class="mh"><h3>${titulo}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="mb">
-      <p class="small muted" style="margin:0 0 12px">¿Cómo paga la clienta?</p>
+      <p class="small muted" style="margin:0 0 12px">¿Cómo paga el cliente?</p>
       <button class="btn btn-primary btn-block btn-lg" style="margin-bottom:10px" id="pcEfe">${ic('cash',19)} Efectivo</button>
       <button class="btn btn-ghost btn-block btn-lg" id="pcFia">${ic('users',19)} Fiar (crédito)</button>
     </div>`);
@@ -803,6 +855,12 @@ async function finalizeVenta(pago,clienteId,clienteNombre){
   if(res&&res.ok){
     lastVenta={folio:res.folio||"—",fecha:nowStr(),total:(res.total!=null?res.total:total),descuento:desc,pago,cliente:clienteNombre||"",items:snap};
     ticket=[];descuento=0;renderTicketBar();closeTicket();await loadCatalog();
+    // ¿alguna de las prendas vendidas quedó en el límite de aviso?
+    const lim=lowLimit();
+    lastVenta.avisos=snap.map(i=>{
+      const p=DATA.products.find(x=>x.id===i.producto_id); const v=p&&findVar(p,i.talla,i.color);
+      return (v&&(+v.stock||0)<=lim)?{id:i.producto_id,nombre:i.nombre,talla:i.talla,color:i.color,queda:+v.stock||0}:null;
+    }).filter(Boolean);
     showVentaOK(lastVenta);
   } else {
     const msg=(res&&res.error==="stock")?`Sin stock de ${res.producto} (T${res.talla}${res.color?"/"+res.color:""}). Quedan ${res.disponible}.`:("No se pudo cobrar"+(res&&res.error?": "+res.error:""));
@@ -811,7 +869,7 @@ async function finalizeVenta(pago,clienteId,clienteNombre){
 }
 function reciboTexto(v){
   const lines=v.items.map(i=>`• ${i.nombre} (T${i.talla}${i.color?"/"+i.color:""}) x${i.cantidad} — ${money(i.precio*i.cantidad)}`).join("\n");
-  return `🧾 *${DATA.config.nombre||"YosyModa"}* — Recibo ${v.folio}\n${lines}\n${v.descuento?("Descuento: -"+money(v.descuento)+"\n"):""}*Total: ${money(v.total)}*${v.pago==="credito"?("\n(FIADO"+(v.cliente?" · "+v.cliente:"")+")"):""}\n¡Gracias por tu compra! 💕`;
+  return `🧾 *${DATA.config.nombre||"YosyModa"}* — Recibo ${v.folio}\n${lines}\n${v.descuento?("Descuento: -"+money(v.descuento)+"\n"):""}*Total: ${money(v.total)}*${v.pago==="credito"?("\n(FIADO"+(v.cliente?" · "+v.cliente:"")+")"):""}\n¡Gracias por tu compra!`;
 }
 function showVentaOK(v){
   const wa=(DATA.config.whatsapp||CONFIG.WHATSAPP||"");
@@ -821,6 +879,10 @@ function showVentaOK(v){
     <div class="small muted">Venta registrada · inventario actualizado${v.pago==="credito"?" · fiado":""}</div>
     <div class="folio serif">${money(v.total)}</div>
     <div class="small muted" style="margin-bottom:16px">Recibo ${v.folio}${v.cliente?" · "+v.cliente:""}</div>
+    ${(v.avisos&&v.avisos.length)?`<a href="admin.html?edit=${encodeURIComponent(v.avisos[0].id)}" style="display:block;text-align:left;background:var(--warn-soft);border:1px solid #e8d3a8;border-radius:12px;padding:11px 13px;margin-bottom:12px">
+       <div style="display:flex;align-items:center;gap:8px;color:var(--warn);font-weight:700;font-size:13.5px">${ic('bell',15)} Queda poco inventario</div>
+       <div class="small" style="color:var(--ink2);margin-top:4px">${v.avisos.map(a=>`${a.nombre} (${a.talla}${a.color?"/"+a.color:""}): ${a.queda===0?"agotado":"quedan "+a.queda}`).join("<br>")}</div>
+       <div class="small" style="color:var(--rosa-deep);font-weight:600;margin-top:5px">Toca para reponer</div></a>`:""}
     <button class="btn btn-primary btn-block" style="margin-bottom:9px" onclick="reciboImagen()">${ic('receipt',18)} Ver / descargar recibo</button>
     ${waUrl?`<a class="btn btn-wa btn-block" href="${waUrl}" target="_blank" style="margin-bottom:9px">Enviar por WhatsApp</a>`:""}
     <button class="btn btn-ghost btn-block" onclick="closeModal();setTab('vender')">Nueva venta</button>
@@ -931,7 +993,7 @@ function resolverFaltantes(id,pago,clienteId,nombre,res){
   window.__ajustados=ajustados;
   modal(`<div class="mh"><h3>No alcanza el inventario</h3><button class="iconbtn" onclick="closeModal()">${ic('close',16)}</button></div>
    <div class="mb">
-     <p class="small muted" style="margin:0 0 10px">Estas prendas se vendieron después de que la clienta hizo el pedido. Puedes venderle lo que sí queda y avisarle por WhatsApp.</p>
+     <p class="small muted" style="margin:0 0 10px">Estas prendas se vendieron después de que el cliente hizo el pedido. Puedes venderle lo que sí queda y avisarle por WhatsApp.</p>
      ${filas}
      ${ajustados.length?`<button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" onclick="confirmarSoloDisponible('${id}','${pago}','${clienteId||""}',${JSON.stringify(nombre||"").replace(/"/g,"&quot;")})">Vender solo lo disponible · ${money(totalAjust)}</button>`
        :`<div class="small muted" style="margin-top:14px;text-align:center">No queda nada de este pedido.</div>`}
@@ -1017,7 +1079,7 @@ async function loadReporte(dia){
     <div class="row" style="margin-top:12px"><h3 class="serif" style="font-size:16px;margin-bottom:6px">Lo más vendido</h3>${topRows}</div>`;
 }
 
-/* ---------- FIADOS / CLIENTAS ---------- */
+/* ---------- FIADOS / CLIENTES ---------- */
 let CLIENTES=[];
 function fiaSig(cls){return cls.map(c=>c.id+":"+c.saldo+":"+c.nombre).join("|");}
 async function loadFiados(){
@@ -1037,26 +1099,26 @@ function renderFiados(){
   const conSaldo=CLIENTES.filter(c=>c.saldo>0).sort((a,b)=>b.saldo-a.saldo);
   const alDia=CLIENTES.filter(c=>!(c.saldo>0));
   const totalDeb=conSaldo.reduce((s,c)=>s+c.saldo,0);
-  const card=c=>`<div class="row" onclick="verClienta('${c.id}')" style="cursor:pointer"><div class="rh"><span class="folio">${c.nombre||"(sin nombre)"}</span>${c.saldo>0?`<span class="badge pend">debe ${money(c.saldo)}</span>`:`<span class="badge conf">al día</span>`}<span class="money" style="margin-left:auto">${c.saldo>0?money(c.saldo):""}</span></div>${c.whatsapp?`<div class="sub">${ic('phone',13)} ${c.whatsapp}</div>`:""}</div>`;
+  const card=c=>`<div class="row" onclick="verCliente('${c.id}')" style="cursor:pointer"><div class="rh"><span class="folio">${c.nombre||"(sin nombre)"}</span>${c.saldo>0?`<span class="badge pend">debe ${money(c.saldo)}</span>`:`<span class="badge conf">al día</span>`}<span class="money" style="margin-left:auto">${c.saldo>0?money(c.saldo):""}</span></div>${c.whatsapp?`<div class="sub">${ic('phone',13)} ${c.whatsapp}</div>`:""}</div>`;
   let h=`<div class="stat big" style="margin:4px 0 12px"><div class="k">Total por cobrar (fiado)</div><div class="v">${money(totalDeb)}</div></div>
-    <div style="margin-bottom:12px"><button class="btn btn-ghost btn-sm" onclick="editarClientaModal({})">${ic('plus',15)} Nueva clienta</button></div>`;
-  if(!CLIENTES.length){el.innerHTML=h+`<div class="empty2"><div class="big">${ic('users',38)}</div><p>Aún no hay clientas.<br><span class="small">Se crean al fiar una venta, o con "Nueva clienta".</span></p></div>`;return;}
+    <div style="margin-bottom:12px"><button class="btn btn-ghost btn-sm" onclick="editarClienteModal({})">${ic('plus',15)} Nuevo cliente</button></div>`;
+  if(!CLIENTES.length){el.innerHTML=h+`<div class="empty2"><div class="big">${ic('users',38)}</div><p>Aún no hay clientes.<br><span class="small">Se crean al fiar una venta, o con "Nuevo cliente".</span></p></div>`;return;}
   h+=`<div class="list">`;
   if(conSaldo.length)h+=`<h3 class="serif" style="font-size:15px;margin:2px 0 6px">Con saldo pendiente</h3>`+conSaldo.map(card).join("");
   if(alDia.length)h+=`<h3 class="serif" style="font-size:15px;margin:14px 0 6px">Al día</h3>`+alDia.map(card).join("");
   h+=`</div>`;el.innerHTML=h;
 }
-function verClienta(id){
+function verCliente(id){
   const c=CLIENTES.find(x=>x.id===id);if(!c)return;
   const wa=String(c.whatsapp||"").replace(/\D/g,"");
-  const recordar=(wa&&c.saldo>0)?("https://wa.me/"+wa+"?text="+encodeURIComponent(`Hola ${c.nombre} 💕, te recordamos tu saldo pendiente con ${DATA.config.nombre||"YosyModa"}: ${money(c.saldo)}. ¡Gracias!`)):"";
-  modal(`<div class="mh"><h3>${c.nombre||"Clienta"}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  const recordar=(wa&&c.saldo>0)?("https://wa.me/"+wa+"?text="+encodeURIComponent(`Hola ${c.nombre}, te recordamos tu saldo pendiente con ${DATA.config.nombre||"YosyModa"}: ${money(c.saldo)}. ¡Gracias!`)):"";
+  modal(`<div class="mh"><h3>${c.nombre||"Cliente"}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
    <div class="mb">
      <div class="stat big" style="margin-bottom:12px"><div class="k">Saldo pendiente</div><div class="v">${money(c.saldo)}</div></div>
      ${c.saldo>0?`<label class="small muted">Registrar abono (${CUR})</label>
        <div style="display:flex;gap:8px;margin:6px 0 4px"><input class="inp" id="abonoMonto" type="number" inputmode="numeric" placeholder="0" style="flex:1"><button class="btn btn-primary btn-sm" style="width:auto" onclick="hacerAbono('${c.id}')">Abonar</button></div>`:`<div class="small muted">Sin deuda pendiente.</div>`}
      ${recordar?`<a class="btn btn-wa btn-block btn-sm" href="${recordar}" target="_blank" style="margin-top:12px">Recordar pago por WhatsApp</a>`:""}
-     <button class="btn btn-ghost btn-block btn-sm" style="margin-top:8px" onclick='editarClientaModal(${JSON.stringify({id:c.id,nombre:c.nombre,whatsapp:c.whatsapp})})'>Editar datos</button>
+     <button class="btn btn-ghost btn-block btn-sm" style="margin-top:8px" onclick='editarClienteModal(${JSON.stringify({id:c.id,nombre:c.nombre,whatsapp:c.whatsapp})})'>Editar datos</button>
    </div>`);
 }
 async function hacerAbono(id){
@@ -1064,16 +1126,16 @@ async function hacerAbono(id){
   const res=await apiCall("registrarAbono",{clienteId:id,monto:m});
   if(res&&res.ok){toast("Abono registrado","ok");closeModal();await loadFiados();}else toast("No se pudo registrar",true);
 }
-function editarClientaModal(c){
+function editarClienteModal(c){
   c=c||{};
-  modal(`<div class="mh"><h3>${c.id?"Editar clienta":"Nueva clienta"}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  modal(`<div class="mh"><h3>${c.id?"Editar cliente":"Nuevo cliente"}</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
    <div class="mb">
      <label class="small muted">Nombre</label><input class="inp" id="cliNom" value="${(c.nombre||"").replace(/"/g,"&quot;")}" style="margin:4px 0 10px">
      <label class="small muted">WhatsApp (opcional)</label><input class="inp" id="cliWa" value="${c.whatsapp||""}" placeholder="505…" style="margin:4px 0 4px">
    </div>
-   <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary btn-sm" style="width:auto" onclick="guardarClienta('${c.id||""}')">Guardar</button></div>`);
+   <div class="mf"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary btn-sm" style="width:auto" onclick="guardarCliente('${c.id||""}')">Guardar</button></div>`);
 }
-async function guardarClienta(id){
+async function guardarCliente(id){
   const nombre=document.getElementById("cliNom").value.trim();if(!nombre){toast("Escribe el nombre.",true);return;}
   const whatsapp=document.getElementById("cliWa").value.replace(/\D/g,"");
   const res=await apiCall("saveCliente",{cliente:{id:id||"",nombre:nombre,whatsapp:whatsapp}});
@@ -1086,15 +1148,15 @@ async function openClientePicker(cb){
   const rows=cls.map(c=>`<button class="row" style="width:100%;text-align:left;margin-bottom:8px;display:block" onclick='pickCliente(${JSON.stringify(c.id)},${JSON.stringify(c.nombre||"")})'><div class="rh"><span class="folio">${c.nombre}</span>${c.saldo>0?`<span class="badge pend" style="margin-left:auto">debe ${money(c.saldo)}</span>`:""}</div></button>`).join("");
   modal(`<div class="mh"><h3>¿A quién se le fía?</h3><button class="iconbtn" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
    <div class="mb">
-     <div style="display:flex;gap:8px;margin-bottom:12px"><input class="inp" id="nuevoCli" placeholder="Nombre de clienta nueva" style="flex:1"><button class="btn btn-primary btn-sm" style="width:auto" onclick="fiarANueva()">Crear y fiar</button></div>
-     ${cls.length?rows:`<div class="small muted">No hay clientas. Escribe un nombre arriba.</div>`}
+     <div style="display:flex;gap:8px;margin-bottom:12px"><input class="inp" id="nuevoCli" placeholder="Nombre del cliente" style="flex:1"><button class="btn btn-primary btn-sm" style="width:auto" onclick="fiarANueva()">Crear y fiar</button></div>
+     ${cls.length?rows:`<div class="small muted">No hay clientes. Escribe un nombre arriba.</div>`}
    </div>`);
 }
 function pickCliente(id,nom){const cb=__pickCb||((i,n)=>finalizeVenta("credito",i,n));__pickCb=null;cb(id,nom);}
 async function fiarANueva(){
   const nombre=document.getElementById("nuevoCli").value.trim();if(!nombre){toast("Escribe el nombre.",true);return;}
   const res=await apiCall("saveCliente",{cliente:{nombre:nombre}});
-  if(res&&res.ok){const cb=__pickCb||((i,n)=>finalizeVenta("credito",i,n));__pickCb=null;cb(res.id,nombre);}else toast("No se pudo crear la clienta",true);
+  if(res&&res.ok){const cb=__pickCb||((i,n)=>finalizeVenta("credito",i,n));__pickCb=null;cb(res.id,nombre);}else toast("No se pudo crear el cliente",true);
 }
 
 /* ---------- ESCÁNER (cámara) ---------- */
